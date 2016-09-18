@@ -65,20 +65,20 @@ public:
 
 	///@name Constructors
 	Color() { }
-	Color( float rgb ) : r(rgb), g(rgb), b(rgb) {}
-	Color( float _r, float _g, float _b ) : r(_r), g(_g), b(_b) {}
 	Color( const Color &c ) : r(c.r), g(c.g), b(c.b) {}
+	explicit Color( float _r, float _g, float _b ) : r(_r), g(_g), b(_b) {}
 	explicit Color( const float *c ) : r(c[0]), g(c[1]), b(c[2]) {}
+	explicit Color( float rgb ) : r(rgb), g(rgb), b(rgb) {}
 	explicit Color( const ColorA  &c );
 	explicit Color( const Color24 &c );
 	explicit Color( const Color32 &c );
 
 	///@name Set & Get value functions
-	Color& Black () { r=0; g=0; b=0; return *this; }									///< Sets r, g and b components as zero
-	Color& White () { r=1; g=1; b=1; return *this; }									///< Sets r, g and b components as one
-	Color& Set   ( float _r, float _g, float _b ) { r=_r; g=_g; b=_b; return *this; }	///< Sets r, g and b components as given
-	Color& Set   ( const float *v ) { r=v[0]; g=v[1]; b=v[2]; return *this; }			///< Sets r, g and b components using the values in the given array
-	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; }							///< Puts r, g and b values into the array
+	void SetBlack() { r=0; g=0; b=0; }									///< Sets r, g and b components as zero
+	void SetWhite() { r=1; g=1; b=1; }									///< Sets r, g and b components as one
+	void Set     ( float _r, float _g, float _b ) { r=_r; g=_g; b=_b; }	///< Sets r, g and b components as given
+	void Set     ( const float *v ) { r=v[0]; g=v[1]; b=v[2]; }			///< Sets r, g and b components using the values in the given array
+	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; }			///< Puts r, g and b values into the array
 
 	///@name Gray-scale functions
 	float Sum() const   { return r + g + b; }
@@ -123,6 +123,10 @@ public:
 	///@name Access operators
 	float& operator [] ( int i )       { return (&r)[i]; }
 	float  operator [] ( int i ) const { return (&r)[i]; }
+
+	///@name Static Methods
+	static Color Black() { Color c; c.SetBlack(); return c; }	///< Returns a black color
+	static Color White() { Color c; c.SetWhite(); return c; }	///< Returns a white color
 };
 
 //-------------------------------------------------------------------------------
@@ -131,9 +135,9 @@ public:
 /// Color class with alpha
 class ColorA
 {
-	friend ColorA operator+( const float v, const ColorA &c ) { return c+v; }		///< Addition with a constant
-	friend ColorA operator-( const float v, const ColorA &c ) { return -(c-v); }	///< Subtraction from a constant
-	friend ColorA operator*( const float v, const ColorA &c ) { return c*v; }		///< Multiplication with a constant
+	friend ColorA operator + ( const float v, const ColorA &c ) { return c+v; }		///< Addition with a constant
+	friend ColorA operator - ( const float v, const ColorA &c ) { return -(c-v); }	///< Subtraction from a constant
+	friend ColorA operator * ( const float v, const ColorA &c ) { return c*v; }		///< Multiplication with a constant
 
 public:
 
@@ -141,20 +145,20 @@ public:
 
 	///@name Constructors
 	ColorA() { }
-	ColorA( float rgb, float _a=1 ) : r(rgb), g(rgb), b(rgb), a(_a) {}
-	ColorA( float _r, float _g, float _b, float _a=1 ) : r(_r), g(_g), b(_b), a(_a) {}
 	ColorA( const ColorA  &c ) : r(c.r), g(c.g), b(c.b), a(c.a) {}
+	explicit ColorA( float _r, float _g, float _b, float _a=1 ) : r(_r), g(_g), b(_b), a(_a) {}
 	explicit ColorA( const float *c ) : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
+	explicit ColorA( float rgb, float _a=1 ) : r(rgb), g(rgb), b(rgb), a(_a) {}
 	explicit ColorA( const Color   &c, float _a=1 ) : r(c.r), g(c.g), b(c.b), a(_a) {}
 	explicit ColorA( const Color24 &c, float _a=1 );
 	explicit ColorA( const Color32 &c );
 
 	///@name Set & Get value functions
-	ColorA& Black( float alpha=1 ) { r=0; g=0; b=0; a=alpha; return *this; }							///< Sets r, g, and b components as zero and a component as given
-	ColorA& White( float alpha=1 ) { r=0; g=0; b=0; a=alpha; return *this; }							///< Sets r, g, and b components as one and a component as given
-	ColorA& Set  ( float _r, float _g, float _b, float _a=1 ) { r=_r; g=_g; b=_b; a=_a; return *this; }	///< Sets r, g, b and a components as given
-	ColorA& Set  ( const float *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; return *this; }					///< Sets r, g, b and a components using the values in the given array
-	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }									///< Puts r, g, b and a values into the array
+	void SetBlack( float alpha=1 ) { r=0; g=0; b=0; a=alpha; }								///< Sets r, g, and b components as zero and a component as given
+	void SetWhite( float alpha=1 ) { r=0; g=0; b=0; a=alpha; }								///< Sets r, g, and b components as one and a component as given
+	void Set     ( float _r, float _g, float _b, float _a=1 ) { r=_r; g=_g; b=_b; a=_a; }	///< Sets r, g, b and a components as given
+	void Set     ( const float *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; }						///< Sets r, g, b and a components using the values in the given array
+	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }						///< Puts r, g, b and a values into the array
 
 	///@name Gray-scale functions
 	float Sum  () const { return r + g + b; }
@@ -199,6 +203,10 @@ public:
 	///@name Access operators
 	float& operator [] ( int i )       { return (&r)[i]; }
 	float  operator [] ( int i ) const { return (&r)[i]; }
+
+	///@name Static Methods
+	static ColorA Black( float alpha=1 ) { ColorA c; c.SetBlack(alpha); return c; }	///< Returns a black color
+	static ColorA White( float alpha=1 ) { ColorA c; c.SetWhite(alpha); return c; }	///< Returns a white color
 };
 
 //-------------------------------------------------------------------------------
@@ -211,8 +219,8 @@ public:
 
 	///@name Constructors
 	Color24() {}
-	Color24( unsigned char _r, unsigned char _g, unsigned char _b ) : r(_r), g(_g), b(_b) {}
 	Color24( const Color24 &c ) : r(c.r), g(c.g), b(c.b) {}
+	explicit Color24( unsigned char _r, unsigned char _g, unsigned char _b ) : r(_r), g(_g), b(_b) {}
 	explicit Color24( const Color   &c ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); }
 	explicit Color24( const ColorA  &c ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); }
 	explicit Color24( const Color32 &c );
@@ -221,11 +229,15 @@ public:
 	Color ToColor() const { return Color(r/255.0f,g/255.0f,b/255.0f); }
 
 	///@name Set & Get value functions
-	Color24& Black() { r=0; g=0; b=0; return *this; }															///< Sets r, g, and b components as zero
-	Color24& White() { r=255; g=255; b=255; return *this; }													///< Sets r, g, and b components as 255
-	Color24& Set  ( unsigned char _r, unsigned char _g, unsigned char _b ) { r=_r; g=_g; b=_b; return *this; }	///< Sets r, g, and b components as given
-	Color24& Set  ( const unsigned char *v ) { r=v[0]; g=v[1]; b=v[2]; return *this; }							///< Sets r, g, and b components using the values in the given array
-	void GetValue ( unsigned char *v ) const { v[0]=r; v[1]=g; v[2]=b; }											///< Puts r, g, and b values into the array
+	void SetBlack() { r=0; g=0; b=0; }															///< Sets r, g, and b components as zero
+	void SetWhite() { r=255; g=255; b=255; }													///< Sets r, g, and b components as 255
+	void Set     ( unsigned char _r, unsigned char _g, unsigned char _b ) { r=_r; g=_g; b=_b; }	///< Sets r, g, and b components as given
+	void Set     ( const unsigned char *v ) { r=v[0]; g=v[1]; b=v[2]; }							///< Sets r, g, and b components using the values in the given array
+	void GetValue( unsigned char *v ) const { v[0]=r; v[1]=g; v[2]=b; }							///< Puts r, g, and b values into the array
+
+	///@name Static Methods
+	static Color24 Black() { Color24 c; c.SetBlack(); return c; }	///< Returns a black color
+	static Color24 White() { Color24 c; c.SetWhite(); return c; }	///< Returns a white color
 
 protected:
 	static unsigned char FloatToByte(float r) { return Clamp(int(r*255)); }
@@ -242,8 +254,8 @@ public:
 
 	///@name Constructors
 	Color32() {}
-	Color32( unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a=255 ) : r(_r), g(_g), b(_b), a(_a) {}
 	Color32( const Color32 &c ) : r(c.r), g(c.g), b(c.b), a(c.a) {}
+	explicit Color32( unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a=255 ) : r(_r), g(_g), b(_b), a(_a) {}
 	explicit Color32( const Color  &c, float _a=1.0f ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); a=FloatToByte(_a); }
 	explicit Color32( const ColorA &c ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); a=FloatToByte(c.a); }
 	explicit Color32( const Color24 &c, unsigned char _a=255 ) : r(c.r), g(c.g), b(c.b), a(_a) {}
@@ -253,11 +265,15 @@ public:
 	ColorA ToColorA() const { return ColorA(r/255.0f,g/255.0f,b/255.0f,a/255.0f); }
 
 	///@name Set & Get value functions
-	Color32& Black( unsigned char _a=255 ) { r=0; g=0; b=0; a=_a; return *this; }														///< Sets r, g, and b components as zero and a component as given
-	Color32& White( unsigned char _a=255 ) { r=255; g=255; b=255; a=_a; return *this; }													///< Sets r, g, and b components as one and a component as given
-	Color32& Set  ( unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a ) { r=_r; g=_g; b=_b; a=_a; return *this; }	///< Sets r, g, b and a components as given
-	Color32& Set  ( const unsigned char *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; return *this; }											///< Sets r, g, b and a components using the values in the given array
-	void GetValue ( unsigned char *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }															///< Puts r, g, b and a values into the array
+	void SetBlack( unsigned char _a=255 ) { r=0; g=0; b=0; a=_a; }														///< Sets r, g, and b components as zero and a component as given
+	void SetWhite( unsigned char _a=255 ) { r=255; g=255; b=255; a=_a; }												///< Sets r, g, and b components as one and a component as given
+	void Set     ( unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a ) { r=_r; g=_g; b=_b; a=_a; }	///< Sets r, g, b and a components as given
+	void Set     ( const unsigned char *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; }											///< Sets r, g, b and a components using the values in the given array
+	void GetValue( unsigned char *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }											///< Puts r, g, b and a values into the array
+
+	///@name Static Methods
+	static Color32 Black( unsigned char _a=255 ) { Color32 c; c.SetBlack(_a); return c; }	///< Returns a black color
+	static Color32 White( unsigned char _a=255 ) { Color32 c; c.SetWhite(_a); return c; }	///< Returns a white color
 
 protected:
 	static unsigned char FloatToByte(float r) { return Clamp(int(r*255)); }

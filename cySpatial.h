@@ -176,10 +176,9 @@ public:
 	///@name Constructors
 	SpatialMatrix6() {}
 	SpatialMatrix6( const SpatialMatrix6 &mat ) { m[0]=mat.m[0]; m[1]=mat.m[1]; m[2]=mat.m[2]; m[3]=mat.m[3]; }
-	SpatialMatrix6( const Matrix3<TYPE> &_R, const Point3<TYPE> &_r ) { Set(_R,_r); }
-	SpatialMatrix6( const Matrix3<TYPE> &m11, const Matrix3<TYPE> &m21, const Matrix3<TYPE> &m12, const Matrix3<TYPE> &m22 ) { Set(m11,m21,m12,m22); }
-	SpatialMatrix6( const SpatialVector6<TYPE> &p1, const SpatialVector6<TYPE> &p2 ) { Set(p1,p2); }	// Outer product of two spatial vectors
-	SpatialMatrix6( const SpatialTrans6<TYPE> &tm ) { Set(tm); }
+	explicit SpatialMatrix6( const Matrix3<TYPE> &_R, const Point3<TYPE> &_r ) { Set(_R,_r); }
+	explicit SpatialMatrix6( const Matrix3<TYPE> &m11, const Matrix3<TYPE> &m21, const Matrix3<TYPE> &m12, const Matrix3<TYPE> &m22 ) { Set(m11,m21,m12,m22); }
+	explicit SpatialMatrix6( const SpatialTrans6<TYPE> &tm ) { Set(tm); }
 
 
 	///@name Initialization methods
@@ -188,7 +187,7 @@ public:
 	void Set( const SpatialTrans6<TYPE> &tm ) { m[0]=m[3]=tm.R; m[1]=Matrix3<TYPE>(-tm.r)*tm.R; m[2].Zero(); }
 
 	/// Sets the matrix as the outer product of two vectors.
-	void Set( const SpatialVector6<TYPE> &p1, const SpatialVector6<TYPE> &p2 )
+	void SetTensorProduct( const SpatialVector6<TYPE> &p1, const SpatialVector6<TYPE> &p2 )
 	{
 			SetMatrix( m[0], p1.a, p2.a );
 			SetMatrix( m[1], p1.b, p2.a );
@@ -235,6 +234,10 @@ protected:
 	}
 
 };
+
+//-------------------------------------------------------------------------------
+
+template<typename TYPE> inline SpatialMatrix6<TYPE> operator & ( const SpatialVector6<TYPE> &v0, const SpatialVector6<TYPE> &v1 ) { Matrix2<TYPE> buffer; buffer.SetTensorProduct(v0,v1); return buffer; }		///< tensor product (outer product) of two vectors
 
 //-------------------------------------------------------------------------------
 

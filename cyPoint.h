@@ -54,9 +54,9 @@ public:
 
 	///@name Constructors
 	Point2() {}
-	Point2( TYPE _x, TYPE _y ) { x=_x; y=_y; }
-	Point2( const TYPE *pt ) { x=pt[0]; y=pt[1]; }
 	Point2( const Point2<TYPE> &pt ) { x=pt.x; y=pt.y; }
+	explicit Point2( TYPE _x, TYPE _y ) { x=_x; y=_y; }
+	explicit Point2( const TYPE *pt ) { x=pt[0]; y=pt[1]; }
 	explicit Point2( TYPE _xy ) { x=_xy; y=_xy; }
 	template <typename T> Point2( const Point2<T> &pt ) { x=(TYPE)pt.x; y=(TYPE)pt.y; }
 
@@ -137,9 +137,9 @@ public:
 
 	///@name Constructors
 	Point3() { }
-	Point3( TYPE _x, TYPE _y, TYPE _z ) { x=_x; y=_y; z=_z; }
-	Point3( const TYPE *pt ) { x=pt[0]; y=pt[1]; z=pt[2]; }
 	Point3( const Point3<TYPE> &pt ) { x=pt.x; y=pt.y; z=pt.z; }
+	Point3( TYPE _x, TYPE _y, TYPE _z ) { x=_x; y=_y; z=_z; }
+	explicit Point3( const TYPE *pt ) { x=pt[0]; y=pt[1]; z=pt[2]; }
 	explicit Point3( TYPE _xyz ) { x=_xyz; y=_xyz; z=_xyz; }
 	explicit Point3( const Point2<TYPE> &pt ) { x=pt.x; y=pt.y; z=0; }
 	explicit Point3( const Point2<TYPE> &pt, TYPE _z ) { x=pt.x; y=pt.y; z=_z; }
@@ -165,36 +165,36 @@ public:
 	void ClampMax( TYPE n ) { if(x>n)x=n; if(y>n)y=n; if(z>n)z=n; }
 
 	///@name Unary operators
-	Point3 operator-() const { return Point3(-x,-y,-z); } 
-	Point3 operator+() const { return *this; }
+	Point3 operator - () const { return Point3(-x,-y,-z); } 
+	Point3 operator + () const { return *this; }
 
 	///@name Binary operators
-	Point3 operator+( const Point3 &pt ) const { return Point3(x+pt.x, y+pt.y, z+pt.z); }
-	Point3 operator-( const Point3 &pt ) const { return Point3(x-pt.x, y-pt.y, z-pt.z); }
-	Point3 operator*( const Point3 &pt ) const { return Point3(x*pt.x, y*pt.y, z*pt.z); }
-	Point3 operator/( const Point3 &pt ) const { return Point3(x/pt.x, y/pt.y, z/pt.z); }
-	Point3 operator+( TYPE n ) const { return Point3(x+n, y+n, z+n); }
-	Point3 operator-( TYPE n ) const { return Point3(x-n, y-n, z-n); }
-	Point3 operator*( TYPE n ) const { return Point3(x*n, y*n, z*n); }
-	Point3 operator/( TYPE n ) const { return Point3(x/n, y/n, z/n); }
+	Point3 operator + ( const Point3 &pt ) const { return Point3(x+pt.x, y+pt.y, z+pt.z); }
+	Point3 operator - ( const Point3 &pt ) const { return Point3(x-pt.x, y-pt.y, z-pt.z); }
+	Point3 operator * ( const Point3 &pt ) const { return Point3(x*pt.x, y*pt.y, z*pt.z); }
+	Point3 operator / ( const Point3 &pt ) const { return Point3(x/pt.x, y/pt.y, z/pt.z); }
+	Point3 operator + ( TYPE n ) const { return Point3(x+n, y+n, z+n); }
+	Point3 operator - ( TYPE n ) const { return Point3(x-n, y-n, z-n); }
+	Point3 operator * ( TYPE n ) const { return Point3(x*n, y*n, z*n); }
+	Point3 operator / ( TYPE n ) const { return Point3(x/n, y/n, z/n); }
 
 	///@name Assignment operators
-	Point3& operator+=( const Point3 &pt ) { x+=pt.x; y+=pt.y; z+=pt.z; return *this; }
-	Point3& operator-=( const Point3 &pt ) { x-=pt.x; y-=pt.y; z-=pt.z; return *this; }
-	Point3& operator*=( const Point3 &pt ) { x*=pt.x; y*=pt.y; z*=pt.z; return *this; }
-	Point3& operator/=( const Point3 &pt ) { x/=pt.x; y/=pt.y; z/=pt.z; return *this; }
-	Point3& operator+=( TYPE n ) { x+=n; y+=n; z+=n; return *this; }
-	Point3& operator-=( TYPE n ) { x-=n; y-=n; z-=n; return *this; }
-	Point3& operator*=( TYPE n ) { x*=n; y*=n; z*=n; return *this; }
-	Point3& operator/=( TYPE n ) { x/=n; y/=n; z/=n; return *this; }
+	Point3& operator += ( const Point3 &pt ) { x+=pt.x; y+=pt.y; z+=pt.z; return *this; }
+	Point3& operator -= ( const Point3 &pt ) { x-=pt.x; y-=pt.y; z-=pt.z; return *this; }
+	Point3& operator *= ( const Point3 &pt ) { x*=pt.x; y*=pt.y; z*=pt.z; return *this; }
+	Point3& operator /= ( const Point3 &pt ) { x/=pt.x; y/=pt.y; z/=pt.z; return *this; }
+	Point3& operator += ( TYPE n ) { x+=n; y+=n; z+=n; return *this; }
+	Point3& operator -= ( TYPE n ) { x-=n; y-=n; z-=n; return *this; }
+	Point3& operator *= ( TYPE n ) { x*=n; y*=n; z*=n; return *this; }
+	Point3& operator /= ( TYPE n ) { x/=n; y/=n; z/=n; return *this; }
 
 	///@name Test operators
-	int operator==( const Point3& pt ) const { return ( (pt.x==x) && (pt.y==y) && (pt.z==z) ); }
-	int operator!=( const Point3& pt ) const { return ( (pt.x!=x) || (pt.y!=y) || (pt.z!=z) ); }
+	int operator == ( const Point3& pt ) const { return ( (pt.x==x) && (pt.y==y) && (pt.z==z) ); }
+	int operator != ( const Point3& pt ) const { return ( (pt.x!=x) || (pt.y!=y) || (pt.z!=z) ); }
 
 	///@name Access operators
-	TYPE& operator[]( int i )       { return (&x)[i]; }
-	TYPE  operator[]( int i ) const { return (&x)[i]; }
+	TYPE& operator [] ( int i )       { return (&x)[i]; }
+	TYPE  operator [] ( int i ) const { return (&x)[i]; }
 
 	///@name Cross product and dot product
 	Point3 Cross      ( const Point3 &pt ) const { return Point3(y*pt.z-z*pt.y, z*pt.x-x*pt.z, x*pt.y-y*pt.x); }	///< Cross product
@@ -214,9 +214,9 @@ float Point3<float>::Length() const { return sqrtf(LengthSquared()); }
 template <typename TYPE>
 class Point4
 {
-	friend Point4 operator+( const TYPE v, const Point4 &pt ) { return pt+v; }		///< Addition with a constant
-	friend Point4 operator-( const TYPE v, const Point4 &pt ) { return -(pt-v); }	///< Subtraction from a constant
-	friend Point4 operator*( const TYPE v, const Point4 &pt ) { return pt*v; }		///< Multiplication with a constant
+	friend Point4 operator + ( const TYPE v, const Point4 &pt ) { return pt+v; }		///< Addition with a constant
+	friend Point4 operator - ( const TYPE v, const Point4 &pt ) { return -(pt-v); }	///< Subtraction from a constant
+	friend Point4 operator * ( const TYPE v, const Point4 &pt ) { return pt*v; }		///< Multiplication with a constant
 
 public:
 
@@ -224,9 +224,9 @@ public:
 
 	///@name Constructors
 	Point4() { }
-	Point4( TYPE _x, TYPE _y, TYPE _z, TYPE _w ) { x=_x; y=_y; z=_z; w=_w; }
-	Point4( const TYPE *pt ) { x=pt[0]; y=pt[1]; z=pt[2]; w=pt[3]; }
 	Point4( const Point4<TYPE> &pt ) { x=pt.x; y=pt.y; z=pt.z; w=pt.w; }
+	Point4( TYPE _x, TYPE _y, TYPE _z, TYPE _w ) { x=_x; y=_y; z=_z; w=_w; }
+	explicit Point4( const TYPE *pt ) { x=pt[0]; y=pt[1]; z=pt[2]; w=pt[3]; }
 	explicit Point4( TYPE _xyzw ) { x=_xyzw; y=_xyzw; z=_xyzw; w=_xyzw; }
 	explicit Point4( const Point3<TYPE> &pt ) { x=pt.x; y=pt.y; z=pt.z; w=1; }
 	explicit Point4( const Point3<TYPE> &pt, TYPE _w ) { x=pt.x; y=pt.y; z=pt.z; w=_w; }
@@ -252,40 +252,40 @@ public:
 	void ClampMax( TYPE n ) { if(x>n)x=n; if(y>n)y=n; if(z>n)z=n; if(w>n)w=n; }
 
 	///@name Unary operators
-	Point4 operator-() const { return Point4(-x, -y, -z, -w); }
-	Point4 operator+() const { return *this; }
+	Point4 operator - () const { return Point4(-x, -y, -z, -w); }
+	Point4 operator + () const { return *this; }
 
 	///@name Binary operators
-	Point4 operator+( const Point4 &pt ) const { return Point4(x+pt.x, y+pt.y, z+pt.z, w+pt.w); }
-	Point4 operator-( const Point4 &pt ) const { return Point4(x-pt.x, y-pt.y, z-pt.z, w-pt.w); }
-	Point4 operator*( const Point4 &pt ) const { return Point4(x*pt.x, y*pt.y, z*pt.z, w*pt.w); }
-	Point4 operator/( const Point4 &pt ) const { return Point4(x/pt.x, y/pt.y, z/pt.z, w/pt.w); }
-	Point4 operator+( TYPE n ) const { return Point4(x+n, y+n, z+n, w+n); }
-	Point4 operator-( TYPE n ) const { return Point4(x-n, y-n, z-n, w-n); }
-	Point4 operator*( TYPE n ) const { return Point4(x*n, y*n, z*n, w*n); }
-	Point4 operator/( TYPE n ) const { return Point4(x/n, y/n, z/n, w/n); }
+	Point4 operator + ( const Point4 &pt ) const { return Point4(x+pt.x, y+pt.y, z+pt.z, w+pt.w); }
+	Point4 operator - ( const Point4 &pt ) const { return Point4(x-pt.x, y-pt.y, z-pt.z, w-pt.w); }
+	Point4 operator * ( const Point4 &pt ) const { return Point4(x*pt.x, y*pt.y, z*pt.z, w*pt.w); }
+	Point4 operator / ( const Point4 &pt ) const { return Point4(x/pt.x, y/pt.y, z/pt.z, w/pt.w); }
+	Point4 operator + ( TYPE n ) const { return Point4(x+n, y+n, z+n, w+n); }
+	Point4 operator - ( TYPE n ) const { return Point4(x-n, y-n, z-n, w-n); }
+	Point4 operator * ( TYPE n ) const { return Point4(x*n, y*n, z*n, w*n); }
+	Point4 operator / ( TYPE n ) const { return Point4(x/n, y/n, z/n, w/n); }
 
 	///@name Assignment operators
-	Point4& operator+=( const Point4 &pt ) { x+=pt.x; y+=pt.y; z+=pt.z; w+=pt.w; return *this; }
-	Point4& operator-=( const Point4 &pt ) { x-=pt.x; y-=pt.y; z-=pt.z; w-=pt.w; return *this; }
-	Point4& operator*=( const Point4 &pt ) { x*=pt.x; y*=pt.y; z*=pt.z; w*=pt.w; return *this; }
-	Point4& operator/=( const Point4 &pt ) { x/=pt.x; y/=pt.y; z/=pt.z; w/=pt.w; return *this; }
-	Point4& operator+=( TYPE n ) { x+=n; y+=n; z+=n; w+=n; return *this; }
-	Point4& operator-=( TYPE n ) { x-=n; y-=n; z-=n; w-=n; return *this; }
-	Point4& operator*=( TYPE n ) { x*=n; y*=n; z*=n; w*=n; return *this; }
-	Point4& operator/=( TYPE n ) { x/=n; y/=n; z/=n; w/=n; return *this; }
+	Point4& operator += ( const Point4 &pt ) { x+=pt.x; y+=pt.y; z+=pt.z; w+=pt.w; return *this; }
+	Point4& operator -= ( const Point4 &pt ) { x-=pt.x; y-=pt.y; z-=pt.z; w-=pt.w; return *this; }
+	Point4& operator *= ( const Point4 &pt ) { x*=pt.x; y*=pt.y; z*=pt.z; w*=pt.w; return *this; }
+	Point4& operator /= ( const Point4 &pt ) { x/=pt.x; y/=pt.y; z/=pt.z; w/=pt.w; return *this; }
+	Point4& operator += ( TYPE n ) { x+=n; y+=n; z+=n; w+=n; return *this; }
+	Point4& operator -= ( TYPE n ) { x-=n; y-=n; z-=n; w-=n; return *this; }
+	Point4& operator *= ( TYPE n ) { x*=n; y*=n; z*=n; w*=n; return *this; }
+	Point4& operator /= ( TYPE n ) { x/=n; y/=n; z/=n; w/=n; return *this; }
 
 	///@name Test operators
-	int operator==( const Point4& pt ) const { return ( (pt.x==x) && (pt.y==y) && (pt.z==z) && (pt.w==w) ); }
-	int operator!=( const Point4& pt ) const { return ( (pt.x!=x) || (pt.y!=y) || (pt.z!=z) || (pt.w!=w) ); }
+	int operator == ( const Point4& pt ) const { return ( (pt.x==x) && (pt.y==y) && (pt.z==z) && (pt.w==w) ); }
+	int operator != ( const Point4& pt ) const { return ( (pt.x!=x) || (pt.y!=y) || (pt.z!=z) || (pt.w!=w) ); }
 
 	///@name Access operators
-	TYPE& operator[](int i)       { return ( &x )[i]; }
-	TYPE  operator[](int i) const { return ( &x )[i]; }
+	TYPE& operator [] (int i)       { return ( &x )[i]; }
+	TYPE  operator [] (int i) const { return ( &x )[i]; }
 
 	///@ Dot product
 	TYPE Dot		( const Point4 &pt ) const { return x*pt.x + y*pt.y + z*pt.z + w*pt.w; }	///< Dot product
-	TYPE operator%( const Point4 &pt ) const { return Dot(pt); }								///< Dot product
+	TYPE operator % ( const Point4 &pt ) const { return Dot(pt); }								///< Dot product
 
 	///@name Conversion Methods
 	Point2<TYPE> XY () const { return Point2<TYPE>(x,y); }

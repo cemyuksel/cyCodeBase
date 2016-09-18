@@ -68,7 +68,7 @@ public:
 	template <typename T> explicit Matrix2<TYPE>( const Matrix2<T> &matrix ) { for ( int i=0; i<4; i++ ) data[i]=(TYPE)matrix.data[i]; }		///< Copy constructor for different types
 	explicit Matrix2( const TYPE *array ) { Set(array); }									///< Initialize the matrix using an array of 4 values
 	explicit Matrix2( TYPE v ) { SetScaledIdentity(v); }									///< Initialize the matrix as identity scaled by v
-	Matrix2( const Point2<TYPE> &x, const Point2<TYPE> &y ) { Set(x,y); }					///< Initialize the matrix using two vectors as columns
+	explicit Matrix2( const Point2<TYPE> &x, const Point2<TYPE> &y ) { Set(x,y); }			///< Initialize the matrix using two vectors as columns
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -263,12 +263,12 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	///@name Constructors
 
-	Matrix3() {}																					///< Default constructor
-	Matrix3( const Matrix3 &matrix ) { for ( int i=0; i<9; i++ ) data[i]=matrix.data[i]; }			///< Copy constructor
+	Matrix3() {}																							///< Default constructor
+	Matrix3( const Matrix3 &matrix ) { for ( int i=0; i<9; i++ ) data[i]=matrix.data[i]; }					///< Copy constructor
 	template <typename T> explicit Matrix3<TYPE>( const Matrix3<T> &matrix ) { for ( int i=0; i<9; i++ ) data[i]=(TYPE)matrix.data[i]; }		///< Copy constructor for different types
-	explicit Matrix3( const TYPE *array ) { Set(array); }											///< Initialize the matrix using an array of 9 values
-	explicit Matrix3( TYPE v ) { SetScaledIdentity(v); }											///< Initialize the matrix as identity scaled by v
-	Matrix3( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z ) { Set(x,y,z); }	///< Initialize the matrix using x,y,z vectors as columns
+	explicit Matrix3( const TYPE *array ) { Set(array); }													///< Initialize the matrix using an array of 9 values
+	explicit Matrix3( TYPE v ) { SetScaledIdentity(v); }													///< Initialize the matrix as identity scaled by v
+	explicit Matrix3( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z ) { Set(x,y,z); }	///< Initialize the matrix using x,y,z vectors as columns
 	explicit Matrix3( const Matrix2<TYPE> &m ) { 
 		data[0] = m.data[0]; data[1] = m.data[1]; data[2] = TYPE(0);
 		data[3] = m.data[2]; data[4] = m.data[3]; data[5] = TYPE(0);
@@ -640,8 +640,8 @@ public:
 	template <typename T> explicit Matrix34<TYPE>( const Matrix34<T> &matrix ) { for ( int i=0; i<12; i++ ) data[i]=(TYPE)matrix.data[i]; }		///< Copy constructor for different types
 	explicit Matrix34( const TYPE *array ) { Set(array); }										///< Initialize the matrix using an array of 9 values
 	explicit Matrix34( TYPE v ) { SetScaledIdentity(v); }										///< Initialize the matrix as identity scaled by v
-	Matrix34( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	///< Initialize the matrix using x,y,z vectors and coordinate center
-	Matrix34( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }				///< Initialize the matrix using position, normal, and approximate x direction
+	explicit Matrix34( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	///< Initialize the matrix using x,y,z vectors and coordinate center
+	explicit Matrix34( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }				///< Initialize the matrix using position, normal, and approximate x direction
 	explicit Matrix34( const Matrix3<TYPE> &m ) { for (int i=0; i<9; i++) data[i]=m.data[i]; data[9]=TYPE(0); data[10]=TYPE(0); data[11]=TYPE(0); }
 	explicit Matrix34( const Matrix3<TYPE> &m, const Point3<TYPE> &pos ) { for (int i=0; i<9; i++) data[i]=m.data[i]; data[9]=pos.x; data[10]=pos.y; data[11]=pos.z; }
 	explicit Matrix34( const Matrix2<TYPE> &m ) { 
@@ -1066,9 +1066,9 @@ public:
 	template <typename T> explicit Matrix4<TYPE>( const Matrix4<T> &matrix ) { for ( int i=0; i<16; i++ ) data[i]=(TYPE)matrix.data[i]; }		///< Copy constructor for different types
 	explicit Matrix4( const TYPE *array ) { Set(array); }										///< Initialize the matrix using an array of 9 values
 	explicit Matrix4( TYPE v ) { SetScaledIdentity(v); }										///< Initialize the matrix as identity scaled by v
-	Matrix4( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	///< Initialize the matrix using x,y,z vectors and coordinate center
-	Matrix4( const Point4<TYPE> &x, const Point4<TYPE> &y, const Point4<TYPE> &z, const Point4<TYPE> &w   ) { Set(x,y,z,w);   }	///< Initialize the matrix using x,y,z vectors as columns
-	Matrix4( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }				///< Initialize the matrix using position, normal, and approximate x direction
+	explicit Matrix4( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	///< Initialize the matrix using x,y,z vectors and coordinate center
+	explicit Matrix4( const Point4<TYPE> &x, const Point4<TYPE> &y, const Point4<TYPE> &z, const Point4<TYPE> &w   ) { Set(x,y,z,w);   }	///< Initialize the matrix using x,y,z vectors as columns
+	explicit Matrix4( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }				///< Initialize the matrix using position, normal, and approximate x direction
 	explicit Matrix4( const Matrix34<TYPE> &m ) { 
 		data[ 0]=m.data[ 0]; data[ 1]=m.data[ 1]; data[ 2]=m.data[ 2]; data[ 3]=TYPE(0); 
 		data[ 4]=m.data[ 3]; data[ 5]=m.data[ 4]; data[ 6]=m.data[ 5]; data[ 7]=TYPE(0); 

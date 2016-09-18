@@ -354,7 +354,7 @@ public:
 	/// Swap 'count' number of characters starting from 'index1' and 'index2'.
 	void SwapChars( int index1, int index2, int count=1 )
 	{
-		swab( string + index1, string + index2, count );
+		_swab( string + index1, string + index2, count );
 	}
 
 	/// Sets the string using the given format and predicted string size.
