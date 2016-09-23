@@ -69,8 +69,8 @@ public:
 	///@name Length and Normalize functions
 	TYPE   LengthSquared () const { return x*x + y*y; }
 	TYPE   Length        () const { return (TYPE) sqrt(LengthSquared()); }
-	void   Normalize     ()       { float s = Length(); *this /= s; }
-	Point2 GetNormalized () const { float s = Length(); return *this / s; }
+	void   Normalize     ()       { TYPE s = Length(); *this /= s; }
+	Point2 GetNormalized () const { TYPE s = Length(); return *this / s; }
 	TYPE   MaxComponent  () const { return x>y ? x : y; }
 	int    MaxComponentID() const { return x>y ? 0 : 1; }
 
@@ -154,8 +154,8 @@ public:
 	///@name Length and Normalize functions
 	TYPE   LengthSquared () const { return x*x + y*y + z*z; }
 	TYPE   Length        () const { return (TYPE) sqrt(LengthSquared()); }
-	void   Normalize     ()       { float s = Length(); *this /= s; }
-	Point3 GetNormalized () const { float s = Length(); return *this / s; }
+	void   Normalize     ()       { TYPE s = Length(); *this /= s; }
+	Point3 GetNormalized () const { TYPE s = Length(); return *this / s; }
 	TYPE   MaxComponent  () const { return x>y ? (x>z ? x : z) : (y>z ? y : z); }
 	int    MaxComponentID() const { return x>y ? (x>z ? 0 : 2) : (y>z ? 1 : 2); }
 

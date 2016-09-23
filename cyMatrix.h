@@ -29,8 +29,8 @@
 // 
 //-------------------------------------------------------------------------------
 
-#ifndef _CY_MATRIX2_H_INCLUDED_
-#define _CY_MATRIX2_H_INCLUDED_
+#ifndef _CY_MATRIX_H_INCLUDED_
+#define _CY_MATRIX_H_INCLUDED_
 
 //-------------------------------------------------------------------------------
 
