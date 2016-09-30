@@ -763,49 +763,6 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////
 };
 
-/*
-//__declspec(noinline)
-Point3<float> Matrix3<float>::operator * ( const Point3<float> &p ) const
-{
-	__m128 mpx = _mm_load_ps1(&p.x);
-	__m128 mpy = _mm_load_ps1(&p.y);
-	__m128 mpz = _mm_load_ps1(&p.z);
-	__m128 md0 = _mm_loadu_ps(data);
-	__m128 md1 = _mm_loadu_ps(data+3);
-	__m128 md2 = _mm_loadu_ps(data+6);
-	__m128 ma  = _mm_mul_ps( mpx, md0 );
-	__m128 mb  = _mm_mul_ps( mpy, md1 );
-	__m128 mc  = _mm_mul_ps( mpz, md2 );
-	__m128 md  = _mm_add_ps( ma, mb );
-	__m128 mr  = _mm_add_ps( md, mc );
-	__declspec(align(16)) Point3<float> r;
-	_mm_store_ps(&r.x,mr);
-	return r;
-}
-//*/
-
-/*
-//__declspec(noinline)
-Point3<double> Matrix3<double>::operator * ( const Point3<double> &p ) const
-{
-	__m128d mpx  = _mm_load1_pd(&p.x);
-	__m128d mpy  = _mm_load1_pd(&p.y);
-	__m128d mpz  = _mm_load1_pd(&p.z);
-	__m128d md0  = _mm_load_pd(data);
-	__m128d md1  = _mm_loadu_pd(data+3);
-	__m128d md2  = _mm_load_pd(data+6);
-	__m128d mrx  = _mm_mul_pd( mpx,  md0 );
-	__m128d mry  = _mm_mul_pd( mpy,  md1 );
-	__m128d mrz  = _mm_mul_pd( mpz,  md2 );
-	__m128d mrxy = _mm_add_pd( mrx,  mry );
-	__m128d mr   = _mm_add_pd( mrxy, mrz );
-	__declspec(align(16)) Point3<double> r;
-	_mm_store_pd(&r.x,mr);
-	r.z = data[2]*p.x + data[5]*p.y + data[8]*p.z;
-	return r;
-}
-//*/
-
 //-------------------------------------------------------------------------------
 
 /// 3x4 matrix class.
