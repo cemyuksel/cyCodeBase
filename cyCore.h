@@ -52,16 +52,16 @@ namespace cy {
 template<typename TYPE> inline TYPE cySin ( TYPE a ) { return (TYPE) ::sin (a); }
 template<typename TYPE> inline TYPE cyCos ( TYPE a ) { return (TYPE) ::cos (a); }
 template<typename TYPE> inline TYPE cyTan ( TYPE a ) { return (TYPE) ::tan (a); }
-template<typename TYPE> inline TYPE cyAbs ( TYPE a ) { return (TYPE) ::fabs(a); }
+template<typename TYPE> inline TYPE cyAbs ( TYPE a ) { return (TYPE) ::abs (a); }
 template<typename TYPE> inline TYPE cySqrt( TYPE a ) { return (TYPE) ::sqrt(a); }
 
-//-------------------------------------------------------------------------------
+template<> inline float cySin <float>( float a ) { return ::sinf (a); }
+template<> inline float cyCos <float>( float a ) { return ::cosf (a); }
+template<> inline float cyTan <float>( float a ) { return ::tanf (a); }
+template<> inline float cyAbs <float>( float a ) { return ::fabsf(a); }
+template<> inline float cySqrt<float>( float a ) { return ::sqrtf(a); }
 
-template <> float cySin <float>( float a ) { return ::sinf (a); }
-template <> float cyCos <float>( float a ) { return ::cosf (a); }
-template <> float cyTan <float>( float a ) { return ::tanf (a); }
-template <> float cyAbs <float>( float a ) { return ::fabsf(a); }
-template <> float cySqrt<float>( float a ) { return ::sqrtf(a); }
+template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
 //-------------------------------------------------------------------------------
 
