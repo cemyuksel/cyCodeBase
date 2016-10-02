@@ -1,9 +1,9 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyMath.h 
+/// \file		cyCore.h 
 /// \author		Cem Yuksel
-/// \brief		Base class for math functions
+/// \brief		Core functions and macros for math and other common operations
 //-------------------------------------------------------------------------------
 //
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
@@ -43,12 +43,18 @@
 #include <math.h>
 #include <string.h>
 #include <stdint.h>
+#include <type_traits>
 
 //-------------------------------------------------------------------------------
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/// Base class for math functions with different types
+/////////////////////////////////////////////////////////////////////////////////
+// Math functions
+/////////////////////////////////////////////////////////////////////////////////
+
+///@name Common math function templates
+
 template<typename TYPE> inline TYPE cySin ( TYPE a ) { return (TYPE) ::sin (a); }
 template<typename TYPE> inline TYPE cyCos ( TYPE a ) { return (TYPE) ::cos (a); }
 template<typename TYPE> inline TYPE cyTan ( TYPE a ) { return (TYPE) ::tan (a); }
@@ -63,10 +69,12 @@ template<> inline float cySqrt<float>( float a ) { return ::sqrtf(a); }
 
 template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
-//-------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////
+// Memory Operations
+/////////////////////////////////////////////////////////////////////////////////
 
 #define CY_MEMCOPY(type,dest,source,n) \
-	if ( !std::is_pod<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
+	if ( !std::is_trivially_copyable<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
 		for ( int i=0; i<n; i++ ) (dest)[i] = (source)[i]; \
 	} else { \
 		memcpy( dest, source, (n)*sizeof(type) ); \
@@ -76,17 +84,19 @@ template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
 #define CY_MEMCLEAR(type,dest,n) memset(dest,0,(n)*sizeof(type))
 
-//-------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////
+// Auto Vectorization
+/////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _CY_IVDEP
-# ifdef _MSC_VER
-#  define _CY_IVDEP loop( ivdep )
-# elif defined __GNUC__
-#  define _CY_IVDEP GLL ivdep
-# else
-#  define _CY_IVDEP ivdep
-# endif
+#ifdef _MSC_VER
+# define _CY_IVDEP loop( ivdep )
+#elif defined __GNUC__
+# define _CY_IVDEP GLL ivdep
+#else
+# define _CY_IVDEP ivdep
 #endif
+
+#define _CY_IVDEP_FOR __pragma(_CY_IVDEP) for
 
 //-------------------------------------------------------------------------------
 } // namespace cy

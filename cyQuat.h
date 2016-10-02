@@ -44,6 +44,7 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 /// Quaternion class
+
 template <typename TYPE>
 class Quat
 {
@@ -143,15 +144,15 @@ private:
 
 //-------------------------------------------------------------------------------
 
-typedef Quat<float>  Quatf;
-typedef Quat<double> Quatd;
+typedef Quat<float>  Quatf;	///< Single precision (float) Quaternion class
+typedef Quat<double> Quatd;	///< Double precision (double) Quaternion class
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Quatf cyQuatf;
-typedef cy::Quatd cyQuatd;
+typedef cy::Quatf cyQuatf;	///< Single precision (float) Quaternion class
+typedef cy::Quatd cyQuatd;	///< Double precision (double) Quaternion class
 
 //-------------------------------------------------------------------------------
 

@@ -1060,7 +1060,7 @@ private:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::String cyString;
+typedef cy::String cyString;	///< String class for char arrays.
 
 //-------------------------------------------------------------------------------
 

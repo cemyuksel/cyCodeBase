@@ -45,7 +45,7 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/// Simple stopwatch class.
+/// Simple stopwatch class
 /// Use this class to measure the time between Start and Stop calls.
 
 class Timer
@@ -67,13 +67,12 @@ public:
 	}
 
 protected:
-	/// \internal
-	clock_t startTime;	// Keeps the starting time
+	clock_t startTime;	///< Keeps the starting time
 };
 
 //-------------------------------------------------------------------------------
 
-/// Stopwatch class with statistics.
+/// Stopwatch class with statistics
 /// Use this class to measure the time between Start and Stop calls.
 /// Unlike Timer class, this class also provides statistical information.
 
@@ -169,8 +168,8 @@ protected:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Timer      cyTimer;
-typedef cy::TimerStats cyTimerStats;
+typedef cy::Timer      cyTimer;			///< Simple stopwatch class
+typedef cy::TimerStats cyTimerStats;	///< Stopwatch class with statistics
 
 //-------------------------------------------------------------------------------
 

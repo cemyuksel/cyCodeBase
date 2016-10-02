@@ -62,6 +62,7 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 /// HAIR file class
+
 class HairFile
 {
 public:
@@ -406,7 +407,7 @@ private:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::HairFile cyHairFile;
+typedef cy::HairFile cyHairFile;	///< HAIR file class
 
 //-------------------------------------------------------------------------------
 

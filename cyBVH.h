@@ -40,7 +40,7 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-#define CY_BVH_ELEMENT_COUNT_BITS	3		///< Determines the maximum number of elements in a node (8)
+#define CY_BVH_ELEMENT_COUNT_BITS	3		// Determines the maximum number of elements in a node (8)
 #define CY_BVH_MAX_ELEMENT_COUNT	(1<<CY_BVH_ELEMENT_COUNT_BITS)
 #define CY_BVH_NODE_DATA_BITS		(sizeof(unsigned int)*8)
 #define CY_BVH_ELEMENT_COUNT_MASK	((1<<CY_BVH_ELEMENT_COUNT_BITS)-1)
@@ -58,6 +58,7 @@ class BVH
 {
 public:
 
+	///@name Constructor and destructor
 	BVH() : nodes(0), elements(0) {}
 	virtual ~BVH() { Clear(); }
 
@@ -327,11 +328,12 @@ private:
 
 #ifdef _CY_TRIMESH_H_INCLUDED_
 
-/// BVH hierarchy for triangular meshes (TriMesh)
+/// Bounding Volume Hierarchy for triangular meshes (TriMesh)
 
 class BVHTriMesh : public BVH
 {
 public:
+	///@name Constructors
 	BVHTriMesh() : mesh(0) {}
 	BVHTriMesh(const TriMesh *m) { SetMesh(m); }
 
@@ -376,10 +378,10 @@ private:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::BVH cyBVH;
+typedef cy::BVH cyBVH;	///< Bounding Volume Hierarchy class
 
 #ifdef _CY_TRIMESH_H_INCLUDED_
-typedef cy::BVHTriMesh cyBVHTriMesh;
+typedef cy::BVHTriMesh cyBVHTriMesh;	///< BVH hierarchy for triangular meshes (TriMesh)
 #endif
 
 //-------------------------------------------------------------------------------

@@ -41,13 +41,16 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 // Forward declarations
+///	\cond HIDDEN_SYMBOLS
 template <typename TYPE> class Point2;
 template <typename TYPE> class Point3;
 template <typename TYPE> class Point4;
+/// \endcond
 
 //-------------------------------------------------------------------------------
 
 /// A general class for N-dimensional points (vectors).
+
 template <typename TYPE, int N>
 class Point
 {
@@ -57,6 +60,7 @@ class Point
 
 public:
 
+	///@name Components of the point/vector
 	TYPE data[N];
 
 	///@name Constructors
@@ -144,6 +148,7 @@ public:
 //-------------------------------------------------------------------------------
 
 /// 2D point (vector) class
+
 template <typename TYPE>
 class Point2
 {
@@ -153,7 +158,8 @@ class Point2
 
 public:
 
-	TYPE x, y;	///< Components of the vector
+	///@name Components of the point/vector
+	TYPE x, y;
 
 	///@name Constructors
 	Point2() {}
@@ -238,6 +244,7 @@ public:
 //-------------------------------------------------------------------------------
 
 /// 3D point class
+
 template <typename TYPE>
 class Point3
 {
@@ -247,7 +254,8 @@ class Point3
 
 public:
 
-	TYPE x, y, z;	///< Components of the vector
+	///@name Components of the point/vector
+	TYPE x, y, z;
 
 	///@name Constructors
 	Point3() { }
@@ -334,6 +342,7 @@ public:
 //-------------------------------------------------------------------------------
 
 /// 4D point class
+
 template <typename TYPE>
 class Point4
 {
@@ -343,7 +352,8 @@ class Point4
 
 public:
 
-	TYPE x, y, z, w;	///< Components of the vector
+	///@name Components of the point/vector
+	TYPE x, y, z, w;
 
 	///@name Constructors
 	Point4() { }
@@ -445,57 +455,57 @@ template <typename TYPE> template <typename T> Point3<TYPE>::Point3( const Point
 
 //-------------------------------------------------------------------------------
 
-typedef Point2<float>    Point2f;
-typedef Point3<float>    Point3f;
-typedef Point4<float>    Point4f;
+typedef Point2<float>    Point2f;	///< Single precision (float) 2D Point/Vector class
+typedef Point3<float>    Point3f;	///< Single precision (float) 3D Point/Vector class
+typedef Point4<float>    Point4f;	///< Single precision (float) 4D Point/Vector class
 
-typedef Point2<double>   Point2d;
-typedef Point3<double>   Point3d;
-typedef Point4<double>   Point4d;
+typedef Point2<double>   Point2d;	///< Double precision (double) 2D Point/Vector class
+typedef Point3<double>   Point3d;	///< Double precision (double) 3D Point/Vector class
+typedef Point4<double>   Point4d;	///< Double precision (double) 4D Point/Vector class
 
-typedef Point2<int32_t>  Point2i;
-typedef Point3<int32_t>  Point3i;
-typedef Point4<int32_t>  Point4i;
+typedef Point2<int32_t>  Point2i;	///< 32-bit signed integer (int32_t) 2D Point/Vector class
+typedef Point3<int32_t>  Point3i;	///< 32-bit signed integer (int32_t) 3D Point/Vector class
+typedef Point4<int32_t>  Point4i;	///< 32-bit signed integer (int32_t) 4D Point/Vector class
 
-typedef Point2<uint32_t> Point2ui;
-typedef Point3<uint32_t> Point3ui;
-typedef Point4<uint32_t> Point4ui;
+typedef Point2<uint32_t> Point2ui;	///< 32-bit unsigned integer (uint32_t) 2D Point/Vector class
+typedef Point3<uint32_t> Point3ui;	///< 32-bit unsigned integer (uint32_t) 3D Point/Vector class
+typedef Point4<uint32_t> Point4ui;	///< 32-bit unsigned integer (uint32_t) 4D Point/Vector class
 
-typedef Point2<int64_t>  Point2l;
-typedef Point3<int64_t>  Point3l;
-typedef Point4<int64_t>  Point4l;
+typedef Point2<int64_t>  Point2l;	///< 64-bit signed integer (int64_t) 2D Point/Vector class
+typedef Point3<int64_t>  Point3l;	///< 64-bit signed integer (int64_t) 3D Point/Vector class
+typedef Point4<int64_t>  Point4l;	///< 64-bit signed integer (int64_t) 4D Point/Vector class
 
-typedef Point2<uint64_t> Point2ul;
-typedef Point3<uint64_t> Point3ul;
-typedef Point4<uint64_t> Point4ul;
+typedef Point2<uint64_t> Point2ul;	///< 64-bit unsigned integer (uint64_t) 2D Point/Vector class
+typedef Point3<uint64_t> Point3ul;	///< 64-bit unsigned integer (uint64_t) 3D Point/Vector class
+typedef Point4<uint64_t> Point4ul;	///< 64-bit unsigned integer (uint64_t) 4D Point/Vector class
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Point2f  cyPoint2f;
-typedef cy::Point3f  cyPoint3f;
-typedef cy::Point4f  cyPoint4f;
+typedef cy::Point2f  cyPoint2f;		///< Single precision (float) 2D Point/Vector class
+typedef cy::Point3f  cyPoint3f;		///< Single precision (float) 3D Point/Vector class
+typedef cy::Point4f  cyPoint4f;		///< Single precision (float) 4D Point/Vector class
 
-typedef cy::Point2d  cyPoint2d;
-typedef cy::Point3d  cyPoint3d;
-typedef cy::Point4d  cyPoint4d;
+typedef cy::Point2d  cyPoint2d;		///< Double precision (double) 2D Point/Vector class
+typedef cy::Point3d  cyPoint3d;		///< Double precision (double) 3D Point/Vector class
+typedef cy::Point4d  cyPoint4d;		///< Double precision (double) 4D Point/Vector class
 
-typedef cy::Point2i  cyPoint2i;
-typedef cy::Point3i  cyPoint3i;
-typedef cy::Point4i  cyPoint4i;
+typedef cy::Point2i  cyPoint2i;		///< 32-bit signed integer (int32_t) 2D Point/Vector class
+typedef cy::Point3i  cyPoint3i;		///< 32-bit signed integer (int32_t) 3D Point/Vector class
+typedef cy::Point4i  cyPoint4i;		///< 32-bit signed integer (int32_t) 4D Point/Vector class
 
-typedef cy::Point2ui cyPoint2ui;
-typedef cy::Point3ui cyPoint3ui;
-typedef cy::Point4ui cyPoint4ui;
+typedef cy::Point2ui cyPoint2ui;	///< 32-bit unsigned integer (uint32_t) 2D Point/Vector class;
+typedef cy::Point3ui cyPoint3ui;	///< 32-bit unsigned integer (uint32_t) 3D Point/Vector class;
+typedef cy::Point4ui cyPoint4ui;	///< 32-bit unsigned integer (uint32_t) 4D Point/Vector class;
 
-typedef cy::Point2l  cyPoint2l;
-typedef cy::Point3l  cyPoint3l;
-typedef cy::Point4l  cyPoint4l;
+typedef cy::Point2l  cyPoint2l;		///< 64-bit signed integer (int64_t) 2D Point/Vector class
+typedef cy::Point3l  cyPoint3l;		///< 64-bit signed integer (int64_t) 3D Point/Vector class
+typedef cy::Point4l  cyPoint4l;		///< 64-bit signed integer (int64_t) 4D Point/Vector class
 
-typedef cy::Point2ul cyPoint2ul;
-typedef cy::Point3ul cyPoint3ul;
-typedef cy::Point4ul cyPoint4ul;
+typedef cy::Point2ul cyPoint2ul;	///< 64-bit unsigned integer (uint64_t) 2D Point/Vector class;
+typedef cy::Point3ul cyPoint3ul;	///< 64-bit unsigned integer (uint64_t) 3D Point/Vector class;
+typedef cy::Point4ul cyPoint4ul;	///< 64-bit unsigned integer (uint64_t) 4D Point/Vector class;
 
 //-------------------------------------------------------------------------------
 

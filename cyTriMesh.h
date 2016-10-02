@@ -55,9 +55,10 @@ public:
 		unsigned int v[3];	///< vertex indices
 	};
 
-	/// Mtl Material Definition
+	/// Material definition
 	struct Mtl
 	{
+		/// Texture map information
 		struct Map
 		{
 			char name[256];	///< filename of the texture map
@@ -98,16 +99,20 @@ protected:
 	Mtl     *m;		///< materials
 	int     *mcfc;	///< material cumulative face count
 
-	unsigned int nv;		///< number of vertices
-	unsigned int nf;		///< number of faces
+	unsigned int nv;	///< number of vertices
+	unsigned int nf;	///< number of faces
 	unsigned int nvn;	///< number of vertex normals
 	unsigned int nvt;	///< number of texture vertices
-	unsigned int nm;		///< number of materials
+	unsigned int nm;	///< number of materials
 
-	Point3f boundMin, boundMax;	///< bounding box
+	///@{
+	/// Bounding box
+	Point3f boundMin, boundMax;
+	///@}
 
 public:
 
+	///@name Constructor and destructor
 	TriMesh() : v(NULL), f(NULL), vn(NULL), fn(NULL), vt(NULL), ft(NULL), m(NULL), mcfc(NULL)
 				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(0,0,0), boundMax(0,0,0) {}
 	virtual ~TriMesh() { Clear(); }
@@ -541,7 +546,7 @@ inline bool TriMesh::SaveToFileObj( const char *filename )
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::TriMesh cyTriMesh;
+typedef cy::TriMesh cyTriMesh;	///< Triangular Mesh Class
 
 //-------------------------------------------------------------------------------
 

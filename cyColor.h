@@ -5,7 +5,7 @@
 /// \author		Cem Yuksel
 /// \brief		Color classes.
 ///
-/// @copydoc Color
+/// @copydoc cy::Color
 ///
 /// Color is color class that holds floating point color values
 ///
@@ -51,7 +51,7 @@ class Color32;
 
 //-------------------------------------------------------------------------------
 
-/// Color class
+/// RGB color class with 3 float components
 
 class Color
 {
@@ -61,6 +61,7 @@ class Color
 
 public:
 
+	///@name Color components
 	float r, g, b;
 
 	///@name Constructors
@@ -131,8 +132,8 @@ public:
 
 //-------------------------------------------------------------------------------
 
+/// RGBA color class with 4 float components
 
-/// Color class with alpha
 class ColorA
 {
 	friend ColorA operator + ( const float v, const ColorA &c ) { return c+v; }		///< Addition with a constant
@@ -141,6 +142,7 @@ class ColorA
 
 public:
 
+	///@name Color components
 	float r, g, b, a;
 
 	///@name Constructors
@@ -211,10 +213,13 @@ public:
 
 //-------------------------------------------------------------------------------
 
-/// 24-bit color class
+/// 24-bit RGB color class with 3 unsigned byte components
+
 class Color24
 {
 public:
+
+	///@name Color components
 	unsigned char r, g, b;
 
 	///@name Constructors
@@ -246,10 +251,13 @@ protected:
 
 //-------------------------------------------------------------------------------
 
-/// 32-bit color class
+/// 32-bit RGBA color class with 4 unsigned byte components
+
 class Color32
 {
 public:
+
+	///@name Color components
 	unsigned char r, g, b, a;
 
 	///@name Constructors
@@ -293,10 +301,10 @@ inline Color24::Color24( const Color32 &c ) : r(c.r), g(c.g), b(c.b) {}
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Color   cyColor;
-typedef cy::ColorA  cyColorA;
-typedef cy::Color24 cyColor24;
-typedef cy::Color32 cyColor32;
+typedef cy::Color   cyColor;	///< RGB color class with 3 float components
+typedef cy::ColorA  cyColorA;	///< RGBA color class with 4 float components
+typedef cy::Color24 cyColor24;	///< 24-bit RGB color class with 3 unsigned byte components
+typedef cy::Color32 cyColor32;	///< 32-bit RGBA color class with 4 unsigned byte components
 
 //-------------------------------------------------------------------------------
 
