@@ -57,7 +57,7 @@ template <typename TYPE>
 class Matrix2
 {
 	friend Matrix2 operator * ( const TYPE value, const Matrix2 &right ) { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = value * right.data[i]; return r; }	///< multiply matrix by a value
-	friend Matrix2 Inverse( Matrix2 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
+	friend Matrix2 Inverse( const Matrix2 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
 
 public:
 
@@ -72,7 +72,7 @@ public:
 	Matrix2() {}																///< Default constructor
 	Matrix2( const Matrix2 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,4); }	///< Copy constructor
 	template <typename T> explicit Matrix2<TYPE>( const Matrix2<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,4); }	///< Copy constructor for different types
-	explicit Matrix2( const TYPE *values ) { Set(values); }									///< Initialize the matrix using an values of 4 values
+	explicit Matrix2( const TYPE *values ) { Set(values); }									///< Initialize the matrix using an array of 4 values
 	explicit Matrix2( const TYPE &v ) { SetScaledIdentity(v); }								///< Initialize the matrix as identity scaled by v
 	explicit Matrix2( const Point2<TYPE> &x, const Point2<TYPE> &y ) { Set(x,y); }			///< Initialize the matrix using two vectors as columns
 	explicit Matrix2( const Matrix3<TYPE>  &m );
@@ -89,7 +89,7 @@ public:
 	bool IsZero() const { for ( int i=0; i<4; i++ ) if ( data[i] != 0 ) return false; return true; }
 	/// Copies the matrix data to the given values array of size 4
 	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,4); } 
-	/// Set Matrix using an values of 4 values
+	/// Set Matrix using an array of 4 values
 	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,4); } 
 	/// Set Matrix using two vectors as columns
 	void Set( const Point2<TYPE> &x, const Point2<TYPE> &y ) { x.Get(data); y.Get(data+2); }
@@ -109,9 +109,9 @@ public:
 	///@name Affine transformations
 
 	/// Sets a uniform scale matrix
-	void SetScale( TYPE uniformScale ) { SetScale(uniformScale,uniformScale); }
+	void SetScale( const TYPE &uniformScale ) { SetScale(uniformScale,uniformScale); }
 	/// Sets a scale matrix
-	void SetScale( TYPE scaleX, TYPE scaleY ) { data[0]=scaleX; data[1]=0; data[2]=0; data[3]=scaleY;}
+	void SetScale( const TYPE &scaleX, const TYPE &scaleY ) { data[0]=scaleX; data[1]=0; data[2]=0; data[3]=scaleY;}
 	/// Sets a scale matrix
 	void SetScale( const Point2<TYPE> &scale ) { SetScale(scale.x,scale.y); }
 	/// Removes the scale component of the matrix
@@ -171,8 +171,8 @@ public:
 	Matrix2 operator * ( const TYPE    &value ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] * value;         return r; }	///< multiply matrix by a value
 	Matrix2 operator / ( const TYPE    &value ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] / value;         return r; }	///< divide matrix by a value;
 	Matrix2 operator + ( const Matrix2 &right ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] + right.data[i]; return r; }	///< add two Matrices
-	Matrix2 operator - ( const Matrix2 &right ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix2 from an other
-	Matrix2 operator * ( const Matrix2 &right ) const	///< multiply a matrix with an other
+	Matrix2 operator - ( const Matrix2 &right ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix2 from another
+	Matrix2 operator * ( const Matrix2 &right ) const	///< multiply a matrix with another
 	{
 		Matrix2 r;
 		r[0] = data[0] * right.data[0] + data[2] * right.data[1];
@@ -205,6 +205,9 @@ public:
 		m.data[2] = data[1];   m.data[3] = data[3];
 	}
 	Matrix2 GetTranspose() const { Matrix2 t; GetTranspose(t); return t; }	///< return Transpose of this matrix
+
+	/// Multiply the give vector with the transpose of the matrix
+	Point2<TYPE> TransposeMult( const Point2<TYPE> &p ) const { return Point2<TYPE>( p.x*data[0] + p.y*data[1], p.x*data[2] + p.y*data[3] ); }
 
 	TYPE GetDeterminant() const { return data[0]*data[3]-data[2]*data[1]; }	///< Get the determinant of this matrix
 
@@ -252,9 +255,9 @@ public:
 	/// Returns a rotation matrix about the given axis by angle in radians
 	static Matrix2 MatrixRotation( TYPE angle ) { Matrix2 m; m.SetRotation(angle); return m; }
 	/// Returns a uniform scale matrix
-	static Matrix2 MatrixScale( TYPE uniformScale ) { Matrix2 m; m.SetScale(uniformScale); return m; }
+	static Matrix2 MatrixScale( const TYPE &uniformScale ) { Matrix2 m; m.SetScale(uniformScale); return m; }
 	/// Returns a scale matrix
-	static Matrix2 MatrixScale( TYPE scaleX, TYPE scaleY ) { Matrix2 m; m.SetScale(scaleX,scaleY); return m; }
+	static Matrix2 MatrixScale( const TYPE &scaleX, const TYPE &scaleY ) { Matrix2 m; m.SetScale(scaleX,scaleY); return m; }
 	/// Returns a scale matrix
 	static Matrix2 MatrixScale( const Point2<TYPE> &scale ) { Matrix2 m; m.SetScale(scale); return m; }
 
@@ -276,7 +279,7 @@ class Matrix3
 #else
 	friend Matrix3 operator * ( const TYPE value, const Matrix3 &right ) { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = value * right.data[i]; r.data[8] = value * right.data[8]; return r; }	///< multiply matrix by a value
 #endif
-	friend Matrix3 Inverse( Matrix3 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
+	friend Matrix3 Inverse( const Matrix3 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
 
 public:
 
@@ -292,7 +295,7 @@ public:
 	Matrix3() {}																							///< Default constructor
 	Matrix3( const Matrix3 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,9); }								///< Copy constructor
 	template <typename T> explicit Matrix3<TYPE>( const Matrix3<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,9); }		///< Copy constructor for different types
-	explicit Matrix3( const TYPE *values ) { Set(values); }													///< Initialize the matrix using an values of 9 values
+	explicit Matrix3( const TYPE *values ) { Set(values); }													///< Initialize the matrix using an array of 9 values
 	explicit Matrix3( const TYPE &v ) { SetScaledIdentity(v); }												///< Initialize the matrix as identity scaled by v
 	explicit Matrix3( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z ) { Set(x,y,z); }	///< Initialize the matrix using x,y,z vectors as columns
 	explicit Matrix3( const Matrix2<TYPE> &m ) { 
@@ -313,7 +316,7 @@ public:
 	bool IsZero() const { for ( int i=0; i<9; i++ ) if ( data[i] != 0 ) return false; return true; }
 	/// Copies the matrix data to the given values array of size 9
 	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,9); } 
-	/// Set matrix using an values of 9 values
+	/// Set matrix using an array of 9 values
 	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,9); } 
 	/// Set matrix using x,y,z vectors as columns
 	void Set( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z ) { x.Get(&data[0]); y.Get(&data[3]); z.Get(&data[6]); }
@@ -336,9 +339,9 @@ public:
 	///@name Affine transformations
 
 	/// Sets a uniform scale matrix
-	void SetScale( TYPE uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
+	void SetScale( const TYPE &uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
 	/// Sets a scale matrix
-	void SetScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ )
+	void SetScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ )
 	{
 		data[0] = scaleX; data[1] = 0;      data[2]=0;     
 		data[3] = 0;      data[4] = scaleY; data[5]=0;     
@@ -511,15 +514,15 @@ public:
 	Matrix3 operator * ( const TYPE    &value ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] * value;         return r; }	///< multiply matrix by a value
 	Matrix3 operator / ( const TYPE    &value ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] / value;         return r; }	///< divide matrix by a value;
 	Matrix3 operator + ( const Matrix3 &right ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] + right.data[i]; return r; }	///< add two Matrices
-	Matrix3 operator - ( const Matrix3 &right ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix3 from an other
+	Matrix3 operator - ( const Matrix3 &right ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix3 from another
 #else
 	Matrix3 operator * ( const TYPE    &value ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] * value;         r.data[8] = data[8] * value;         return r; }	///< multiply matrix by a value
 	Matrix3 operator / ( const TYPE    &value ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] / value;         r.data[8] = data[8] / value;         return r; }	///< divide matrix by a value;
 	Matrix3 operator + ( const Matrix3 &right ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] + right.data[i]; r.data[8] = data[8] + right.data[8]; return r; }	///< add two Matrices
-	Matrix3 operator - ( const Matrix3 &right ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] - right.data[i]; r.data[8] = data[8] - right.data[8]; return r; }	///< subtract one Matrix3 from an other
+	Matrix3 operator - ( const Matrix3 &right ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] - right.data[i]; r.data[8] = data[8] - right.data[8]; return r; }	///< subtract one Matrix3 from another
 #endif
 
-	Matrix3 operator * ( const Matrix3 &right  ) const	///< multiply a matrix with an other
+	Matrix3 operator * ( const Matrix3 &right ) const	///< multiply a matrix with another
 	{
 		Matrix3 r;
 		TYPE *rd = r.data;
@@ -584,6 +587,14 @@ public:
 		m.data[6] = data[2];   m.data[7] = data[5];   m.data[8] = data[8];
 	}
 	Matrix3 GetTranspose() const { Matrix3 t; GetTranspose(t); return t; }	///< return Transpose of this matrix
+
+	/// Multiply the give vector with the transpose of the matrix
+	Point3<TYPE> TransposeMult( const Point3<TYPE> &p ) const
+	{
+		return Point3<TYPE>( p.x*data[0] + p.y*data[1] + p.z*data[2], 
+							 p.x*data[3] + p.y*data[4] + p.z*data[5],
+							 p.x*data[6] + p.y*data[7] + p.z*data[8] );
+	}
 
 	TYPE GetDeterminant() const {	///< Get the determinant of this matrix
 		// 0 (4 8 - 5 7) + 1 (5 6 - 3 8) + 2 (3 7 - 4 6)
@@ -688,9 +699,9 @@ public:
 	/// Returns a rotation matrix that sets [from] unit vector to [to] unit vector
 	static Matrix3 MatrixRotation( const Point3<TYPE> &from, const Point3<TYPE> &to ) { Matrix3 m; m.SetRotation(from,to); return m; }
 	/// Returns a uniform scale matrix
-	static Matrix3 MatrixScale( TYPE uniformScale ) { Matrix3 m; m.SetScale(uniformScale); return m; }
+	static Matrix3 MatrixScale( const TYPE &uniformScale ) { Matrix3 m; m.SetScale(uniformScale); return m; }
 	/// Returns a scale matrix
-	static Matrix3 MatrixScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ ) { Matrix3 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
+	static Matrix3 MatrixScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ ) { Matrix3 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
 	/// Returns a scale matrix
 	static Matrix3 MatrixScale( const Point3<TYPE> &scale ) { Matrix3 m; m.SetScale(scale); return m; }
 	/// Returns the matrix representation of cross product ( a x b )
@@ -711,7 +722,7 @@ template <typename TYPE>
 class Matrix34
 {
 	friend Matrix34 operator * ( const TYPE value, const Matrix34 &right ) { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = value * right.data[i]; return r; }	///< multiply matrix by a value
-	friend Matrix34 Inverse( Matrix34 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
+	friend Matrix34 Inverse( const Matrix34 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
 
 public:
 
@@ -728,7 +739,7 @@ public:
 	Matrix34() {}																				///< Default constructor
 	Matrix34( const Matrix34 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,12); }				///< Copy constructor
 	template <typename T> explicit Matrix34<TYPE>( const Matrix34<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,12); }		///< Copy constructor for different types
-	explicit Matrix34( const TYPE *values ) { Set(values); }									///< Initialize the matrix using an values of 9 values
+	explicit Matrix34( const TYPE *values ) { Set(values); }									///< Initialize the matrix using an array of 9 values
 	explicit Matrix34( const TYPE &v ) { SetScaledIdentity(v); }								///< Initialize the matrix as identity scaled by v
 	explicit Matrix34( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	///< Initialize the matrix using x,y,z vectors and coordinate center
 	explicit Matrix34( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }				///< Initialize the matrix using position, normal, and approximate x direction
@@ -752,7 +763,7 @@ public:
 	bool IsZero() const { for ( int i=0; i<12; i++ ) if ( data[i] != 0 ) return false; return true; }
 	/// Copies the matrix data to the given values array of size 12
 	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,12); } 
-	/// Set Matrix using an values of 12 values
+	/// Set Matrix using an array of 12 values
 	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,12); } 
 	/// Set matrix using x,y,z vectors and coordinate center
 	void Set( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { x.Get(data); y.Get(data+3); z.Get(data+6); pos.Get(data+9); }
@@ -768,9 +779,9 @@ public:
 	///@name Affine transformations
 
 	/// Sets a uniform scale matrix
-	void SetScale( TYPE uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
+	void SetScale( const TYPE &uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
 	/// Sets a scale matrix
-	void SetScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ )
+	void SetScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ )
 	{
 		data[ 0] = scaleX; data[ 1] = 0;      data[ 2]=0;     
 		data[ 3] = 0;      data[ 4] = scaleY; data[ 5]=0;     
@@ -962,8 +973,8 @@ public:
 	Matrix34 operator * ( const TYPE     &value ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] * value;         return r; }	///< multiply matrix by a value
 	Matrix34 operator / ( const TYPE     &value ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] / value;         return r; }	///< divide matrix by a value;
 	Matrix34 operator + ( const Matrix34 &right ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] + right.data[i]; return r; }	///< add two Matrices
-	Matrix34 operator - ( const Matrix34 &right ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix4 from an other
-	Matrix34 operator * ( const Matrix34 &right ) const	///< multiply a matrix with an other
+	Matrix34 operator - ( const Matrix34 &right ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix4 from another
+	Matrix34 operator * ( const Matrix34 &right ) const	///< multiply a matrix with another
 	{
 		Matrix34 r;
 		TYPE *rd = r.data;
@@ -977,7 +988,7 @@ public:
 		for ( int j=0; j<3; ++j ) r.data[9+j] += data[9+j];
 		return r;
 	}
-	Matrix34 operator * ( const Matrix3<TYPE> &right ) const	///< multiply a matrix with an other
+	Matrix34 operator * ( const Matrix3<TYPE> &right ) const	///< multiply a matrix with another
 	{
 		Matrix34 r;
 		TYPE *rd = r.data;
@@ -1060,6 +1071,24 @@ public:
 		CY_MEMCLEAR(TYPE,m.data+9,3);
 	}
 	Matrix34 GetTranspose() const { Matrix34 t; GetTranspose(t); return t; }	///< return Transpose of this matrix
+
+	/// Multiply the give vector with the transpose of the matrix
+	Point4<TYPE> TransposeMult( const Point3<TYPE> &p ) const
+	{
+		return Point4<TYPE>( p.x*data[ 0] + p.y*data[ 1] + p.z*data[ 2], 
+							 p.x*data[ 3] + p.y*data[ 4] + p.z*data[ 5],
+							 p.x*data[ 6] + p.y*data[ 7] + p.z*data[ 8],
+							 p.x*data[ 9] + p.y*data[10] + p.z*data[11] + 1 );
+	}
+
+	/// Multiply the give vector with the transpose of the matrix
+	Point4<TYPE> TransposeMult( const Point4<TYPE> &p ) const
+	{
+		return Point4<TYPE>( p.x*data[ 0] + p.y*data[ 1] + p.z*data[ 2], 
+							 p.x*data[ 3] + p.y*data[ 4] + p.z*data[ 5],
+							 p.x*data[ 6] + p.y*data[ 7] + p.z*data[ 8],
+							 p.x*data[ 9] + p.y*data[10] + p.z*data[11] + p.w );
+	}
 
 	TYPE GetDeterminant() const	///< Get the determinant of this matrix
 	{
@@ -1179,9 +1208,9 @@ public:
 	/// Returns a rotation matrix that sets [from] unit vector to [to] unit vector
 	static Matrix34 MatrixRotation( const Point3<TYPE> &from, const Point3<TYPE> &to ) { Matrix34 m; m.SetRotation(from,to); return m; }
 	/// Returns a uniform scale matrix
-	static Matrix34 MatrixScale( TYPE uniformScale ) { Matrix34 m; m.SetScale(uniformScale); return m; }
+	static Matrix34 MatrixScale( const TYPE &uniformScale ) { Matrix34 m; m.SetScale(uniformScale); return m; }
 	/// Returns a scale matrix
-	static Matrix34 MatrixScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ ) { Matrix34 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
+	static Matrix34 MatrixScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ ) { Matrix34 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
 	/// Returns a scale matrix
 	static Matrix34 MatrixScale( const Point3<TYPE> &scale ) { Matrix34 m; m.SetScale(scale); return m; }
 	/// Returns a translation matrix with no rotation or scale
@@ -1204,10 +1233,10 @@ template <typename TYPE>
 class Matrix4
 {
 	friend Matrix4 operator * ( const TYPE value, const Matrix4 &right ) { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = value * right.data[i]; return r; }	///< multiply matrix by a value
-	friend Matrix4 Inverse( Matrix4 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
+	friend Matrix4 Inverse( const Matrix4 &m ) { return m.GetInverse(); }	///< return the inverse of the matrix
 
 	/// multiply a 4x4 matrix with a 3x4 matrix, treating it as a 4x4 matrix with last row 0,0,0,1
-	friend Matrix4 operator * ( const Matrix34<TYPE> &left, const Matrix4 &right  )
+	friend Matrix4 operator * ( const Matrix34<TYPE> &left, const Matrix4 &right )
 	{
 		Matrix4 r;
 		TYPE *rd = r.data;
@@ -1242,7 +1271,7 @@ public:
 	Matrix4() {}																	///< Default constructor
 	Matrix4( const Matrix4 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,16); }		///< Copy constructor
 	template <typename T> explicit Matrix4<TYPE>( const Matrix4<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,16); }	///< Copy constructor for different types
-	explicit Matrix4( const TYPE *values ) { Set(values); }							///< Initialize the matrix using an values of 9 values
+	explicit Matrix4( const TYPE *values ) { Set(values); }							///< Initialize the matrix using an array of 9 values
 	explicit Matrix4( const TYPE &v ) { SetScaledIdentity(v); }						///< Initialize the matrix as identity scaled by v
 	explicit Matrix4( const Point3<TYPE> &x,   const Point3<TYPE> &y,      const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	///< Initialize the matrix using x,y,z vectors and coordinate center
 	explicit Matrix4( const Point4<TYPE> &x,   const Point4<TYPE> &y,      const Point4<TYPE> &z, const Point4<TYPE> &w   ) { Set(x,y,z,w);   }	///< Initialize the matrix using x,y,z vectors as columns
@@ -1279,7 +1308,7 @@ public:
 	bool IsZero() const { for ( int i=0; i<16; i++ ) if ( data[i] != 0 ) return false; return true; }
 	/// Copies the matrix data to the given values array of size 16
 	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,16); } 
-	/// Set Matrix using an values of 16 values
+	/// Set Matrix using an array of 16 values
 	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,16); } 
 	/// Set matrix using x,y,z vectors and coordinate center
 	void Set( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { x.Get(data); data[3]=TYPE(0); y.Get(data+4); data[7]=TYPE(0); z.Get(data+8); data[11]=TYPE(0); pos.Get(data+12); data[15]=TYPE(1); }
@@ -1305,9 +1334,9 @@ public:
 	///@name Affine transformations
 
 	/// Sets a uniform scale matrix
-	void SetScale( TYPE uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
+	void SetScale( const TYPE &uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
 	/// Sets a scale matrix
-	void SetScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ, TYPE scaleW=1 )
+	void SetScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ, TYPE scaleW=1 )
 	{
 		data[ 0] = scaleX; data[ 1] = 0;      data[ 2]=0;      data[ 3]=0; 
 		data[ 4] = 0;      data[ 5] = scaleY; data[ 6]=0;      data[ 7]=0; 
@@ -1518,8 +1547,8 @@ public:
 	Matrix4 operator * ( const TYPE    &value ) const { Matrix4 r; for (int i=0; i<16; ++i) r.data[i] = data[i] * value;         return r; }	///< multiply matrix by a value
 	Matrix4 operator / ( const TYPE    &value ) const { Matrix4 r; for (int i=0; i<16; ++i) r.data[i] = data[i] / value;         return r; }	///< divide matrix by a value;
 	Matrix4 operator + ( const Matrix4 &right ) const { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = data[i] + right.data[i]; return r; }	///< add two Matrices
-	Matrix4 operator - ( const Matrix4 &right ) const { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix4 from an other
-	Matrix4 operator * ( const Matrix4 &right ) const	///< multiply a matrix with an other
+	Matrix4 operator - ( const Matrix4 &right ) const { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = data[i] - right.data[i]; return r; }	///< subtract one Matrix4 from another
+	Matrix4 operator * ( const Matrix4 &right ) const	///< multiply a matrix with another
 	{
 		Matrix4 r;
 		TYPE *rd = r.data;
@@ -1533,7 +1562,7 @@ public:
 		}
 		return r;
 	}
-	Matrix4 operator * ( const Matrix34<TYPE> &right ) const	///< multiply a matrix with an other
+	Matrix4 operator * ( const Matrix34<TYPE> &right ) const	///< multiply a matrix with another
 	{
 		TYPE a[4], b[4], c[4];
 		Matrix4 r;
@@ -1550,7 +1579,7 @@ public:
 		_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = (a[j] + b[j]) + (c[j] + data[12+j]);
 		return r;
 	}
-	Matrix4 operator * ( const Matrix3<TYPE> &right ) const	///< multiply a matrix with an other
+	Matrix4 operator * ( const Matrix3<TYPE> &right ) const	///< multiply a matrix with another
 	{
 		TYPE a[4], b[4], c[4];
 		Matrix4 r;
@@ -1632,6 +1661,30 @@ public:
 		m.data[12] = data[3];   m.data[13] = data[7];   m.data[14] = data[11];  m.data[15] = data[15];
 	}
 	Matrix4 GetTranspose() const { Matrix4 t; GetTranspose(t); return t; }	///< return Transpose of this matrix
+
+	/// Multiply the give vector with the transpose of the matrix
+	Point4<TYPE> TransposeMult( const Point3<TYPE>& p ) const { return TransposeMult( Point4<TYPE>(p.x, p.y, p.z, TYPE(1)) ); }
+
+	/// Multiply the give vector with the transpose of the matrix
+	Point4<TYPE> TransposeMult( const Point4<TYPE>& p ) const 
+	{
+		//return Point4<TYPE>(	p.x*data[ 0] + p.y*data[ 1] + p.z*data[ 2] + p.w*data[ 3],
+		//						p.x*data[ 4] + p.y*data[ 5] + p.z*data[ 6] + p.w*data[ 7],
+		//						p.x*data[ 8] + p.y*data[ 9] + p.z*data[10] + p.w*data[11],
+		//						p.x*data[12] + p.y*data[13] + p.z*data[14] + p.w*data[15] );
+		TYPE a[4], b[4], c[4], d[4];
+		const TYPE *pd = p.Data();
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[i] = pd[i] * data[   i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[i] = pd[i] * data[ 4+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) c[i] = pd[i] * data[ 8+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) d[i] = pd[i] * data[12+i];
+		Point4<TYPE> rr;
+		rr.x = a[0] + a[1] + a[2] + a[3];
+		rr.y = b[0] + b[1] + b[2] + b[3];
+		rr.z = c[0] + c[1] + c[2] + c[3];
+		rr.w = d[0] + d[1] + d[2] + d[3];
+		return rr;
+	}
 
 	TYPE GetDeterminant() const	///< Get the determinant of this matrix
 	{
@@ -1811,9 +1864,9 @@ public:
 	/// Returns a rotation matrix that sets [from] unit vector to [to] unit vector
 	static Matrix4 MatrixRotation( const Point3<TYPE> &from, const Point3<TYPE> &to ) { Matrix4 m; m.SetRotation(from,to); return m; }
 	/// Returns a uniform scale matrix
-	static Matrix4 MatrixScale( TYPE uniformScale ) { Matrix4 m; m.SetScale(uniformScale); return m; }
+	static Matrix4 MatrixScale( const TYPE &uniformScale ) { Matrix4 m; m.SetScale(uniformScale); return m; }
 	/// Returns a scale matrix
-	static Matrix4 MatrixScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ ) { Matrix4 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
+	static Matrix4 MatrixScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ ) { Matrix4 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
 	/// Returns a scale matrix
 	static Matrix4 MatrixScale( const Point3<TYPE> &scale ) { Matrix4 m; m.SetScale(scale); return m; }
 	/// Returns a translation matrix with no rotation or scale
