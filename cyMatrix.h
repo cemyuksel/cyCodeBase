@@ -478,6 +478,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////
 	///@name Get Sub-matrix data
 	
+	void          GetSubMatrix ( Matrix2<TYPE> &m )     const { GetSubMatrix2(m); }														///< Returns the 2x2 portion of the matrix
 	Matrix2<TYPE> GetSubMatrix2()                       const { Matrix2<TYPE> m; GetSubMatrix2(m.data); return m; }						///< Returns the 2x2 portion of the matrix
 	void          GetSubMatrix2( Matrix2<TYPE> &m )     const { GetSubMatrix2(m.data); }												///< Returns the 2x2 portion of the matrix
 	void          GetSubMatrix2( TYPE *mdata )          const { CY_MEMCOPY(TYPE,mdata,data,2); CY_MEMCOPY(TYPE,mdata+2,data+3,2); }		///< Returns the 2x2 portion of the matrix
@@ -936,6 +937,8 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////
 	///@name Get Sub-matrix data
 
+	void          GetSubMatrix ( Matrix3<TYPE> &m )     const { GetSubMatrix3(m); }														///< Returns the 3x3 portion of the matrix
+	void          GetSubMatrix ( Matrix2<TYPE> &m )     const { GetSubMatrix2(m); }														///< Returns the 2x2 portion of the matrix
 	Matrix3<TYPE> GetSubMatrix3()                       const { Matrix3<TYPE> m; GetSubMatrix3(m.data); return m; }						///< Returns the 3x3 portion of the matrix
 	void          GetSubMatrix3( Matrix3<TYPE> &m )     const { GetSubMatrix3(m.data); }												///< Returns the 3x3 portion of the matrix
 	void          GetSubMatrix3( TYPE *mdata )          const { CY_MEMCOPY(TYPE,mdata,data,9); }										///< Returns the 3x3 portion of the matrix
@@ -1507,6 +1510,9 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////
 	///@name Get Sub-matrix data
 
+	void           GetSubMatrix ( Matrix34<TYPE> &m )    const { GetSubMatrix34(m); }																					///< Returns the 3x4 portion of the matrix
+	void           GetSubMatrix ( Matrix3 <TYPE> &m )    const { GetSubMatrix3 (m); }																					///< Returns the 3x3 portion of the matrix
+	void           GetSubMatrix ( Matrix2 <TYPE> &m )    const { GetSubMatrix2 (m); }																					///< Returns the 2x2 portion of the matrix
 	Matrix34<TYPE> GetSubMatrix34()                      const { Matrix34<TYPE> m; GetSubMatrix34(m.data); return m; }													///< Returns the 3x4 portion of the matrix
 	void           GetSubMatrix34( Matrix34<TYPE> &m )   const { GetSubMatrix34(m.data); }																				///< Returns the 3x4 portion of the matrix
 	void           GetSubMatrix34( TYPE *mdata )         const { CY_MEMCOPY(TYPE,mdata,data,3); CY_MEMCOPY(TYPE,mdata+3,data+4,3); CY_MEMCOPY(TYPE,mdata+6,data+8,3); CY_MEMCOPY(TYPE,mdata+9,data+12,3); }	///< Returns the 3x4 portion of the matrix
