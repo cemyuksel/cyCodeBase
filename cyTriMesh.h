@@ -1,9 +1,11 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyTriMesh.h 
-/// \author		Cem Yuksel
-/// \brief		Triangular Mesh class.
+//! \file   cyTriMesh.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  Triangular Mesh class.
+//! 
 //-------------------------------------------------------------------------------
 //
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
@@ -44,37 +46,37 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/// Triangular Mesh Class
+//! Triangular Mesh Class
 
 class TriMesh
 {
 public:
-	/// Triangular Mesh Face
+	//! Triangular Mesh Face
 	struct TriFace
 	{
-		unsigned int v[3];	///< vertex indices
+		unsigned int v[3];	//!< vertex indices
 	};
 
-	/// Material definition
+	//! Material definition
 	struct Mtl
 	{
-		/// Texture map information
+		//! Texture map information
 		struct Map
 		{
-			char name[256];	///< filename of the texture map
+			char name[256];	//!< filename of the texture map
 			Map() { name[0] = '\0'; }
 		};
-		char name[256];	///< Material name
-		float Ka[3];	///< Ambient color
-		float Kd[3];	///< Diffuse color
-		float Ks[3];	///< Specular color
-		float Tf[3];	///< Transmission color
-		float Ns;		///< Specular exponent
-		float Ni;		///< Index of refraction
-		int illum;		///< Illumination model
-		Map map_Ka;		///< Ambient texture map
-		Map map_Kd;		///< Diffuse texture map
-		Map map_Ks;		///< Specular texture map
+		char name[256];	//!< Material name
+		float Ka[3];	//!< Ambient color
+		float Kd[3];	//!< Diffuse color
+		float Ks[3];	//!< Specular color
+		float Tf[3];	//!< Transmission color
+		float Ns;		//!< Specular exponent
+		float Ni;		//!< Index of refraction
+		int illum;		//!< Illumination model
+		Map map_Ka;		//!< Ambient texture map
+		Map map_Kd;		//!< Diffuse texture map
+		Map map_Ks;		//!< Specular texture map
 
 		Mtl()
 		{
@@ -90,59 +92,59 @@ public:
 	};
 
 protected:
-	Point3f *v;		///< vertices
-	TriFace *f;		///< faces
-	Point3f *vn;	///< vertex normal
-	TriFace *fn;	///< normal faces
-	Point3f *vt;	///< texture vertices
-	TriFace *ft;	///< texture faces
-	Mtl     *m;		///< materials
-	int     *mcfc;	///< material cumulative face count
+	Point3f *v;		//!< vertices
+	TriFace *f;		//!< faces
+	Point3f *vn;	//!< vertex normal
+	TriFace *fn;	//!< normal faces
+	Point3f *vt;	//!< texture vertices
+	TriFace *ft;	//!< texture faces
+	Mtl     *m;		//!< materials
+	int     *mcfc;	//!< material cumulative face count
 
-	unsigned int nv;	///< number of vertices
-	unsigned int nf;	///< number of faces
-	unsigned int nvn;	///< number of vertex normals
-	unsigned int nvt;	///< number of texture vertices
-	unsigned int nm;	///< number of materials
+	unsigned int nv;	//!< number of vertices
+	unsigned int nf;	//!< number of faces
+	unsigned int nvn;	//!< number of vertex normals
+	unsigned int nvt;	//!< number of texture vertices
+	unsigned int nm;	//!< number of materials
 
-	///@{
-	/// Bounding box
+	//!@{
+	//! Bounding box
 	Point3f boundMin, boundMax;
-	///@}
+	//!@}
 
 public:
 
-	///@name Constructor and destructor
+	//!@name Constructor and destructor
 	TriMesh() : v(NULL), f(NULL), vn(NULL), fn(NULL), vt(NULL), ft(NULL), m(NULL), mcfc(NULL)
 				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(0,0,0), boundMax(0,0,0) {}
 	virtual ~TriMesh() { Clear(); }
 
-	///@name Component Access Methods
-	const Point3f& V (int i) const { return v[i]; }		///< returns the i^th vertex
-	Point3f&       V (int i)       { return v[i]; }		///< returns the i^th vertex
-	const TriFace& F (int i) const { return f[i]; }		///< returns the i^th face
-	TriFace&       F (int i)       { return f[i]; }		///< returns the i^th face
-	const Point3f& VN(int i) const { return vn[i]; }	///< returns the i^th vertex normal
-	Point3f&       VN(int i)       { return vn[i]; }	///< returns the i^th vertex normal
-	const TriFace& FN(int i) const { return fn[i]; }	///< returns the i^th normal face
-	TriFace&       FN(int i)       { return fn[i]; }	///< returns the i^th normal face
-	const Point3f& VT(int i) const { return vt[i]; }	///< returns the i^th vertex texture
-	Point3f&       VT(int i)       { return vt[i]; }	///< returns the i^th vertex texture
-	const TriFace& FT(int i) const { return ft[i]; }	///< returns the i^th texture face
-	TriFace&       FT(int i)       { return ft[i]; }	///< returns the i^th texture face
-	const Mtl&     M (int i) const { return m[i]; }		///< returns the i^th material
-	Mtl&           M (int i)       { return m[i]; }		///< returns the i^th material
+	//!@name Component Access Methods
+	const Point3f& V (int i) const { return v[i]; }		//!< returns the i^th vertex
+	Point3f&       V (int i)       { return v[i]; }		//!< returns the i^th vertex
+	const TriFace& F (int i) const { return f[i]; }		//!< returns the i^th face
+	TriFace&       F (int i)       { return f[i]; }		//!< returns the i^th face
+	const Point3f& VN(int i) const { return vn[i]; }	//!< returns the i^th vertex normal
+	Point3f&       VN(int i)       { return vn[i]; }	//!< returns the i^th vertex normal
+	const TriFace& FN(int i) const { return fn[i]; }	//!< returns the i^th normal face
+	TriFace&       FN(int i)       { return fn[i]; }	//!< returns the i^th normal face
+	const Point3f& VT(int i) const { return vt[i]; }	//!< returns the i^th vertex texture
+	Point3f&       VT(int i)       { return vt[i]; }	//!< returns the i^th vertex texture
+	const TriFace& FT(int i) const { return ft[i]; }	//!< returns the i^th texture face
+	TriFace&       FT(int i)       { return ft[i]; }	//!< returns the i^th texture face
+	const Mtl&     M (int i) const { return m[i]; }		//!< returns the i^th material
+	Mtl&           M (int i)       { return m[i]; }		//!< returns the i^th material
 
-	unsigned int NV () const { return nv; }		///< returns the number of vertices
-	unsigned int NF () const { return nf; }		///< returns the number of faces
-	unsigned int NVN() const { return nvn; }	///< returns the number of vertex normals
-	unsigned int NVT() const { return nvt; }	///< returns the number of texture vertices
-	unsigned int NM () const { return nm; }		///< returns the number of materials
+	unsigned int NV () const { return nv; }		//!< returns the number of vertices
+	unsigned int NF () const { return nf; }		//!< returns the number of faces
+	unsigned int NVN() const { return nvn; }	//!< returns the number of vertex normals
+	unsigned int NVT() const { return nvt; }	//!< returns the number of texture vertices
+	unsigned int NM () const { return nm; }		//!< returns the number of materials
 
-	bool HasNormals() const { return NVN() > 0; }			///< returns true if the mesh has vertex normals
-	bool HasTextureVertices() const { return NVT() > 0; }	///< returns true if the mesh has texture vertices
+	bool HasNormals() const { return NVN() > 0; }			//!< returns true if the mesh has vertex normals
+	bool HasTextureVertices() const { return NVT() > 0; }	//!< returns true if the mesh has texture vertices
 
-	///@name Set Component Count
+	//!@name Set Component Count
 	void Clear() { SetNumVertex(0); SetNumFaces(0); SetNumNormals(0); SetNumTexVerts(0); SetNumMtls(0); boundMin.Zero(); boundMax.Zero(); }
 	void SetNumVertex  (unsigned int n) { Allocate(n,v,nv); }
 	void SetNumFaces   (unsigned int n) { Allocate(n,f,nf); if (fn||vn) Allocate(n,fn); if (ft||vt) Allocate(n,ft); }
@@ -150,23 +152,23 @@ public:
 	void SetNumTexVerts(unsigned int n) { Allocate(n,vt,nvt); if (!ft) Allocate(nf,ft); }
 	void SetNumMtls    (unsigned int n) { Allocate(n,m,nm); Allocate(n,mcfc); }
 
-	///@name Get Property Methods
+	//!@name Get Property Methods
 	bool    IsBoundBoxReady() const { return boundMin.x!=0 && boundMin.y!=0 && boundMin.z!=0 && boundMax.x!=0 && boundMax.y!=0 && boundMax.z!=0; }
-	Point3f GetBoundMin() const { return boundMin; }		///< Returns the minimum values of the bounding box
-	Point3f GetBoundMax() const { return boundMax; }		///< Returns the maximum values of the bounding box
-	Point3f GetPoint   (int faceID, const Point3f &bc) const { return Interpolate(faceID,v,f,bc); }	///< Returns the point on the given face with the given barycentric coordinates (bc).
-	Point3f GetNormal  (int faceID, const Point3f &bc) const { return Interpolate(faceID,vn,fn,bc); }	///< Returns the the surface normal on the given face at the given barycentric coordinates (bc). The returned vector is not normalized.
-	Point3f GetTexCoord(int faceID, const Point3f &bc) const { return Interpolate(faceID,vt,ft,bc); }	///< Returns the texture coordinate on the given face at the given barycentric coordinates (bc).
-	int     GetMaterialIndex(int faceID) const;				///< Returns the material index of the face. This method goes through material counts of all materials to find the material index of the face. Returns a negaive number if the face as no material
-	int     GetMaterialFaceCount(int mtlID) const { return mtlID>0 ? mcfc[mtlID]-mcfc[mtlID-1] : mcfc[0]; }	///< Returns the number of faces associated with the given material ID.
-	int     GetMaterialFirstFace(int mtlID) const { return mtlID>0 ? mcfc[mtlID-1] : 0; }	///< Returns the first face index associated with the given material ID. Other faces associated with the same material are placed are placed consecutively.
+	Point3f GetBoundMin() const { return boundMin; }		//!< Returns the minimum values of the bounding box
+	Point3f GetBoundMax() const { return boundMax; }		//!< Returns the maximum values of the bounding box
+	Point3f GetPoint   (int faceID, const Point3f &bc) const { return Interpolate(faceID,v,f,bc); }	//!< Returns the point on the given face with the given barycentric coordinates (bc).
+	Point3f GetNormal  (int faceID, const Point3f &bc) const { return Interpolate(faceID,vn,fn,bc); }	//!< Returns the the surface normal on the given face at the given barycentric coordinates (bc). The returned vector is not normalized.
+	Point3f GetTexCoord(int faceID, const Point3f &bc) const { return Interpolate(faceID,vt,ft,bc); }	//!< Returns the texture coordinate on the given face at the given barycentric coordinates (bc).
+	int     GetMaterialIndex(int faceID) const;				//!< Returns the material index of the face. This method goes through material counts of all materials to find the material index of the face. Returns a negaive number if the face as no material
+	int     GetMaterialFaceCount(int mtlID) const { return mtlID>0 ? mcfc[mtlID]-mcfc[mtlID-1] : mcfc[0]; }	//!< Returns the number of faces associated with the given material ID.
+	int     GetMaterialFirstFace(int mtlID) const { return mtlID>0 ? mcfc[mtlID-1] : 0; }	//!< Returns the first face index associated with the given material ID. Other faces associated with the same material are placed are placed consecutively.
 
-	///@name Compute Methods
-	void ComputeBoundingBox();						///< Computes the bounding box
-	void ComputeNormals(bool clockwise=false);		///< Computes and stores vertex normals
+	//!@name Compute Methods
+	void ComputeBoundingBox();						//!< Computes the bounding box
+	void ComputeNormals(bool clockwise=false);		//!< Computes and stores vertex normals
 
-	///@name Load and Save methods
-	bool LoadFromFileObj( const char *filename, bool loadMtl=true );	///< Loads the mesh from an OBJ file. Automatically converts all faces to triangles.
+	//!@name Load and Save methods
+	bool LoadFromFileObj( const char *filename, bool loadMtl=true );	//!< Loads the mesh from an OBJ file. Automatically converts all faces to triangles.
 	bool SaveToFileObj( const char *filename );
 
 private:
@@ -546,7 +548,7 @@ inline bool TriMesh::SaveToFileObj( const char *filename )
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::TriMesh cyTriMesh;	///< Triangular Mesh Class
+typedef cy::TriMesh cyTriMesh;	//!< Triangular Mesh Class
 
 //-------------------------------------------------------------------------------
 

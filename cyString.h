@@ -1,12 +1,13 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyString.h 
-/// \author		Cem Yuksel
-/// \brief		String class
-/// 
-/// This file includes a general purpose string class for char arrays.
-///
+//! \file   cyString.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  String class
+//! 
+//! This file includes a general purpose string class for char arrays.
+//!
 //-------------------------------------------------------------------------------
 //
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
@@ -46,16 +47,16 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/// String class for char arrays.
-/// This is a general purpose string class, which supports many useful string operations.
-/// It has methods for numeric conversions, character and string search,
-/// formating, editing, and file operations.
+//! String class for char arrays.
+//! This is a general purpose string class, which supports many useful string operations.
+//! It has methods for numeric conversions, character and string search,
+//! formating, editing, and file operations.
 
 class String
 {
 
 #ifdef _OSTREAM_
-	/// Overloaded stream operator. It only works if you include iostream before this file.
+	//! Overloaded stream operator. It only works if you include iostream before this file.
 	friend std::ostream& operator << ( std::ostream &os, const String &str )
 	{
 		os<<str.GetString();
@@ -66,33 +67,32 @@ class String
 public:
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Constructors and Destructor
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Constructors and Destructor
 
-	/// Default constructor
+	//! Default constructor
 	String() : string(NULL), length(0) { EmptyString(); }
 
-	/// Copy constructor
+	//! Copy constructor
 	String( const String &src ) : string(NULL), length(0) { Set(src); }
 
-	/// Sets the string using the given array.
+	//! Sets the string using the given array.
 	String( const char *src ) : string(NULL), length(0) { Set(src); }
 
-	/// Sets the string using the given number.
+	//! Sets the string using the given number.
 	String( char src ) : string(NULL), length(0) { Set(src); }
 	String( int src ) : string(NULL), length(0) { Set(src); }
 	String( long src ) : string(NULL), length(0) { Set(src); }
 	String( float src ) : string(NULL), length(0) { Set(src); }
 	String( double src ) : string(NULL), length(0) { Set(src); }
 
-	/// Sets the string using the first 'count' characters of the given array.
+	//! Sets the string using the first 'count' characters of the given array.
 	String( const char *src, unsigned int count ) : string(NULL), length(0) { Set(src,count); }
 
-	/// Sets the string as the given double number 'src' using given number of digits and precision.
+	//! Sets the string as the given double number 'src' using given number of digits and precision.
 	String( double src, int digits, int precisition ) : string(NULL), length(0) { Set(src,digits,precisition); }
 
-	/// Sets the string using the given format and predicted string size.
-	/// The predicted size should be greater than or equal to the final size.
+	//! Sets the string using the given format and predicted string size.
+	//! The predicted size should be greater than or equal to the final size.
 	String( int size, const char *format, ... ) : string(NULL), length(0)
 	{
 		va_list args;
@@ -100,7 +100,7 @@ public:
 		FormatString(size,format,args);
 	}
 
-	/// Destructor
+	//! Destructor
 	virtual ~String()
 	{
 		DeleteString( string );
@@ -108,10 +108,9 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Set methods (Assign value)
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Set methods (Assign value)
 
-	/// Sets the string using the given string. Returns the string.
+	//! Sets the string using the given string. Returns the string.
 	String& Set( const String &str )
 	{
 		SetStrLen( str.length );
@@ -119,7 +118,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the given array. Returns the string.
+	//! Sets the string using the given array. Returns the string.
 	String& Set( const char *src )
 	{
 		int n = (int) strlen(src);
@@ -128,7 +127,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string as the given character. Returns the string.
+	//! Sets the string as the given character. Returns the string.
 	String& Set( char src )
 	{
 		SetStrLen(1);
@@ -136,7 +135,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the given number. Returns the string.
+	//! Sets the string using the given number. Returns the string.
 	String& Set( int src )
 	{
 		SetStrLen(30);
@@ -145,7 +144,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the given number. Returns the string.
+	//! Sets the string using the given number. Returns the string.
 	String& Set( long src )
 	{
 		SetStrLen(30);
@@ -154,7 +153,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the given number. Returns the string.
+	//! Sets the string using the given number. Returns the string.
 	String& Set( float src )
 	{
 		SetStrLen(30);
@@ -163,7 +162,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the given number. Returns the string.
+	//! Sets the string using the given number. Returns the string.
 	String& Set( double src )
 	{
 		SetStrLen(30);
@@ -172,7 +171,7 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the first 'count' characters of the given array. Return this string.
+	//! Sets the string using the first 'count' characters of the given array. Return this string.
 	String& Set( const char *src, unsigned int count )
 	{
 		SetStrLen(count);
@@ -180,8 +179,8 @@ public:
 		return *this;
 	}
 
-	/// Sets the string as the given double number 'src'
-	/// using given number of digits and precision. Returns this string.
+	//! Sets the string as the given double number 'src'
+	//! using given number of digits and precision. Returns this string.
 	String& Set( double src, int digits, int precision )
 	{
 		SetStrLen(30);
@@ -192,9 +191,9 @@ public:
 		return *this;
 	}
 
-	/// Sets the string using the given format and predicted string size.
-	/// The predicted size should be greater than or equal to the final size.
-	/// Returns this string.
+	//! Sets the string using the given format and predicted string size.
+	//! The predicted size should be greater than or equal to the final size.
+	//! Returns this string.
 	String& Set( int size, const char *format, ... )
 	{
 		va_list args;
@@ -205,8 +204,7 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Assignment operators
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Assignment operators
 
 	String& operator = ( const String &src ){ return Set(src); }
 	String& operator = ( const char *src )	{ return Set(src); }
@@ -218,15 +216,14 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Editing methods
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Editing methods
 
-	/// Converts to empty string.
+	//! Converts to empty string.
 	void EmptyString() { SetStrLen(0); }
 
-	/// Changes the length of the array by keeping the values in the string.
-	/// If the new size is smaller, a part of the string is lost.
-	/// If the new size is greater, space characters are added at the end of the string.
+	//! Changes the length of the array by keeping the values in the string.
+	//! If the new size is smaller, a part of the string is lost.
+	//! If the new size is greater, space characters are added at the end of the string.
 	int SetLength( int newLength )
 	{
 		if ( newLength < 0 || newLength == length ) return length;
@@ -242,15 +239,15 @@ public:
 		return length;
 	}
 
-	/// Creates a string of length 'count' with the given character 'chr'.
+	//! Creates a string of length 'count' with the given character 'chr'.
 	void SetCharString( char chr, int count )
 	{
 		SetStrLen( count );
 		memset( string, chr, length );
 	}
 
-	/// Deletes 'count' number of characters from the array, starting from 'start'.
-	/// If 'count' is too big, deletes till the end of the string.
+	//! Deletes 'count' number of characters from the array, starting from 'start'.
+	//! If 'count' is too big, deletes till the end of the string.
 	void Delete( int start, int count )
 	{
 		if ( start > length || count <= 0 ) return;
@@ -263,7 +260,7 @@ public:
 		ReplaceString( string2 );
 	}
 
-	/// Inserts the given string to the given index.
+	//! Inserts the given string to the given index.
 	void Insert( const String &str, int index )
 	{
 		int count = length - index;
@@ -276,12 +273,12 @@ public:
 		ReplaceString( string2 );
 	}
 
-	/// Deletes all carriage return characters.
-	/// Returns the number of characters deleted.
+	//! Deletes all carriage return characters.
+	//! Returns the number of characters deleted.
 	int DeleteCarriageReturns() { return DeleteChar('\r'); }
 
-	/// Insert a carriage return character after every new line character
-	/// if it doesn't already exits. Returns the number of carriage return characters inserted.
+	//! Insert a carriage return character after every new line character
+	//! if it doesn't already exits. Returns the number of carriage return characters inserted.
 	int InsertCarriageReturns()
 	{
 		int nn = CountChar('\n');
@@ -305,8 +302,8 @@ public:
 
 	}
 
-	/// Deletes all the characters in the string that are equal to the given character 'c'.
-	/// Returns the number of characters deleted.
+	//! Deletes all the characters in the string that are equal to the given character 'c'.
+	//! Returns the number of characters deleted.
 	int DeleteChar( char c )
 	{
 		int n = 0;
@@ -324,8 +321,8 @@ public:
 		return n;
 	}
 
-	/// Deletes all the characters in the string that exits in the given set.
-	/// Returns the number of characters deleted.
+	//! Deletes all the characters in the string that exits in the given set.
+	//! Returns the number of characters deleted.
 	int DeleteChars( const String &set )
 	{
 		int n = 0;
@@ -343,7 +340,7 @@ public:
 		return n;
 	}
 
-	/// Reverses the string.
+	//! Reverses the string.
 	void Reverse()
 	{
 		for ( int i=0; i<length/2; i++ ) {
@@ -351,15 +348,15 @@ public:
 		}
 	}
 
-	/// Swap 'count' number of characters starting from 'index1' and 'index2'.
+	//! Swap 'count' number of characters starting from 'index1' and 'index2'.
 	void SwapChars( int index1, int index2, int count=1 )
 	{
 		_swab( string + index1, string + index2, count );
 	}
 
-	/// Sets the string using the given format and predicted string size.
-	/// The predicted size should be greater than or equal to the final size.
-	/// Returns this string.
+	//! Sets the string using the given format and predicted string size.
+	//! The predicted size should be greater than or equal to the final size.
+	//! Returns this string.
 	String& Format( int size, const char *format, ... )
 	{
 		va_list args;
@@ -368,25 +365,24 @@ public:
 		return *this; 
 	}
 
-	/// Returns the character of the string at the specified index.
+	//! Returns the character of the string at the specified index.
 	char& operator [] ( const int index ) { return string[index]; }
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Get value methods
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Get value methods
 
-	/// Returns the length of the string.
+	//! Returns the length of the string.
 	int Length() const { return length; }
 
-	/// Returns the char array that keep the string data.
+	//! Returns the char array that keep the string data.
 	const char* GetString() const { return string; }
 
-	/// Checks if the string is empty (length is zero).
+	//! Checks if the string is empty (length is zero).
 	int IsEmpty() const { return (length==0); }
 
-	/// Returns a pointer to the last character before the first null character.
-	/// If null character is not found, or the string is empty returns NULL pointer.
+	//! Returns a pointer to the last character before the first null character.
+	//! If null character is not found, or the string is empty returns NULL pointer.
 	char* LastChar() const
 	{
 		char * lc = strchr(string,'\0') - 1;
@@ -394,17 +390,17 @@ public:
 		else return lc;
 	}
 
-	/// If the character at the given index exists in the given set,
-	/// returns the index of the character.
-	/// If the character is not found in the set, returns -1.
+	//! If the character at the given index exists in the given set,
+	//! returns the index of the character.
+	//! If the character is not found in the set, returns -1.
 	int SearchCharInSet( int index, const String &set ) const
 	{
 		return set.GetPosition( string[index] );
 	}
 
-	/// Searches the string starting from the beginning for a character that exists in the given set.
-	/// Returns the first position of a character from the set.
-	/// If not found, returns -1.
+	//! Searches the string starting from the beginning for a character that exists in the given set.
+	//! Returns the first position of a character from the set.
+	//! If not found, returns -1.
 	int SearchSet( const String &set ) const
 	{
 		int pos = (int) strcspn( string, set.string );
@@ -412,9 +408,9 @@ public:
 		else return -1;
 	}
 
-	/// Searches the string starting from the end for a character that exists in the given set.
-	/// Returns the last position of a character from the set.
-	/// If not found, returns -1.
+	//! Searches the string starting from the end for a character that exists in the given set.
+	//! Returns the last position of a character from the set.
+	//! If not found, returns -1.
 	int ReverseSearchSet( const String &set ) const
 	{
 		for ( int i=length-1; i >= 0; i-- ) {
@@ -424,9 +420,9 @@ public:
 		return -1;
 	}
 
-	/// Searches the string starting from the beginning for a character that exists in the given set.
-	/// Returns the first position of a character from the set.
-	/// If not found, returns -1.
+	//! Searches the string starting from the beginning for a character that exists in the given set.
+	//! Returns the first position of a character from the set.
+	//! If not found, returns -1.
 	int SearchNextSet( int start, const String &set ) const
 	{
 		if ( start > length ) return -1;
@@ -435,8 +431,8 @@ public:
 		else return -1;
 	}
 
-	/// Returns the first position of the character.
-	/// If the character is not found, returns -1.
+	//! Returns the first position of the character.
+	//! If the character is not found, returns -1.
 	int GetPosition( char c ) const
 	{
 		char *cp = strchr( string, c );
@@ -444,8 +440,8 @@ public:
 		else return -1;
 	}
 
-	/// Returns the first position of the given string.
-	/// If the string is not found, returns -1.
+	//! Returns the first position of the given string.
+	//! If the string is not found, returns -1.
 	int GetPosition( const String &str ) const
 	{
 		char *sub = strstr( string, str.GetString() );
@@ -453,8 +449,8 @@ public:
 		else return -1;
 	}
 
-	/// Returns the last position of the character.
-	/// If the character is not found, returns -1.
+	//! Returns the last position of the character.
+	//! If the character is not found, returns -1.
 	int GetLastPosition( char c ) const
 	{
 		char *cp = strrchr( string, c );
@@ -462,8 +458,8 @@ public:
 		else return -1;
 	}
 
-	/// Returns the last position of the given string.
-	/// If the string is not found, returns -1.
+	//! Returns the last position of the given string.
+	//! If the string is not found, returns -1.
 	int GetLastPosition( const String &str ) const
 	{
 		String s(*this);
@@ -475,8 +471,8 @@ public:
 		else return -1;
 	}
 
-	/// Returns the next position of the character.
-	/// If the character is not found, returns -1.
+	//! Returns the next position of the character.
+	//! If the character is not found, returns -1.
 	int GetNextPosition( int start, char c ) const
 	{
 		if ( start > length ) return -1;
@@ -485,8 +481,8 @@ public:
 		else return -1;
 	}
 
-	/// Returns the next position of the given string.
-	/// If the string is not found, returns -1.
+	//! Returns the next position of the given string.
+	//! If the string is not found, returns -1.
 	int GetNextPosition( int start, const String &str ) const
 	{
 		if ( start > length ) return -1;
@@ -495,13 +491,13 @@ public:
 		else return -1;
 	}
 
-	/// Returns the line number of the given position in the string
+	//! Returns the line number of the given position in the string
 	int GetLineNumber( int pos ) const { return CountChar('\n',0,pos) + 1; }
 
-	/// Returns the number of lines in the string.
+	//! Returns the number of lines in the string.
 	int GetNumLines() const { return CountChar('\n') + 1; }
 
-	/// Returns the number of characters in the string that are equal to the given character 'c'.
+	//! Returns the number of characters in the string that are equal to the given character 'c'.
 	int CountChar( char c ) const
 	{
 		int n = 0;
@@ -513,7 +509,7 @@ public:
 		return n;
 	}
 
-	/// Returns the number of characters in the string that are equal to the given character 'c'.between start and end
+	//! Returns the number of characters in the string that are equal to the given character 'c'.between start and end
 	int CountChar( char c, int start, int end ) const
 	{
 		int n = 0;
@@ -532,42 +528,41 @@ public:
 		return n;
 	}
 
-	/// Returns the number of characters in the string that exists in the given character set.
+	//! Returns the number of characters in the string that exists in the given character set.
 	int CountChars( const String &set ) const
 	{
 		return (int) strspn( string, set.string );
 	}
 
-	/// Returns the character of the string at the specified index.
+	//! Returns the character of the string at the specified index.
 	char operator [] ( const int index ) const { return string[index]; }
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Comparison methods
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Comparison methods
 
-	/// Checks if this string is the same as 'str'.
+	//! Checks if this string is the same as 'str'.
 	int operator == ( const String &str ) const { return ( Compare(str) == 0 ); }
 
-	/// Checks if this string is not the same as 'str'.
+	//! Checks if this string is not the same as 'str'.
 	int operator != ( const String &str ) const { return ( Compare(str) != 0 ); }
 
-	/// Checks if this string is smaller than 'str'.
+	//! Checks if this string is smaller than 'str'.
 	int operator <  ( const String &str ) const { return ( Compare(str) <  0 ); }
 
-	/// Checks if this string is smaller than or equal to 'str'.
+	//! Checks if this string is smaller than or equal to 'str'.
 	int operator <= ( const String &str ) const { return ( Compare(str) <= 0 ); }
 
-	/// Checks if this string is greater than 'str'.
+	//! Checks if this string is greater than 'str'.
 	int operator >  ( const String &str ) const { return ( Compare(str) >  0 ); }
 
-	/// Checks if this string is greater than or equal to 'str'.
+	//! Checks if this string is greater than or equal to 'str'.
 	int operator >= ( const String &str ) const { return ( Compare(str) >= 0 ); }
 
-	/// Compares this string to 'str' (case sensitive).
-	/// Returns zero if the strings are the same,
-	/// smaller than zero if this string is smaller than 'str',
-	/// greater than zero if this string is greater than 'str'.
+	//! Compares this string to 'str' (case sensitive).
+	//! Returns zero if the strings are the same,
+	//! smaller than zero if this string is smaller than 'str',
+	//! greater than zero if this string is greater than 'str'.
 	int Compare( const String &str ) const
 	{
 		if ( length == str.length ) {
@@ -577,19 +572,19 @@ public:
 		} else return length - str.length;
 	}
 
-	/// Compares this string to 'str' (case sensitive) limited to the first 'count' characters.
-	/// Returns zero if the strings are the same,
-	/// smaller than zero if this string is smaller than 'str',
-	/// greater than zero if this string is greater than 'str'.
+	//! Compares this string to 'str' (case sensitive) limited to the first 'count' characters.
+	//! Returns zero if the strings are the same,
+	//! smaller than zero if this string is smaller than 'str',
+	//! greater than zero if this string is greater than 'str'.
 	int Compare( const String &str, int count ) const
 	{
 		return strncmp( string, str.string, count );
 	}
 
-	/// Compares this string to 'str' (case insensitive).
-	/// Returns zero if the strings are the same,
-	/// smaller than zero if this string is smaller than 'str',
-	/// greater than zero if this string is greater than 'str'.
+	//! Compares this string to 'str' (case insensitive).
+	//! Returns zero if the strings are the same,
+	//! smaller than zero if this string is smaller than 'str',
+	//! greater than zero if this string is greater than 'str'.
 	int CompareIC( const String &str ) const
 	{
 		String str1(*this);
@@ -599,10 +594,10 @@ public:
 		return str1.Compare( str2 );
 	}
 
-	/// Compares this string to 'str' (case insensitive) limited to the first 'count' characters.
-	/// Returns zero if the strings are the same,
-	/// smaller than zero if this string is smaller than 'str',
-	/// greater than zero if this string is greater than 'str'.
+	//! Compares this string to 'str' (case insensitive) limited to the first 'count' characters.
+	//! Returns zero if the strings are the same,
+	//! smaller than zero if this string is smaller than 'str',
+	//! greater than zero if this string is greater than 'str'.
 	int CompareIC( const String &str, int count ) const
 	{
 		String str1(*this);
@@ -612,7 +607,7 @@ public:
 		return str1.Compare( str2, count );
 	}
 
-	/// Returns if the char in the given position is a capital letter
+	//! Returns if the char in the given position is a capital letter
 	int IsCapitalChar( int pos ) const
 	{
 		if ( string[pos] < 65 ) return false;
@@ -620,7 +615,7 @@ public:
 		return true;
 	}
 
-	/// Returns if the char in the given position is a lower case letter
+	//! Returns if the char in the given position is a lower case letter
 	int IsLowerCaseChar( int pos ) const
 	{
 		if ( string[pos] < 97 ) return false;
@@ -628,7 +623,7 @@ public:
 		return true;
 	}
 
-	/// Returns if the char in the given position is a numeric character
+	//! Returns if the char in the given position is a numeric character
 	int IsNumericChar( int pos ) const
 	{
 		if ( string[pos] < 48 ) return false;
@@ -636,7 +631,7 @@ public:
 		return true;
 	}
 
-	/// Returns if the char in the given position is a lower case or capital letter
+	//! Returns if the char in the given position is a lower case or capital letter
 	int IsAlphaChar( int pos ) const
 	{
 		if ( IsLowerCaseChar(pos) ) return true;
@@ -644,7 +639,7 @@ public:
 		return false;
 	}
 
-	/// Returns if the char in the given position is a lower case or capital letter or a numeric character
+	//! Returns if the char in the given position is a lower case or capital letter or a numeric character
 	int IsAlphaNumericChar( int pos ) const
 	{
 		if ( IsNumericChar(pos) ) return true;
@@ -652,14 +647,14 @@ public:
 		return false;
 	}
 
-	/// Returns if the char in the given position is a lower case or capital letter, a numeric character or '_'
+	//! Returns if the char in the given position is a lower case or capital letter, a numeric character or '_'
 	int IsNameChar( int pos ) const
 	{
 		if ( string[pos] == '-') return true;
 		else return IsAlphaNumericChar( pos );
 	}
 
-	/// Returns if the char in the given position is a space character
+	//! Returns if the char in the given position is a space character
 	int IsSpaceChar( int pos ) const
 	{
 		switch ( string[pos] ) {
@@ -673,7 +668,7 @@ public:
 		}
 	}
 
-	/// Returns if the char in the given position is a control char (including new line etc.)
+	//! Returns if the char in the given position is a control char (including new line etc.)
 	int IsControlChar( int pos ) const
 	{
 		if ( string[pos] < 32 ) return true;
@@ -682,10 +677,9 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Append and substring
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Append and substring
 
-	/// Appends to the end of the string.
+	//! Appends to the end of the string.
 	void Append( const String &str )
 	{
 		int length2 = length + str.length;
@@ -695,10 +689,10 @@ public:
 		ReplaceString( string2, length2 );
 	}
 
-	/// Appends to the end of the string and returns this string.
+	//! Appends to the end of the string and returns this string.
 	String& operator += ( const String &str ) { Append(str); return *this; }
 
-	/// Appends two strings and returns the result
+	//! Appends two strings and returns the result
 	String operator + ( const String &right ) {
 		String r;
 		r.SetStrLen( length + right.length );
@@ -707,8 +701,8 @@ public:
 		return r;
 	}
 
-	/// Converts the string to its sub-string starting from 'start' with length of 'count'.
-	/// If 'count' is too large, returns the sub-string till the end of the string.
+	//! Converts the string to its sub-string starting from 'start' with length of 'count'.
+	//! If 'count' is too large, returns the sub-string till the end of the string.
 	void SubString( int start, int count )
 	{
 		if ( start > length ) start = length;
@@ -720,8 +714,8 @@ public:
 		ReplaceString( string2 );
 	}
 
-	/// Returns the sub-string from 'start' with the length of 'count'.
-	/// If 'count' is too big, returns the sub-string till the end of the string.
+	//! Returns the sub-string from 'start' with the length of 'count'.
+	//! If 'count' is too big, returns the sub-string till the end of the string.
 	String GetSubString( int start, int count ) const
 	{
 		if ( start > length ) start = length;
@@ -732,22 +726,21 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Conversion to numbers and number arrays
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Conversion to numbers and number arrays
 
-	/// Converts the string to int.
+	//! Converts the string to int.
 	int ToInt() const { return atoi(string); }
 
-	/// Converts the string to long.
+	//! Converts the string to long.
 	long ToLong() const { return atol(string); }
 
-	/// Converts the string to float.
+	//! Converts the string to float.
 	float ToFloat() const { return (float) atof(string); }
 
-	/// Converts the string to double.
+	//! Converts the string to double.
 	double ToDouble() const { return atof(string); }
 
-	/// Converts the string (ex: "23,43,14") to int array.
+	//! Converts the string (ex: "23,43,14") to int array.
 	void ToIntArray(int n, int *v) const
 	{
 		int p1 = 0;
@@ -764,7 +757,7 @@ public:
 		}
 	}
 
-	/// Converts the string to long.
+	//! Converts the string to long.
 	void ToLongArray(int n, long *v) const
 	{
 		int p1 = 0;
@@ -781,7 +774,7 @@ public:
 		}
 	}
 
-	/// Converts the string (ex: "23,43,14") to float array.
+	//! Converts the string (ex: "23,43,14") to float array.
 	void ToFloatArray(int n, float *v) const
 	{
 		int p1 = 0;
@@ -798,7 +791,7 @@ public:
 		}
 	}
 
-	/// Converts the string (ex: "23,43,14") to double array.
+	//! Converts the string (ex: "23,43,14") to double array.
 	void ToDoubleArray(int n, double *v) const
 	{
 		int p1 = 0;
@@ -816,13 +809,12 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Trim and shrink
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Trim and shrink
 	
-	/// Deletes empty characters from the beginning and end of the string.
+	//! Deletes empty characters from the beginning and end of the string.
 	void Trim() { TrimRight(); TrimLeft(); }
 
-	/// Deletes empty characters from the beginning of the string.
+	//! Deletes empty characters from the beginning of the string.
 	void TrimLeft()
 	{
 		int i;
@@ -834,7 +826,7 @@ public:
 		Delete(0,i);
 	}
 
-	/// Deletes empty characters from the end of the string.
+	//! Deletes empty characters from the end of the string.
 	void TrimRight()
 	{
 		unsigned char *uchr = (unsigned char *) LastChar(); // unsigned to support extended ASCII characters
@@ -847,7 +839,7 @@ public:
 		}
 	}
 
-	/// Deletes the rest of the string after the first null character.
+	//! Deletes the rest of the string after the first null character.
 	void Shrink()
 	{
 		char *end = strchr(string,'\0');
@@ -858,24 +850,23 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Case change
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Case change
 
-	/// Coverts the string to lower case.
+	//! Coverts the string to lower case.
 	void LowerCase()
 	{
 		for ( int i=0; i<length; i++ )
 			if ( string[i] >= 65 && string[i] <= 90 ) string[i] += 32;
 	}
 
-	/// Coverts the string to upper case.
+	//! Coverts the string to upper case.
 	void UpperCase()
 	{
 		for ( int i=0; i<length; i++ )
 			if ( string[i] >= 97 && string[i] <= 122 ) string[i] -= 32;
 	}
 
-	/// Coverts the string to swapped case.
+	//! Coverts the string to swapped case.
 	void SwapCase()
 	{
 		for ( int i=0; i<length; i++ ) {
@@ -884,7 +875,7 @@ public:
 		}
 	}
 
-	/// Coverts the string to title case.
+	//! Coverts the string to title case.
 	void TitleCase()
 	{
 		int wordstart = true;
@@ -902,24 +893,23 @@ public:
 		}
 	}
 	
-	/// Returns the lower case version of the string.
+	//! Returns the lower case version of the string.
 	String GetLowerCase() const { String str(*this); str.LowerCase(); return str; }
 
-	/// Returns the upper case version of the string.
+	//! Returns the upper case version of the string.
 	String GetUpperCase() const { String str(*this); str.UpperCase(); return str; }
 
-	/// Returns the swapped case version of the string.
+	//! Returns the swapped case version of the string.
 	String GetSwapCase()  const { String str(*this); str.SwapCase();  return str; }
 
-	/// Returns the title case version of the string.
+	//! Returns the title case version of the string.
 	String GetTitleCase() const { String str(*this); str.TitleCase(); return str; }
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Load/save and file name methods
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Load/save and file name methods
 
-	/// Parses the string as file name string and returns path, filename.
+	//! Parses the string as file name string and returns path, filename.
 	void DecodeFileName( String &path, String &filename )
 	{
 		int pos = ReverseSearchSet("\\/:");
@@ -932,7 +922,7 @@ public:
 		}
 	}
 
-	/// Parses the string as file name string and returns path, filename and extension.
+	//! Parses the string as file name string and returns path, filename and extension.
 	void DecodeFileName( String &path, String &filename, String &extention )
 	{
 		String fname;
@@ -947,8 +937,8 @@ public:
 		}
 	}
 
-	/// Reads 'count' number of characters from the given file stream onto the string.
-	/// Returns final length of the string.
+	//! Reads 'count' number of characters from the given file stream onto the string.
+	//! Returns final length of the string.
 	int LoadFromStream( FILE *stream, unsigned int count )
 	{
 		SetStrLen(count);
@@ -960,7 +950,7 @@ public:
 		return length;
 	}
 
-	/// Loads the string from the file. Returns final length of the string.
+	//! Loads the string from the file. Returns final length of the string.
 	int LoadFromFile( const String &filename )
 	{
 		FILE *fp = fopen( filename.GetString(), "r" );
@@ -978,13 +968,13 @@ public:
 		return length;
 	}
 
-	/// Writes string data to the given file stream. Returns the number of bytes written.
+	//! Writes string data to the given file stream. Returns the number of bytes written.
 	int SaveToStream( FILE *stream ) const
 	{
 		return (int) fwrite( string, 1, length, stream );
 	}
 
-	/// Saves the string to the text file. Returns the number of bytes written.
+	//! Saves the string to the text file. Returns the number of bytes written.
 	int SaveToFile( const String &filename ) const
 	{
 		FILE *fp = fopen( filename.GetString(), "w" );
@@ -998,10 +988,9 @@ public:
 
 private:
 
-	/// \internal
+	//! \internal
 	//////////////////////////////////////////////////////////////////////////
-	///@name Internal methods
-	//////////////////////////////////////////////////////////////////////////
+	//!@name Internal methods
 
 	char *string;	// keeps the string data
 	int  length;	// keeps the length of the string (the actual length of the array is length +1)
@@ -1060,7 +1049,7 @@ private:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::String cyString;	///< String class for char arrays.
+typedef cy::String cyString;	//!< String class for char arrays.
 
 //-------------------------------------------------------------------------------
 

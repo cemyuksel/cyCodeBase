@@ -1,14 +1,14 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyBVH.h 
-/// \author		Cem Yuksel
-/// \brief		Bounding Volume Hierarchy class.
-///
-/// BVH is a storage class for Bounding Volume Hierarchies.
-///
+//! \file   cyBVH.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  Bounding Volume Hierarchy class.
+//!
+//! BVH is a storage class for Bounding Volume Hierarchies.
+//!
 //-------------------------------------------------------------------------------
-//
 // 
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
 // All rights reserved.
@@ -52,58 +52,58 @@ namespace cy {
 
 //-------------------------------------------------------------------------------
 
-/// Bounding Volume Hierarchy class
+//! Bounding Volume Hierarchy class
 
 class BVH
 {
 public:
 
-	///@name Constructor and destructor
+	//!@name Constructor and destructor
 	BVH() : nodes(0), elements(0) {}
 	virtual ~BVH() { Clear(); }
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Node Access Methods
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
-	/// Returns the index of the root node.
+	//! Returns the index of the root node.
 	unsigned int GetRootNodeID() const { return 1; }
 
-	/// Returns the bounding box of the node as 6 float values.
-	/// The first 3 values are the minimum x, y, and z coordinates and
-	/// the last 3 values are the maximum x, y, and z coordinates of the box.
+	//! Returns the bounding box of the node as 6 float values.
+	//! The first 3 values are the minimum x, y, and z coordinates and
+	//! the last 3 values are the maximum x, y, and z coordinates of the box.
 	const float* GetNodeBounds(unsigned int nodeID) const { return nodes[nodeID].GetBounds(); }
 
-	/// Returns true if the node is a leaf node.
+	//! Returns true if the node is a leaf node.
 	bool IsLeafNode(unsigned int nodeID) const { return nodes[nodeID].IsLeafNode(); }
 
-	/// Returns the index of the first child node (parent must be an internal node).
+	//! Returns the index of the first child node (parent must be an internal node).
 	unsigned int GetFirstChildNode(unsigned int parentNodeID) const { return nodes[parentNodeID].ChildIndex(); }
 
-	/// Returns the index of the second child node (parent must be an internal node).
+	//! Returns the index of the second child node (parent must be an internal node).
 	unsigned int GetSecondChildNode(unsigned int parentNodeID) const { return nodes[parentNodeID].ChildIndex()+1; }
 
-	/// Given the first child node index, returns the index of the second child node.
+	//! Given the first child node index, returns the index of the second child node.
 	unsigned int GetSiblingNode(unsigned int firstChildNodeID) const { return firstChildNodeID+1; }
 
-	/// Returns the child nodes of the given node (parent must be an internal node).
+	//! Returns the child nodes of the given node (parent must be an internal node).
 	void GetChildNodes(unsigned int parent, unsigned int &child1, unsigned int &child2) const
 	{
 		child1 = GetFirstChildNode(parent);
 		child2 = GetSiblingNode(child1);
 	}
 
-	/// Returns the number of elements inside the given node (must be a leaf node).
+	//! Returns the number of elements inside the given node (must be a leaf node).
 	unsigned int GetNodeElementCount(unsigned int nodeID) const  { return nodes[nodeID].ElementCount(); }
 
-	/// Returns the list of element inside the given node (must be a leaf node).
+	//! Returns the list of element inside the given node (must be a leaf node).
 	const unsigned int* GetNodeElements(unsigned int nodeID) const { return &elements[nodes[nodeID].ElementOffset()]; }
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Clear and Build Methods
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
-	/// Clears the tree structure
+	//! Clears the tree structure
 	void Clear()
 	{
 		if (nodes) delete [] nodes;
@@ -112,7 +112,7 @@ public:
 		elements = 0;
 	}
 
-	/// Builds the tree structure by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
+	//! Builds the tree structure by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
 	void Build( unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		Clear();
@@ -135,39 +135,39 @@ public:
 		delete tempRoot;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
 protected:
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Methods to be implemented by sub-classes
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
-	virtual void  GetElementBounds(unsigned int i, float box[6]) const=0;	///< Sets box as the i^th element's bounding box.
-	virtual float GetElementCenter(unsigned int i, int dimension) const=0;	///< Returns the center of the i^th element in the given dimension
+	virtual void  GetElementBounds(unsigned int i, float box[6]) const=0;	//!< Sets box as the i^th element's bounding box.
+	virtual float GetElementCenter(unsigned int i, int dimension) const=0;	//!< Returns the center of the i^th element in the given dimension
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Building method that can be overloaded
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
-	/// Sorts the given elements of a temporary node while building the BVH hierarchy,
-	/// such that first N elements are to be assigned to the first child and the 
-	/// remaining elements are to be assigned to the second child node, then returns N.
-	/// Returns zero, if the node is not to be split.
-	/// The default implementation splits the temporary node down the middle of the
-	/// widest axis of its bounding box.
+	//! Sorts the given elements of a temporary node while building the BVH hierarchy,
+	//! such that first N elements are to be assigned to the first child and the 
+	//! remaining elements are to be assigned to the second child node, then returns N.
+	//! Returns zero, if the node is not to be split.
+	//! The default implementation splits the temporary node down the middle of the
+	//! widest axis of its bounding box.
 	virtual unsigned int FindSplit(unsigned int elementCount, unsigned int *elements, const float *box, unsigned int maxElementsPerNode )
 	{
 		return MeanSplit(elementCount,elements,box,maxElementsPerNode);
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
 private:
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Internal storage
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
 	struct Box
 	{
@@ -183,24 +183,24 @@ private:
 	public:
 		void SetLeafNode( const Box &bound, unsigned int elemCount, unsigned int elemOffset ) { box=bound; data=(elemOffset&CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<CY_BVH_ELEMENT_OFFSET_BITS)|CY_BVH_LEAF_BIT_MASK; }
 		void SetInternalNode( const Box &bound, unsigned int chilIndex ) { box=bound; data=(chilIndex&CY_BVH_CHILD_INDEX_MASK); }
-		unsigned int	ChildIndex()	const { return (data&CY_BVH_CHILD_INDEX_MASK); }									///< returns the index to the first child (must be internal node)
-		unsigned int	ElementOffset()	const { return (data&CY_BVH_ELEMENT_OFFSET_MASK); }									///< returns the offset to the first element (must be leaf node)
-		unsigned int	ElementCount()	const { return ((data>>CY_BVH_ELEMENT_OFFSET_BITS)&CY_BVH_ELEMENT_COUNT_MASK)+1; }	///< returns the number of elements in this node (must be leaf node)
-		bool			IsLeafNode()	const { return (data&CY_BVH_LEAF_BIT_MASK)>0; }										///< returns true if this is a leaf node
-		const float*	GetBounds()		const { return box.b; }																///< returns the bounding box of the node
+		unsigned int	ChildIndex()	const { return (data&CY_BVH_CHILD_INDEX_MASK); }									//!< returns the index to the first child (must be internal node)
+		unsigned int	ElementOffset()	const { return (data&CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
+		unsigned int	ElementCount()	const { return ((data>>CY_BVH_ELEMENT_OFFSET_BITS)&CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
+		bool			IsLeafNode()	const { return (data&CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
+		const float*	GetBounds()		const { return box.b; }																//!< returns the bounding box of the node
 	private:
-		Box				box;	///< bounding box of the node
-		unsigned int	data;	///< node data bits that keep the leaf node flag and the child node index or element count and element offset.
+		Box				box;	//!< bounding box of the node
+		unsigned int	data;	//!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
 	};
 
-	Node			*nodes;		///< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
-	unsigned int	*elements;	///< indices of all elements in all nodes
+	Node			*nodes;		//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
+	unsigned int	*elements;	//!< indices of all elements in all nodes
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//@ Internal methods for building the BVH tree
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
-	/// Temporary node class used for building the hierarchy and then converted to NodeData.
+	//! Temporary node class used for building the hierarchy and then converted to NodeData.
 	class TempNode
 	{
 	public:
@@ -232,7 +232,7 @@ private:
 		unsigned int	elementOffset;
 	};
 
-	/// Recursively splits the given temporary node.
+	//! Recursively splits the given temporary node.
 	void SplitTempNode(TempNode *tNode, unsigned int maxElementsPerNode)
 	{
 		const float *box = tNode->GetBounds().b;
@@ -271,7 +271,7 @@ private:
 		SplitTempNode(tNode->GetChild2(),maxElementsPerNode);
 	}
 
-	/// Recursively converts the temporary node data to NodeData.
+	//! Recursively converts the temporary node data to NodeData.
 	unsigned int ConvertTempData( unsigned int nodeID, TempNode *tNode, unsigned int childIndex )
 	{
 		if ( tNode->IsLeafNode() ) {
@@ -284,8 +284,8 @@ private:
 		}
 	}
 
-	/// Called by the default implementation of FindSplit.
-	/// Splits the elements using the widest axis of the given bounding box.
+	//! Called by the default implementation of FindSplit.
+	//! Splits the elements using the widest axis of the given bounding box.
 	unsigned int MeanSplit(unsigned int elementCount, unsigned int *nodeElements, const float *box, unsigned int maxElementsPerNode )
 	{
 		if ( elementCount <= maxElementsPerNode ) return 0;
@@ -321,23 +321,23 @@ private:
 		return child1ElemCount;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 };
 
 //-------------------------------------------------------------------------------
 
 #ifdef _CY_TRIMESH_H_INCLUDED_
 
-/// Bounding Volume Hierarchy for triangular meshes (TriMesh)
+//! Bounding Volume Hierarchy for triangular meshes (TriMesh)
 
 class BVHTriMesh : public BVH
 {
 public:
-	///@name Constructors
+	//!@name Constructors
 	BVHTriMesh() : mesh(0) {}
 	BVHTriMesh(const TriMesh *m) { SetMesh(m); }
 
-	/// Sets the mesh pointer and builds the BVH structure.
+	//! Sets the mesh pointer and builds the BVH structure.
 	void SetMesh(const TriMesh *m, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT)
 	{
 		mesh = m;
@@ -346,7 +346,7 @@ public:
 	}
 
 protected:
-	/// Sets box as the i^th element's bounding box.
+	//! Sets box as the i^th element's bounding box.
 	virtual void GetElementBounds(unsigned int i, float box[6]) const
 	{
 		const TriMesh::TriFace &f = mesh->F(i);
@@ -361,7 +361,7 @@ protected:
 		}
 	}
 
-	/// Returns the center of the i^th element in the given dimension.
+	//! Returns the center of the i^th element in the given dimension.
 	virtual float GetElementCenter(unsigned int i, int dim) const
 	{
 		const TriMesh::TriFace &f = mesh->F(i);
@@ -378,10 +378,10 @@ private:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::BVH cyBVH;	///< Bounding Volume Hierarchy class
+typedef cy::BVH cyBVH;	//!< Bounding Volume Hierarchy class
 
 #ifdef _CY_TRIMESH_H_INCLUDED_
-typedef cy::BVHTriMesh cyBVHTriMesh;	///< BVH hierarchy for triangular meshes (TriMesh)
+typedef cy::BVHTriMesh cyBVHTriMesh;	//!< BVH hierarchy for triangular meshes (TriMesh)
 #endif
 
 //-------------------------------------------------------------------------------

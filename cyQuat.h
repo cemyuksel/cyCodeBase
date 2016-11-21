@@ -1,14 +1,15 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyQuat.h 
-/// \author		Cem Yuksel
-/// \brief		Quaternion class
-/// 
-/// This file includes a quaternion class that can be used to rotate 3D vectors.
-/// It works with Point3<TYPE>, Matrix3, and Matrix4 classes.
-/// Special thanks to Can Yuksel for his contributions in writing this class.
-///
+//! \file   cyQuat.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  Quaternion class
+//! 
+//! This file includes a quaternion class that can be used to rotate 3D vectors.
+//! It works with Point3, Matrix3, and Matrix4 classes.
+//! Special thanks to Can Yuksel for his contributions in writing this class.
+//!
 //-------------------------------------------------------------------------------
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -43,68 +44,68 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/// Quaternion class
+//! Quaternion class
 
 template <typename TYPE>
 class Quat
 {
 	friend Quat operator*( TYPE f, const Quat &q ) { return Quat( q.s*f, q.v*f); }
 public:
-	TYPE         s;	///< scaler part
-	Point3<TYPE> v;	///< vector part
+	TYPE         s;	//!< scaler part
+	Point3<TYPE> v;	//!< vector part
 
-	///@name Constructors
+	//!@name Constructors
 	Quat() {}
 	Quat( TYPE _s, const Point3<TYPE> &_v ) : s(_s), v(_v) {}
 	Quat( TYPE _s, TYPE _x, TYPE _y, TYPE _z ) : s(_s), v(_x,_y,_z) {}
 	Quat( const Quat &q ) : s(q.s), v(q.v) {}
 
-	///@name Set & Get value functions
+	//!@name Set & Get value functions
 	void         Zero() { s=0; v.Zero(); }
-	void         Reset() { s=1; v.Zero(); }	///< Sets the scalar part to 1 and vector part to zero vector.
+	void         Reset() { s=1; v.Zero(); }	//!< Sets the scalar part to 1 and vector part to zero vector.
 	void         Set( TYPE _s, const Point3<TYPE> &_v ) { s=_s; v=_v; }
 	void         Set( TYPE _s, TYPE _x, TYPE _y, TYPE _z ) { s=_s; v.Set(_x,_y,_z); }
 	void         Set( TYPE *array ) { s=array[0]; v.Set(&array[1]); }
 	void         SetRotation( TYPE angle, const Point3<TYPE> &axis ) { s=cos(angle*0.5f); v=(TYPE)sin(angle*0.5f)*(axis.GetNormalized()); }
 	void         SetRotation( TYPE angle, TYPE axisX, TYPE axisY, TYPE axisZ ) { SetRotation( angle, Point3<TYPE>(axisX,axisY,axisZ) );	}
 	void         GetValue( TYPE *array ) { array[0]=s; v.GetValue(&array[1]); }
-	TYPE         GetRotationAngle() { return 2.0f*(TYPE)acos(s); }	///< Returns rotation angle in radiants
+	TYPE         GetRotationAngle() { return 2.0f*(TYPE)acos(s); }	//!< Returns rotation angle in radiants
 	Point3<TYPE> GetRotationAxis () { return v.GetNormalized(); }
 
-	///@name Length and Normalize functions
+	//!@name Length and Normalize functions
 	void         Normalize    ()       { TYPE f=1.0f/Length(); *this *= f; }
 	Quat         GetNormalized() const { TYPE f=1.0f/Length(); return *this*f; }
 	TYPE         LengthSquared() const { return s*s + v.LengthSquared(); }
 	TYPE         Length       () const { return (TYPE) sqrt(LengthSquared()); }
 
-	///@name Matrix conversion functions
+	//!@name Matrix conversion functions
 	void          ToMatrix3( Matrix3<TYPE> &m ) const { FillMatrix( m.data, &m.data[3], &m.data[6] ); }
 	void          ToMatrix4( Matrix4<TYPE> &m ) const { FillMatrix( m.data, &m.data[4], &m.data[8] ); m.data[3]=m.data[7]=m.data[11]=m.data[12]=m.data[13]=m.data[14]=0; m.data[15]=1; }
 	Matrix3<TYPE> ToMatrix3() const { Matrix3<TYPE> m; ToMatrix3(m); return m; }
 	Matrix4<TYPE> ToMatrix4() const { Matrix4<TYPE> m; ToMatrix4(m); return m; }
 
-	///@name Unary operators
+	//!@name Unary operators
 	Quat operator - () const { return Quat(-s,-v); }
 
-	///@name Binary operators
+	//!@name Binary operators
 	Quat operator * ( const Quat &q ) const { return Quat( s*q.s - v.Dot(q.v), s*q.v + q.s*v + v.Cross(q.v)); }
 	Quat operator + ( const Quat &q ) const { return Quat( s + q.s, v + q.v ); }
 	Quat operator - ( const Quat &q ) const { return Quat( s - q.s, v - q.v ); }
 	Quat operator * ( TYPE f ) const { return Quat( s*f, v*f); }
 
-	///@name Assignment operators
+	//!@name Assignment operators
 	Quat& operator *= ( const Quat &q ) { Set( s*q.s - v.Dot(q.v), s*q.v + q.s*v + v.Cross(q.v)); return *this; }
 	Quat& operator += ( const Quat &q ) { s+=q.s; v+=q.v; return *this; }
 	Quat& operator -= ( const Quat &q ) { s-=q.s; v-=q.v; return *this; }
 	Quat& operator *= ( TYPE f ) { s*=f; v*=f; return *this; }
 
-	///@name Test operators
+	//!@name Test operators
 	int operator == ( const Quat& q ) const { return ( (q.s==s) && (q.v==v) ); }
 	int operator != ( const Quat& q ) const { return ( (q.s!=s) || (q.v!=v) ); }
 
-	///@name Vector rotations
-	/// Rotates the given vector using the quaternion.
-	/// Note that the quaternion must be a unit quaternion.
+	//!@name Vector rotations
+	//! Rotates the given vector using the quaternion.
+	//! Note that the quaternion must be a unit quaternion.
 	Point3<TYPE> GetRotatedVector( const Point3<TYPE> &p )
 	{
 		TYPE t2  =  s*v.x;
@@ -125,7 +126,7 @@ public:
 	void RotateVector( Point3<TYPE> &p ) { p = GetRotatedVector(p); }
 
 private:
-	/// \internal
+	//! \internal
 	void FillMatrix( TYPE *col1, TYPE *col2, TYPE *col3 ) const
 	{
 		col1[0] = s*s + v.x*v.x - v.y*v.y - v.z*v.z;
@@ -144,15 +145,15 @@ private:
 
 //-------------------------------------------------------------------------------
 
-typedef Quat<float>  Quatf;	///< Single precision (float) Quaternion class
-typedef Quat<double> Quatd;	///< Double precision (double) Quaternion class
+typedef Quat<float>  Quatf;	//!< Single precision (float) Quaternion class
+typedef Quat<double> Quatd;	//!< Double precision (double) Quaternion class
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Quatf cyQuatf;	///< Single precision (float) Quaternion class
-typedef cy::Quatd cyQuatd;	///< Double precision (double) Quaternion class
+typedef cy::Quatf cyQuatf;	//!< Single precision (float) Quaternion class
+typedef cy::Quatd cyQuatd;	//!< Double precision (double) Quaternion class
 
 //-------------------------------------------------------------------------------
 

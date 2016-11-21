@@ -1,13 +1,13 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-//! \file		cySampleElim.h 
-//! \author		Cem Yuksel
+//! \file   cySampleElim.h 
+//! \author Cem Yuksel
 //!
-//! Implementation of the weighted sample elimination method.
-//! Cem Yuksel. 2015. Sample Elimination for Generating Poisson Disk Sample Sets. 
-//! Computer Graphics Forum 34, 2 (May 2015), 25-32. 
-//! http://www.cemyuksel.com/research/sampleelimination/
+//! \brief  Implementation of the weighted sample elimination method.
+//!
+//! This file includes an implementation of the weighted sample elimination 
+//! method for generating Poisson disk sample sets.
 //!
 //! Blue noise (Poisson disk) sample sets produce high-quality sampling. They
 //! often lead to lower noise and better convergence with Monte Carlo sampling.
@@ -23,6 +23,12 @@
 //! disk radius without the need for specifying a Poisson disk radius. It also 
 //! allows progressive (adaptive) sampling and it is efficient for high-
 //! dimensional sampling. However, it does not guarantee maximal coverage.
+//!
+//! More details can be found in the original publication:
+//!
+//! Cem Yuksel. 2015. Sample Elimination for Generating Poisson Disk Sample Sets. 
+//! Computer Graphics Forum 34, 2 (May 2015), 25-32. 
+//! http://www.cemyuksel.com/research/sampleelimination/
 //!
 //-------------------------------------------------------------------------------
 //

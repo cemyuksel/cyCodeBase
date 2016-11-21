@@ -1,14 +1,15 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyTimer.h 
-/// \author		Cem Yuksel
-/// \brief		Timer classes to measure performance
-/// 
-/// This file includes timer classes to measure performance in windows systems.
-/// Timer class uses Windows specific calls to measure the time,
-/// therefore this file can only be used in windows platforms.
-///
+//! \file   cyTimer.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  Timer classes to measure performance
+//! 
+//! This file includes timer classes to measure performance in windows systems.
+//! Timer class uses Windows specific calls to measure the time,
+//! therefore this file can only be used in windows platforms.
+//!
 //-------------------------------------------------------------------------------
 //
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
@@ -45,51 +46,51 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/// Simple stopwatch class
-/// Use this class to measure the time between Start and Stop calls.
+//! Simple stopwatch class
+//! Use this class to measure the time between Start and Stop calls.
 
 class Timer
 {
 public:
-	/// Starts the timer
+	//! Starts the timer
 	void Start() {
 		startTime = clock();
 	}
 
-	/// Returns the time passed since Start call in seconds.
-	/// Note that this method does not actually stop the timer,
-	/// it only returns the time passed since Start call.
-	/// Therefore, you can call this method as many times as you like
-	/// once you call Start method once.
+	//! Returns the time passed since Start call in seconds.
+	//! Note that this method does not actually stop the timer,
+	//! it only returns the time passed since Start call.
+	//! Therefore, you can call this method as many times as you like
+	//! once you call Start method once.
 	double Stop() const {
 		clock_t endTime = clock();
 		return float(endTime-startTime)/CLOCKS_PER_SEC;;
 	}
 
 protected:
-	clock_t startTime;	///< Keeps the starting time
+	clock_t startTime;	//!< Keeps the starting time
 };
 
 //-------------------------------------------------------------------------------
 
-/// Stopwatch class with statistics
-/// Use this class to measure the time between Start and Stop calls.
-/// Unlike Timer class, this class also provides statistical information.
+//! Stopwatch class with statistics
+//! Use this class to measure the time between Start and Stop calls.
+//! Unlike Timer class, this class also provides statistical information.
 
 class TimerStats
 {
 public:
 	TimerStats() { Clear(); }
 
-	///@name Timer Methods
+	//!@name Timer Methods
 
-	/// Starts the timer
+	//! Starts the timer
 	void Start() {
 		timer.Start();
 	}
 
-	/// Stops the timer and records the current measurement.
-	/// Returns the time passed since Start call in seconds.
+	//! Stops the timer and records the current measurement.
+	//! Returns the time passed since Start call in seconds.
 	double Stop() {
 		double t = timer.Stop();
 		unsigned char p = pos & 0x7F;
@@ -104,9 +105,9 @@ public:
 	}
 
 
-	///@name Statistics Methods
+	//!@name Statistics Methods
 
-	/// Clears all the time records
+	//! Clears all the time records
 	void Clear() {
 		for ( int i=0; i<128; i++ ) times[i] = 0;
 		minTime = 1.0e30;
@@ -115,22 +116,22 @@ public:
 		pos = 0;
 	}
 
-	/// Returns the last measured time.
-	/// If no time is measured before, returns zero.
+	//! Returns the last measured time.
+	//! If no time is measured before, returns zero.
 	double GetLastTime() const { return times[ (pos-1) & 0x7F ]; }
 
-	/// Returns the minimum measured time
+	//! Returns the minimum measured time
 	double GetMin() const { return minTime; }
 
-	/// Returns the maximum measured time
+	//! Returns the maximum measured time
 	double GetMax() const { return maxTime; }
 
-	/// Returns the average of all recorded times (max previous 128 records)
+	//! Returns the average of all recorded times (max previous 128 records)
 	double GetAverage() const { return totalTime / (double) GetRecordCount(); }
 
-	/// Returns the variance of the time records.
-	/// Note that this method goes over all time records,
-	/// so it may take a little time to compute the variance.
+	//! Returns the variance of the time records.
+	//! Note that this method goes over all time records,
+	//! so it may take a little time to compute the variance.
 	double GetVariance() const {
 		unsigned char count = GetRecordCount();
 		double avrg = totalTime / (double) count;
@@ -139,23 +140,23 @@ public:
 		return var / (double) count;
 	}
 
-	/// Returns the standard deviation of the time records.
-	/// Note that this method goes over all time records,
-	/// so it may take a little time to compute the standard deviation.
+	//! Returns the standard deviation of the time records.
+	//! Note that this method goes over all time records,
+	//! so it may take a little time to compute the standard deviation.
 	double GetStdev() const { return sqrt( GetVariance() ); }
 
 
-	///@name Access time records
+	//!@name Access time records
 
-	/// Returns the number of time records.
+	//! Returns the number of time records.
 	unsigned char GetRecordCount() const { return ( pos & 0x80 ) ? 128 : pos; }
 
-	/// Returns the array of time records.
+	//! Returns the array of time records.
 	const double* GetRecords() const { return times; }
 
 
 protected:
-	/// \internal
+	//! \internal
 	Timer   timer;		// The timer
 	double	times[128];	// List of measured times
 	double	minTime;	// Minimum time recorded
@@ -168,8 +169,8 @@ protected:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Timer      cyTimer;			///< Simple stopwatch class
-typedef cy::TimerStats cyTimerStats;	///< Stopwatch class with statistics
+typedef cy::Timer      cyTimer;			//!< Simple stopwatch class
+typedef cy::TimerStats cyTimerStats;	//!< Stopwatch class with statistics
 
 //-------------------------------------------------------------------------------
 

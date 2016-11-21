@@ -1,9 +1,13 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyCore.h 
-/// \author		Cem Yuksel
-/// \brief		Core functions and macros for math and other common operations
+//! \file   cyCore.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  Core functions and macros
+//! 
+//! Core functions and macros for math and other common operations
+//! 
 //-------------------------------------------------------------------------------
 //
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
@@ -49,11 +53,10 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // Math functions
-/////////////////////////////////////////////////////////////////////////////////
 
-///@name Common math function templates
+//!@name Common math function templates
 
 template<typename TYPE> inline TYPE cySin ( TYPE a ) { return (TYPE) ::sin (a); }
 template<typename TYPE> inline TYPE cyCos ( TYPE a ) { return (TYPE) ::cos (a); }
@@ -72,9 +75,8 @@ template<> inline float cyPow <float>( float a, float e ) { return ::powf(a,e); 
 
 template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
-/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // Memory Operations
-/////////////////////////////////////////////////////////////////////////////////
 
 #define CY_MEMCOPY(type,dest,source,n) \
 	if ( !std::is_trivially_copyable<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
@@ -87,9 +89,8 @@ template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
 #define CY_MEMCLEAR(type,dest,n) memset(dest,0,(n)*sizeof(type))
 
-/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // Auto Vectorization
-/////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _MSC_VER
 # define _CY_IVDEP loop( ivdep )
@@ -100,6 +101,8 @@ template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 #endif
 
 #define _CY_IVDEP_FOR __pragma(_CY_IVDEP) for
+
+//////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------
 } // namespace cy

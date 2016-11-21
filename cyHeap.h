@@ -1,10 +1,10 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-//! \file		cyHeap.h 
-//! \author		Cem Yuksel
+//! \file   cyHeap.h 
+//! \author Cem Yuksel
 //!
-//! \brief      A general-purpose heap class
+//! \brief  A general-purpose heap class
 //! 
 //! This file includes a general-purpose heap class.
 //!
@@ -52,13 +52,13 @@ template <typename DATA_TYPE, typename SIZE_TYPE=size_t>
 class Heap
 {
 public:
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Constructor and Destructor
 
 	Heap() : size(0), heapItemCount(0), data(nullptr), heap(nullptr), heapPos(nullptr), deleteData(false) {}
 	~Heap() { Clear(); }
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Initialization methods
 
 	//! Deletes all data owned by the class.
@@ -117,7 +117,7 @@ public:
 		for ( SIZE_TYPE ix = heapItemCount/2; ix>0; ix-- ) HeapMoveDown(ix);
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Access and manipulation methods
 
 	//! Returns the item from the main data with the given id.
@@ -184,7 +184,7 @@ public:
 	}
 
 private:
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Internal structures and methods
 
 	DATA_TYPE *data;			// The main data pointer.
@@ -268,7 +268,7 @@ private:
 		heapPos[ heap[ix2] ] = ix2;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 };
 
 //-------------------------------------------------------------------------------

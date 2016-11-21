@@ -1,9 +1,11 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-/// \file		cyHairFile.h 
-/// \author		Cem Yuksel
-/// \brief		Class for HAIR file type
+//! \file   cyHairFile.h 
+//! \author Cem Yuksel
+//! 
+//! \brief  A class for the HAIR file type
+//! 
 //-------------------------------------------------------------------------------
 //
 // Copyright (c) 2016, Cem Yuksel <cem@cemyuksel.com>
@@ -61,7 +63,7 @@ namespace cy {
 
 //-------------------------------------------------------------------------------
 
-/// HAIR file class
+//! HAIR file class
 
 class HairFile
 {
@@ -69,47 +71,47 @@ public:
 	HairFile() : segments(NULL), points(NULL), thickness(NULL), transparency(NULL), colors(NULL) { Initialize(); }
 	~HairFile() { Initialize(); }
 
-	/// Hair file header
+	//! Hair file header
 	struct Header
 	{
-		char			signature[4];	///< This should be "HAIR"
-		unsigned int	hair_count;		///< number of hair strands
-		unsigned int	point_count;	///< total number of points of all strands
-		unsigned int	arrays;			///< bit array of data in the file
+		char			signature[4];	//!< This should be "HAIR"
+		unsigned int	hair_count;		//!< number of hair strands
+		unsigned int	point_count;	//!< total number of points of all strands
+		unsigned int	arrays;			//!< bit array of data in the file
 
-		unsigned int	d_segments;		///< default number of segments of each strand
-		float			d_thickness;	///< default thickness of hair strands
-		float			d_transparency;	///< default transparency of hair strands
-		float			d_color[3];		///< default color of hair strands
+		unsigned int	d_segments;		//!< default number of segments of each strand
+		float			d_thickness;	//!< default thickness of hair strands
+		float			d_transparency;	//!< default transparency of hair strands
+		float			d_color[3];		//!< default color of hair strands
 
-		char			info[CY_HAIR_FILE_INFO_SIZE];	///< information about the file
+		char			info[CY_HAIR_FILE_INFO_SIZE];	//!< information about the file
 	};
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Constant Data Access Methods
+	//!@name Constant Data Access Methods
 	
-	const Header& GetHeader() const { return header; }		///< Use this method to access header data.
-	const unsigned short* GetSegmentsArray() const { return segments; }	///< Returns segments array (segment count for each hair strand).
-	const float* GetPointsArray() const { return points; }				///< Returns points array (xyz coordinates of each hair point).
-	const float* GetThicknessArray() const { return thickness; }		///< Returns thickness array (thickness at each hair point}.
-	const float* GetTransparencyArray() const { return transparency; }	///< Returns transparency array (transparency at each hair point).
-	const float* GetColorsArray() const { return colors; }				///< Returns colors array (rgb color at each hair point).
+	const Header& GetHeader() const { return header; }		//!< Use this method to access header data.
+	const unsigned short* GetSegmentsArray() const { return segments; }	//!< Returns segments array (segment count for each hair strand).
+	const float* GetPointsArray() const { return points; }				//!< Returns points array (xyz coordinates of each hair point).
+	const float* GetThicknessArray() const { return thickness; }		//!< Returns thickness array (thickness at each hair point}.
+	const float* GetTransparencyArray() const { return transparency; }	//!< Returns transparency array (transparency at each hair point).
+	const float* GetColorsArray() const { return colors; }				//!< Returns colors array (rgb color at each hair point).
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Data Access Methods
+	//!@name Data Access Methods
 
-	unsigned short* GetSegmentsArray() { return segments; }	///< Returns segments array (segment count for each hair strand).
-	float* GetPointsArray() { return points; }				///< Returns points array (xyz coordinates of each hair point).
-	float* GetThicknessArray() { return thickness; }		///< Returns thickness array (thickness at each hair point}.
-	float* GetTransparencyArray() { return transparency; }	///< Returns transparency array (transparency at each hair point).
-	float* GetColorsArray() { return colors; }				///< Returns colors array (rgb color at each hair point).
+	unsigned short* GetSegmentsArray() { return segments; }	//!< Returns segments array (segment count for each hair strand).
+	float* GetPointsArray() { return points; }				//!< Returns points array (xyz coordinates of each hair point).
+	float* GetThicknessArray() { return thickness; }		//!< Returns thickness array (thickness at each hair point}.
+	float* GetTransparencyArray() { return transparency; }	//!< Returns transparency array (transparency at each hair point).
+	float* GetColorsArray() { return colors; }				//!< Returns colors array (rgb color at each hair point).
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Methods for Setting Array Sizes
+	//!@name Methods for Setting Array Sizes
 	
-	/// Deletes all arrays and initializes the header data.
+	//! Deletes all arrays and initializes the header data.
 	void Initialize()
 	{
 		if ( segments ) delete [] segments;
@@ -133,7 +135,7 @@ public:
 		memset( header.info, '\0', CY_HAIR_FILE_INFO_SIZE );
 	}
 
-	/// Sets the hair count, re-allocates segments array if necessary.
+	//! Sets the hair count, re-allocates segments array if necessary.
 	void SetHairCount( int count )
 	{
 		header.hair_count = count;
@@ -165,9 +167,9 @@ public:
 		}
 	}
 
-	/// Use this function to allocate/delete arrays.
-	/// Before you call this method set hair count and point count.
-	/// Note that a valid HAIR file should always have points array.
+	//! Use this function to allocate/delete arrays.
+	//! Before you call this method set hair count and point count.
+	//! Note that a valid HAIR file should always have points array.
 	void SetArrays( int array_types )
 	{
 		header.arrays = array_types;
@@ -183,23 +185,23 @@ public:
 		if ( ! (header.arrays & CY_HAIR_FILE_COLORS_BIT) && colors ) { delete [] colors; colors=NULL; }
 	}
 
-	/// Sets default number of segments for all hair strands, which is used if segments array does not exist.
+	//! Sets default number of segments for all hair strands, which is used if segments array does not exist.
 	void SetDefaultSegmentCount( int s ) { header.d_segments = s; }
 
-	/// Sets default hair strand thickness, which is used if thickness array does not exist.
+	//! Sets default hair strand thickness, which is used if thickness array does not exist.
 	void SetDefaultThickness( float t ) { header.d_thickness = t; }
 
-	/// Sets default hair strand transparency, which is used if transparency array does not exist.
+	//! Sets default hair strand transparency, which is used if transparency array does not exist.
 	void SetDefaultTransparency( float t ) { header.d_transparency = t; }
 
-	/// Sets default hair color, which is used if color array does not exist.
+	//! Sets default hair color, which is used if color array does not exist.
 	void SetDefaultColor( float r, float g, float b ) { header.d_color[0]=r; header.d_color[1]=g; header.d_color[2]=b; }
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Load and Save Methods
+	//!@name Load and Save Methods
 
-	/// Loads hair data from the given HAIR file.
+	//! Loads hair data from the given HAIR file.
 	int LoadFromFile( const char *filename )
 	{
 		Initialize();
@@ -260,7 +262,7 @@ public:
 		return header.hair_count;
 	}
 
-	/// Saves hair data to the given HAIR file.
+	//! Saves hair data to the given HAIR file.
 	int SaveToFile( const char *filename ) const
 	{
 		FILE *fp;
@@ -284,12 +286,12 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	///@name Other Methods
+	//!@name Other Methods
 
-	/// Fills the given direction array with normalized directions using the points array.
-	/// Call this function if you need strand directions for shading.
-	/// The given array dir should be allocated as an array of size 3 times point count.
-	/// Returns point count, returns zero if fails.
+	//! Fills the given direction array with normalized directions using the points array.
+	//! Call this function if you need strand directions for shading.
+	//! The given array dir should be allocated as an array of size 3 times point count.
+	//! Returns point count, returns zero if fails.
 	int FillDirectionArray( float *dir )
 	{
 		if ( dir==NULL || header.point_count<=0 || points==NULL ) return 0;
@@ -356,7 +358,7 @@ public:
 
 private:
 	//////////////////////////////////////////////////////////////////////////
-	///@name Private Variables and Methods
+	//!@name Private Variables and Methods
 
 	Header header;
 	unsigned short	*segments;
@@ -407,7 +409,7 @@ private:
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::HairFile cyHairFile;	///< HAIR file class
+typedef cy::HairFile cyHairFile;	//!< HAIR file class
 
 //-------------------------------------------------------------------------------
 

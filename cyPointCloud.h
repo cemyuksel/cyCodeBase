@@ -1,9 +1,10 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-//! \file		cyPointCloud.h 
-//! \author		Cem Yuksel
-//! \brief		Point cloud using a k-d tree
+//! \file   cyPointCloud.h 
+//! \author Cem Yuksel
+//!
+//! \brief  Point cloud using a k-d tree
 //! 
 //! This file includes a class that keeps a point cloud as a k-d tree
 //! for quickly finding n-nearest points to a given location.
@@ -59,14 +60,14 @@ template <typename PointType, typename FType, uint32_t DIMENSIONS, typename SIZE
 class PointCloud
 {
 public:
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Constructors and Destructor
 
 	PointCloud() : points(nullptr), pointCount(0) {}
 	PointCloud( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices=nullptr ) : points(nullptr), pointCount(0) { Build(numPts,pts,customIndices); }
 	~PointCloud() { delete [] points; }
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@ Initialization
 
 	//! Builds a k-d tree for the given points.
@@ -83,7 +84,7 @@ public:
 		delete [] order;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@ General search methods
 
 	//! Returns all points to the given position within the given radius.
@@ -165,7 +166,7 @@ public:
 		return GetPoints( position, std::numeric_limits<FType>::max(), maxCount, closestPoints );
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Closest point methods
 
 	//! Returns the closest point to the given position within the given radius.
@@ -254,11 +255,11 @@ public:
 		return GetClosest( position, closestIndex, closestPosition, closestDistanceSquared );
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 
 private:
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 	//!@name Internal Structures and Methods
 
 	class PointData
@@ -339,7 +340,7 @@ private:
 		return axis;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////!//!//!
 };
 
 //-------------------------------------------------------------------------------
