@@ -63,7 +63,7 @@ public:
 	/// once you call Start method once.
 	double Stop() const {
 		clock_t endTime = clock();
-		return float(startTime-endTime)/CLOCKS_PER_SEC;;
+		return float(endTime-startTime)/CLOCKS_PER_SEC;;
 	}
 
 protected:

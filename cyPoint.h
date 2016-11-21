@@ -87,9 +87,10 @@ public:
 	template <typename T> explicit Point( const Point4<T> &p );
 
 	///@name Set & Get value functions
-	void Zero()               { CY_MEMCLEAR(TYPE,data,N); }		///< Sets the coordinates as zero
-	void Get( TYPE *p ) const { CY_MEMCOPY(TYPE,p,data,N); }	///< Puts the coordinate values into the array
-	void Set( const TYPE *p ) { CY_MEMCOPY(TYPE,data,p,N); }	///< Sets the coordinates using the values in the given array
+	void Zero()               { CY_MEMCLEAR(TYPE,data,N); }					///< Sets the coordinates as zero
+	void Get( TYPE *p ) const { CY_MEMCOPY(TYPE,p,data,N); }				///< Puts the coordinate values into the array
+	void Set( const TYPE *p ) { CY_MEMCOPY(TYPE,data,p,N); }				///< Sets the coordinates using the values in the given array
+	void Set( const TYPE &v ) { for ( int i=0; i<N; ++i ) data[i] = v; }	///< Sets all coordinates using the given value
 	template <int M> void CopyData( TYPE *p ) { if ( M <= N ) CY_MEMCOPY(TYPE,p,data,M); else { CY_MEMCOPY(TYPE,p,data,N); CY_MEMCLEAR(TYPE,p+N,M-N); }	}
 	template <typename T, int M> void ConvertData( T *p ) { if ( M <= N ) CY_MEMCONVERT(T,p,data,M); else { CY_MEMCONVERT(T,p,data,N); CY_MEMCLEAR(T,p+N,M-N); }	}
 
@@ -180,6 +181,7 @@ public:
 	void Zero()               { CY_MEMCLEAR(TYPE,Data(),2); }		///< Sets the coordinates as zero.
 	void Get( TYPE *p ) const { ((Point2*)p)->operator=(*this); }	///< Puts the coordinate values into the array.
 	void Set( const TYPE *p ) { operator=(*((Point2*)p)); }			///< Sets the coordinates using the values in the given array.
+	void Set( const TYPE &v ) { x=v; y=v; }							///< Sets all coordinates using the given value
 	void Set( const TYPE &_x, const TYPE &_y ) { x=_x; y=_y; }		///< Sets the coordinates using the given values
 
 	///@name Length and Normalize functions
@@ -275,6 +277,7 @@ public:
 	void Zero()               { CY_MEMCLEAR(TYPE,Data(),3); }		///< Sets the coordinates as zero
 	void Get( TYPE *p ) const { ((Point3*)p)->operator=(*this); }	///< Puts the coordinate values into the array
 	void Set( const TYPE *p ) { operator=(*((Point3*)p)); }			///< Sets the coordinates using the values in the given array
+	void Set( const TYPE &v ) { x=v; y=v; z=v; }					///< Sets all coordinates using the given value
 	void Set( const TYPE &_x, const TYPE &_y, const TYPE &_z ) { x=_x; y=_y; z=_z; }	///< Sets the coordinates using the given values
 
 	///@name Length and Normalize functions
@@ -373,6 +376,7 @@ public:
 	void Zero()               { CY_MEMCLEAR(TYPE,Data(),4); }		///< Sets the coordinates as zero
 	void Get( TYPE *p ) const { ((Point4*)p)->operator=(*this); }	///< Puts the coordinate values into the array
 	void Set( const TYPE *p ) { operator=(*((Point4*)p)); }			///< Sets the coordinates using the values in the given array
+	void Set( const TYPE &v ) { x=v; y=v; z=v; w=v; }				///< Sets all coordinates using the given value
 	void Set( const TYPE &_x, const TYPE &_y, const TYPE &_z, const TYPE &_w=1 ) { x=_x; y=_y; z=_z; w=_w; }	///< Sets the coordinates using the given values
 
 	///@name Length and Normalize functions

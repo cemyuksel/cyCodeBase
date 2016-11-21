@@ -60,12 +60,15 @@ template<typename TYPE> inline TYPE cyCos ( TYPE a ) { return (TYPE) ::cos (a); 
 template<typename TYPE> inline TYPE cyTan ( TYPE a ) { return (TYPE) ::tan (a); }
 template<typename TYPE> inline TYPE cyAbs ( TYPE a ) { return (TYPE) ::abs (a); }
 template<typename TYPE> inline TYPE cySqrt( TYPE a ) { return (TYPE) ::sqrt(a); }
+template<typename TYPE> inline TYPE cyPow ( TYPE a, TYPE e ) { return (TYPE) ::pow(a,e); }
+template<typename TYPE> inline TYPE cyPi  () { return TYPE(3.141592653589793238462643383279502884197169); }
 
 template<> inline float cySin <float>( float a ) { return ::sinf (a); }
 template<> inline float cyCos <float>( float a ) { return ::cosf (a); }
 template<> inline float cyTan <float>( float a ) { return ::tanf (a); }
 template<> inline float cyAbs <float>( float a ) { return ::fabsf(a); }
 template<> inline float cySqrt<float>( float a ) { return ::sqrtf(a); }
+template<> inline float cyPow <float>( float a, float e ) { return ::powf(a,e); }
 
 template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
