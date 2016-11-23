@@ -46,6 +46,7 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 //! A general-purpose max-heap structure that allows random access and updates.
+//!
 //! The main data can be kept in an external array or within the Heap class.
 
 template <typename DATA_TYPE, typename SIZE_TYPE=size_t> 

@@ -47,7 +47,8 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-//! String class for char arrays.
+//! A general-purpose string class for char arrays.
+//!
 //! This is a general purpose string class, which supports many useful string operations.
 //! It has methods for numeric conversions, character and string search,
 //! formating, editing, and file operations.

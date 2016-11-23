@@ -52,6 +52,7 @@ template <typename TYPE> class Matrix4;
 //-------------------------------------------------------------------------------
 
 //! 2x2 matrix class.
+//!
 //! Its data stores 4-value array of column-major matrix elements.
 //! You can use Matrix2 with Point2<TYPE> to transform 2D points.
 
@@ -270,6 +271,7 @@ public:
 //-------------------------------------------------------------------------------
 
 //! 3x3 matrix class.
+//!
 //! Its data stores 9-value array of column-major matrix elements.
 //! You can use Matrix3 with Point3<TYPE> to transform 3D points.
 
@@ -716,6 +718,7 @@ public:
 //-------------------------------------------------------------------------------
 
 //! 3x4 matrix class.
+//!
 //! Its data stores 12-value array of column-major matrix elements.
 //! I chose column-major format to be compatible with OpenGL
 //! You can use Matrix34 with Point3<TYPE> and Point4<TYPE>
@@ -1229,6 +1232,7 @@ public:
 //-------------------------------------------------------------------------------
 
 //! 4x4 matrix class.
+//!
 //! Its data stores 16-value array of column-major matrix elements.
 //! I chose column-major format to be compatible with OpenGL
 //! You can use Matrix4 with Point3<TYPE> and Point4<TYPE>

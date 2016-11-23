@@ -51,6 +51,7 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 //! 6D spatial vector (for 3D).
+//!
 //! This class is both for spatial motion vectors and spatial force vectors.
 
 template <typename TYPE>
@@ -101,6 +102,7 @@ public:
 //-------------------------------------------------------------------------------
 
 //! 6D spatial matrix for coordinate transforms.
+//!
 //! This is a special case for SpatialMatrix6 class,
 //! where the matrix represents a coordinate transformation.
 //! In this case, instead of keeping a full 6x6 matrix values,
@@ -158,6 +160,7 @@ public:
 //-------------------------------------------------------------------------------
 
 //! 6D spatial matrix.
+//!
 //! This is the general class for 6D spatial matrices.
 //! For representing coordinate transformation matrices
 //! use SpatialTrans6 instead, since it is more efficient.

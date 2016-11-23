@@ -46,7 +46,8 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-//! Simple stopwatch class
+//! Simple stopwatch class.
+//!
 //! Use this class to measure the time between Start and Stop calls.
 
 class Timer
@@ -73,7 +74,8 @@ protected:
 
 //-------------------------------------------------------------------------------
 
-//! Stopwatch class with statistics
+//! Stopwatch class with statistics.
+//!
 //! Use this class to measure the time between Start and Stop calls.
 //! Unlike Timer class, this class also provides statistical information.
 

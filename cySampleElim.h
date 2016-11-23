@@ -68,7 +68,8 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-//! This class provides an implementation of the weighted sample elimination method.
+//! An implementation of the weighted sample elimination method.
+//!
 //! Cem Yuksel. 2015. Sample Elimination for Generating Poisson Disk Sample Sets. 
 //! Computer Graphics Forum 34, 2 (May 2015), 25-32. 
 //! http://www.cemyuksel.com/research/sampleelimination/

@@ -54,6 +54,7 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 //! A point cloud class that uses a k-d tree for storing points.
+//!
 //! The GetPoints and GetClosest methods return the neighboring points to a given location.
 
 template <typename PointType, typename FType, uint32_t DIMENSIONS, typename SIZE_TYPE=uint32_t>
@@ -123,6 +124,8 @@ public:
 		}
 	}
 
+	//! Used by one of the PointCloud::GetPoints() methods.
+	//!
 	//! Keeps the point index, position, and distance squared to a given search position.
 	//! Used by one of the GetPoints methods.
 	struct PointInfo {
