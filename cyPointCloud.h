@@ -99,7 +99,7 @@ public:
 	template <typename _CALLBACK>
 	void GetPoints( const PointType &position, FType radius, _CALLBACK pointFound )
 	{
-		SIZE_TYPE internalNodes = pointCount >> 1;
+		SIZE_TYPE internalNodes = (pointCount+1) >> 1;
 		SIZE_TYPE stack[60];	// deep enough for 2^30 points
 		int stackPos = 0;
 		stack[0] = 1;	// root node
@@ -121,6 +121,11 @@ public:
 			}
 			FType d2 = (pos - position).LengthSquared();
 			if ( d2 < dist2 ) pointFound( p->Index(), pos, d2, dist2 );
+		}
+		if ( (pointCount & SIZE_TYPE(1)) == 0 ) {
+			const PointData *p = &points[pointCount];
+			FType d2 = (p->Pos() - position).LengthSquared();
+			if ( d2 < dist2 ) pointFound( p->Index(), p->Pos(), d2, dist2 );
 		}
 	}
 
