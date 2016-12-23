@@ -4,7 +4,7 @@
 //! \file   cyPoint.h 
 //! \author Cem Yuksel
 //! 
-//! \brief  2D, 3D and 4D point classes.
+//! \brief  2D, 3D, 4D, and ND point classes.
 //! 
 //-------------------------------------------------------------------------------
 //
@@ -88,7 +88,7 @@ public:
 	template <typename T> explicit Point( const Point3<T> &p );
 	template <typename T> explicit Point( const Point4<T> &p );
 
-	//!@name Set & Get value functions
+	//!@name Set & Get value methods
 	void Zero()               { CY_MEMCLEAR(TYPE,data,N); }					//!< Sets the coordinates as zero
 	void Get( TYPE *p ) const { CY_MEMCOPY(TYPE,p,data,N); }				//!< Puts the coordinate values into the array
 	void Set( const TYPE *p ) { CY_MEMCOPY(TYPE,data,p,N); }				//!< Sets the coordinates using the values in the given array
@@ -96,15 +96,19 @@ public:
 	template <int M> void CopyData( TYPE *p ) { if ( M <= N ) CY_MEMCOPY(TYPE,p,data,M); else { CY_MEMCOPY(TYPE,p,data,N); CY_MEMCLEAR(TYPE,p+N,M-N); }	}
 	template <typename T, int M> void ConvertData( T *p ) { if ( M <= N ) CY_MEMCONVERT(T,p,data,M); else { CY_MEMCONVERT(T,p,data,N); CY_MEMCLEAR(T,p+N,M-N); }	}
 
-	//!@name Length and Normalize functions
-	TYPE  LengthSquared () const { Point p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-	TYPE  Length        () const { return (TYPE) cySqrt(LengthSquared()); }		//!< Returns the length of the vector.
-	void  Normalize     ()       { *this /= Length(); }							//!< Normalizes the vector, such that its length becomes 1.
-	Point GetNormalized () const { return *this / Length(); }					//!< Returns a normalized copy of the vector.
-	TYPE  Sum           () const { TYPE v=data[0]; for ( int i=1; i<N; ++i ) v+=data[i]; return v; }		//!< Returns the sum of its components
-	bool  IsZero        () const { for ( int i=0; i<N; ++i ) if ( data[i] != TYPE(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
+	//!@name General methods
+	TYPE  LengthSquared() const { Point p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+	TYPE  Length       () const { return (TYPE) cySqrt(LengthSquared()); }		//!< Returns the length of the vector.
+	void  Normalize    ()       { *this /= Length(); }							//!< Normalizes the vector, such that its length becomes 1.
+	Point GetNormalized() const { return *this / Length(); }					//!< Returns a normalized copy of the vector.
+	TYPE  Sum          () const { TYPE v=data[0]; for ( int i=1; i<N; ++i ) v+=data[i]; return v; }		//!< Returns the sum of its components
+	bool  IsZero       () const { for ( int i=0; i<N; ++i ) if ( data[i] != TYPE(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
+	TYPE  Min          () const { TYPE m = data[0]; for ( int i=1; i<N; ++i ) if ( m > data[i] ) m = data[i]; return m; }
+	TYPE  Max          () const { TYPE m = data[0]; for ( int i=1; i<N; ++i ) if ( m < data[i] ) m = data[i]; return m; }
+	int   MinID        () const { TYPE m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > data[i] ) { m = data[i]; ix = i; } return m; }
+	int   MaxID        () const { TYPE m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < data[i] ) { m = data[i]; ix = i; } return m; }
 
-	//!@name Limit functions
+	//!@name Limit methods
 	void Clamp( const TYPE &minValue, const TYPE &maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( const TYPE &v ) { for ( int i=0; i<N; ++i ) data[i] = (data[i]<v) ? v : data[i]; }
 	void ClampMax( const TYPE &v ) { for ( int i=0; i<N; ++i ) data[i] = (data[i]>v) ? v : data[i]; }
@@ -112,7 +116,6 @@ public:
 
 	//!@name Unary operators
 	Point operator - () const { Point r; for ( int i=0; i<N; ++i ) r.data[i]=-data[i]; return r; } 
-	Point operator + () const { return *this; }
 
 	//!@name Binary operators
 	Point operator + ( const Point &p ) const { Point r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] + p.data[i]; return r; }
@@ -130,10 +133,10 @@ public:
 	const Point& operator -= ( const Point &p ) { for ( int i=0; i<N; ++i ) data[i] -= p.data[i]; return *this; }
 	const Point& operator *= ( const Point &p ) { for ( int i=0; i<N; ++i ) data[i] *= p.data[i]; return *this; }
 	const Point& operator /= ( const Point &p ) { for ( int i=0; i<N; ++i ) data[i] /= p.data[i]; return *this; }
-	const Point& operator += ( const TYPE   v ) { for ( int i=0; i<N; ++i ) data[i] += v; return *this; }
-	const Point& operator -= ( const TYPE   v ) { for ( int i=0; i<N; ++i ) data[i] -= v; return *this; }
-	const Point& operator *= ( const TYPE   v ) { for ( int i=0; i<N; ++i ) data[i] *= v; return *this; }
-	const Point& operator /= ( const TYPE   v ) { for ( int i=0; i<N; ++i ) data[i] /= v; return *this; }
+	const Point& operator += ( const TYPE  &v ) { for ( int i=0; i<N; ++i ) data[i] += v; return *this; }
+	const Point& operator -= ( const TYPE  &v ) { for ( int i=0; i<N; ++i ) data[i] -= v; return *this; }
+	const Point& operator *= ( const TYPE  &v ) { for ( int i=0; i<N; ++i ) data[i] *= v; return *this; }
+	const Point& operator /= ( const TYPE  &v ) { for ( int i=0; i<N; ++i ) data[i] /= v; return *this; }
 
 	//!@name Test operators
 	bool operator == ( const Point& p ) const { for ( int i=0; i<N; ++i ) if ( data[i] != p.data[i] ) return false; return true; }
@@ -178,25 +181,28 @@ public:
 	template <typename T> explicit Point2( const Point4<T> &p );
 	template <int M> explicit Point2( const Point<TYPE,M> &p ) { p.CopyData<2>(&x); }
 	template <typename T, int M> explicit Point2( const Point<T,M> &p ) { p.ConvertData<TYPE,2>(&x); }
+	template <typename P> explicit Point2( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]) {}
 
-	//!@name Set & Get value functions
+	//!@name Set & Get value methods
 	void Zero()               { CY_MEMCLEAR(TYPE,Data(),2); }		//!< Sets the coordinates as zero.
 	void Get( TYPE *p ) const { ((Point2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
 	void Set( const TYPE *p ) { operator=(*((Point2*)p)); }			//!< Sets the coordinates using the values in the given array.
 	void Set( const TYPE &v ) { x=v; y=v; }							//!< Sets all coordinates using the given value
 	void Set( const TYPE &_x, const TYPE &_y ) { x=_x; y=_y; }		//!< Sets the coordinates using the given values
 
-	//!@name Length and Normalize functions
-	TYPE   LengthSquared () const { Point2 p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-	TYPE   Length        () const { return (TYPE) cySqrt(LengthSquared()); }		//!< Returns the length of the vector.
-	void   Normalize     ()       { *this /= Length(); }							//!< Normalizes the vector, such that its length becomes 1.
-	Point2 GetNormalized () const { return *this / Length(); }						//!< Returns a normalized copy of the vector.
-	TYPE   Sum           () const { return x+y; }									//!< Returns the sum of its components
-	bool   IsZero        () const { return x==TYPE(0) && y==TYPE(0); }				//!< Returns true if all components are exactly zero
-	TYPE   MaxComponent  () const { return x>y ? x : y; }
-	int    MaxComponentID() const { return x>y ? 0 : 1; }
+	//!@name General methods
+	TYPE   LengthSquared() const { Point2 p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+	TYPE   Length       () const { return (TYPE) cySqrt(LengthSquared()); }		//!< Returns the length of the vector.
+	void   Normalize    ()       { *this /= Length(); }							//!< Normalizes the vector, such that its length becomes 1.
+	Point2 GetNormalized() const { return *this / Length(); }					//!< Returns a normalized copy of the vector.
+	TYPE   Sum          () const { return x+y; }								//!< Returns the sum of its components
+	bool   IsZero       () const { return x==TYPE(0) && y==TYPE(0); }			//!< Returns true if all components are exactly zero
+	TYPE   Min          () const { return x<y ? x : y; }
+	TYPE   Max          () const { return x>y ? x : y; }
+	int    MinID        () const { return x<y ? 0 : 1; }
+	int    MaxID        () const { return x>y ? 0 : 1; }
 
-	//!@name Limit functions
+	//!@name Limit methods
 	void Clamp( const TYPE &minValue, const TYPE &maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( const TYPE &v ) { x=(x<v)?v:x; y=(y<v)?v:y; }
 	void ClampMax( const TYPE &v ) { x=(x>v)?v:x; y=(y>v)?v:y; }
@@ -239,15 +245,15 @@ public:
 	const TYPE* Data        ()        const { return &x; }
 
 	//!@name Cross product and dot product
-	TYPE Cross      ( const Point2 &p ) const { Point2 r(-y,x); return r.Dot(p); }		//!< Cross product
-	TYPE operator ^ ( const Point2 &p ) const { return Cross(p); }						//!< Cross product operator
+	TYPE Cross      ( const Point2 &p ) const { Point2 r(-y,x); return r.Dot(p); }			//!< Cross product
+	TYPE operator ^ ( const Point2 &p ) const { return Cross(p); }							//!< Cross product operator
 	TYPE Dot        ( const Point2 &p ) const { Point2 r=operator*(p); return r.Sum(); }	//!< Dot product
 	TYPE operator % ( const Point2 &p ) const { return Dot(p); }							//!< Dot product operator
 };
 
 //-------------------------------------------------------------------------------
 
-//! 3D point class
+//! 3D point (vector) class
 
 template <typename TYPE>
 class Point3
@@ -274,25 +280,28 @@ public:
 	template <typename T> explicit Point3( const Point4<T> &p );
 	template <int M> explicit Point3( const Point<TYPE,M> &p ) { p.CopyData<3>(&x); }
 	template <typename T, int M> explicit Point3( const Point<T,M> &p ) { p.ConvertData<TYPE,3>(&x); }
+	template <typename P> explicit Point3( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]), z((TYPE)p[2]) {}
 
-	//!@name Set & Get value functions
+	//!@name Set & Get value methods
 	void Zero()               { CY_MEMCLEAR(TYPE,Data(),3); }		//!< Sets the coordinates as zero
 	void Get( TYPE *p ) const { ((Point3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
 	void Set( const TYPE *p ) { operator=(*((Point3*)p)); }			//!< Sets the coordinates using the values in the given array
 	void Set( const TYPE &v ) { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value
 	void Set( const TYPE &_x, const TYPE &_y, const TYPE &_z ) { x=_x; y=_y; z=_z; }	//!< Sets the coordinates using the given values
 
-	//!@name Length and Normalize functions
-	TYPE   LengthSquared () const { Point3 p=operator*(*this); return p.Sum(); }		//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-	TYPE   Length        () const { return (TYPE) cySqrt(LengthSquared()); }			//!< Returns the length of the vector.
-	void   Normalize     ()       { *this /= Length(); }								//!< Normalizes the vector, such that its length becomes 1.
-	Point3 GetNormalized () const { return *this / Length(); }							//!< Returns a normalized copy of the vector.
-	TYPE   Sum           () const { return x+y+z; }										//!< Returns the sum of its components
-	bool   IsZero        () const { return x==TYPE(0) && y==TYPE(0) && z==TYPE(0); }	//!< Returns true if all components are exactly zero
-	TYPE   MaxComponent  () const { return x>y ? (x>z ? x : z) : (y>z ? y : z); }
-	int    MaxComponentID() const { return x>y ? (x>z ? 0 : 2) : (y>z ? 1 : 2); }
+	//!@name General methods
+	TYPE   LengthSquared() const { Point3 p=operator*(*this); return p.Sum(); }		//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+	TYPE   Length       () const { return (TYPE) cySqrt(LengthSquared()); }			//!< Returns the length of the vector.
+	void   Normalize    ()       { *this /= Length(); }								//!< Normalizes the vector, such that its length becomes 1.
+	Point3 GetNormalized() const { return *this / Length(); }						//!< Returns a normalized copy of the vector.
+	TYPE   Sum          () const { return x+y+z; }									//!< Returns the sum of its components
+	bool   IsZero       () const { return x==TYPE(0) && y==TYPE(0) && z==TYPE(0); }	//!< Returns true if all components are exactly zero
+	TYPE   Min          () const { return x<y ? (x<z ? x : z) : (y<z ? y : z); }
+	TYPE   Max          () const { return x>y ? (x>z ? x : z) : (y>z ? y : z); }
+	int    MinID        () const { return x<y ? (x<z ? 0 : 2) : (y<z ? 1 : 2); }
+	int    MaxID        () const { return x>y ? (x>z ? 0 : 2) : (y>z ? 1 : 2); }
 
-	//!@name Limit functions
+	//!@name Limit methods
 	void Clamp( const TYPE &minValue, const TYPE &maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( const TYPE &v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; }
 	void ClampMax( const TYPE &v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; }
@@ -346,7 +355,7 @@ public:
 
 //-------------------------------------------------------------------------------
 
-//! 4D point class
+//! 4D point (vector) class
 
 template <typename TYPE>
 class Point4
@@ -373,25 +382,28 @@ public:
 	template <typename T> explicit Point4( const Point2<T> &p, TYPE _z=0, TYPE _w=1 ) : x(TYPE(p.x)), y(TYPE(p.y)), z(_z       ), w(_w       ) {}
 	template <int M> explicit Point4( const Point<TYPE,M> &p ) { p.CopyData<4>(&x); }
 	template <typename T, int M> explicit Point4( const Point<T,M> &p ) { p.ConvertData<TYPE,4>(&x); }
+	template <typename P> explicit Point4( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]), z((TYPE)p[2]), w((TYPE)p[3]) {}
 
-	//!@name Set & Get value functions
+	//!@name Set & Get value methods
 	void Zero()               { CY_MEMCLEAR(TYPE,Data(),4); }		//!< Sets the coordinates as zero
 	void Get( TYPE *p ) const { ((Point4*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
 	void Set( const TYPE *p ) { operator=(*((Point4*)p)); }			//!< Sets the coordinates using the values in the given array
 	void Set( const TYPE &v ) { x=v; y=v; z=v; w=v; }				//!< Sets all coordinates using the given value
 	void Set( const TYPE &_x, const TYPE &_y, const TYPE &_z, const TYPE &_w=1 ) { x=_x; y=_y; z=_z; w=_w; }	//!< Sets the coordinates using the given values
 
-	//!@name Length and Normalize functions
-	TYPE   LengthSquared () const { Point4 p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-	TYPE   Length        () const { return (TYPE) cySqrt(LengthSquared()); }		//!< Returns the length of the vector.
-	void   Normalize     ()       { *this /= Length(); }							//!< Normalizes the vector, such that its length becomes 1.
-	Point4 GetNormalized () const { return *this / Length(); }						//!< Returns a normalized copy of the vector.
-	TYPE   Sum           () const { return x+y+z+w; }								//!< Returns the sum of its components
-	bool   IsZero        () const { return x==TYPE(0) && y==TYPE(0) && z==TYPE(0) && w==TYPE(0); }	//!< Returns true if all components are exactly zero
-	TYPE   MaxComponent  () const { TYPE mxy = x>y ? x : y; TYPE mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }
-	int    MaxComponentID() const { int  ixy = x>y ? 0 : 1; int  izw = z>w ? 2 : 3; return (&x)[ixy]>(&x)[izw] ? ixy : izw; }
+	//!@name General methods
+	TYPE   LengthSquared() const { Point4 p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+	TYPE   Length       () const { return (TYPE) cySqrt(LengthSquared()); }		//!< Returns the length of the vector.
+	void   Normalize    ()       { *this /= Length(); }							//!< Normalizes the vector, such that its length becomes 1.
+	Point4 GetNormalized() const { return *this / Length(); }					//!< Returns a normalized copy of the vector.
+	TYPE   Sum          () const { return x+y+z+w; }							//!< Returns the sum of its components
+	bool   IsZero       () const { return x==TYPE(0) && y==TYPE(0) && z==TYPE(0) && w==TYPE(0); }	//!< Returns true if all components are exactly zero
+	TYPE   Min          () const { TYPE mxy = x<y ? x : y; TYPE mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }
+	TYPE   Max          () const { TYPE mxy = x>y ? x : y; TYPE mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }
+	int    MinID        () const { int  ixy = x<y ? 0 : 1; int  izw = z<w ? 2 : 3; return (&x)[ixy]<(&x)[izw] ? ixy : izw; }
+	int    MaxID        () const { int  ixy = x>y ? 0 : 1; int  izw = z>w ? 2 : 3; return (&x)[ixy]>(&x)[izw] ? ixy : izw; }
 
-	//!@name Limit functions
+	//!@name Limit methods
 	void Clamp( const TYPE &minValue, const TYPE &maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( const TYPE &v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; w=(w<v)?v:w; }
 	void ClampMax( const TYPE &v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; w=(w>v)?v:w; }
@@ -469,22 +481,6 @@ typedef Point2<double>   Point2d;	//!< Double precision (double) 2D Point/Vector
 typedef Point3<double>   Point3d;	//!< Double precision (double) 3D Point/Vector class
 typedef Point4<double>   Point4d;	//!< Double precision (double) 4D Point/Vector class
 
-typedef Point2<int32_t>  Point2i;	//!< 32-bit signed integer (int32_t) 2D Point/Vector class
-typedef Point3<int32_t>  Point3i;	//!< 32-bit signed integer (int32_t) 3D Point/Vector class
-typedef Point4<int32_t>  Point4i;	//!< 32-bit signed integer (int32_t) 4D Point/Vector class
-
-typedef Point2<uint32_t> Point2ui;	//!< 32-bit unsigned integer (uint32_t) 2D Point/Vector class
-typedef Point3<uint32_t> Point3ui;	//!< 32-bit unsigned integer (uint32_t) 3D Point/Vector class
-typedef Point4<uint32_t> Point4ui;	//!< 32-bit unsigned integer (uint32_t) 4D Point/Vector class
-
-typedef Point2<int64_t>  Point2l;	//!< 64-bit signed integer (int64_t) 2D Point/Vector class
-typedef Point3<int64_t>  Point3l;	//!< 64-bit signed integer (int64_t) 3D Point/Vector class
-typedef Point4<int64_t>  Point4l;	//!< 64-bit signed integer (int64_t) 4D Point/Vector class
-
-typedef Point2<uint64_t> Point2ul;	//!< 64-bit unsigned integer (uint64_t) 2D Point/Vector class
-typedef Point3<uint64_t> Point3ul;	//!< 64-bit unsigned integer (uint64_t) 3D Point/Vector class
-typedef Point4<uint64_t> Point4ul;	//!< 64-bit unsigned integer (uint64_t) 4D Point/Vector class
-
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
@@ -496,22 +492,6 @@ typedef cy::Point4f  cyPoint4f;		//!< Single precision (float) 4D Point/Vector c
 typedef cy::Point2d  cyPoint2d;		//!< Double precision (double) 2D Point/Vector class
 typedef cy::Point3d  cyPoint3d;		//!< Double precision (double) 3D Point/Vector class
 typedef cy::Point4d  cyPoint4d;		//!< Double precision (double) 4D Point/Vector class
-
-typedef cy::Point2i  cyPoint2i;		//!< 32-bit signed integer (int32_t) 2D Point/Vector class
-typedef cy::Point3i  cyPoint3i;		//!< 32-bit signed integer (int32_t) 3D Point/Vector class
-typedef cy::Point4i  cyPoint4i;		//!< 32-bit signed integer (int32_t) 4D Point/Vector class
-
-typedef cy::Point2ui cyPoint2ui;	//!< 32-bit unsigned integer (uint32_t) 2D Point/Vector class;
-typedef cy::Point3ui cyPoint3ui;	//!< 32-bit unsigned integer (uint32_t) 3D Point/Vector class;
-typedef cy::Point4ui cyPoint4ui;	//!< 32-bit unsigned integer (uint32_t) 4D Point/Vector class;
-
-typedef cy::Point2l  cyPoint2l;		//!< 64-bit signed integer (int64_t) 2D Point/Vector class
-typedef cy::Point3l  cyPoint3l;		//!< 64-bit signed integer (int64_t) 3D Point/Vector class
-typedef cy::Point4l  cyPoint4l;		//!< 64-bit signed integer (int64_t) 4D Point/Vector class
-
-typedef cy::Point2ul cyPoint2ul;	//!< 64-bit unsigned integer (uint64_t) 2D Point/Vector class;
-typedef cy::Point3ul cyPoint3ul;	//!< 64-bit unsigned integer (uint64_t) 3D Point/Vector class;
-typedef cy::Point4ul cyPoint4ul;	//!< 64-bit unsigned integer (uint64_t) 4D Point/Vector class;
 
 //-------------------------------------------------------------------------------
 
