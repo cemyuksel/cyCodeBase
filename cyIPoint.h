@@ -414,6 +414,14 @@ template <typename TYPE> template <typename T> IPoint2<TYPE>::IPoint2( const IPo
 
 //-------------------------------------------------------------------------------
 
+typedef IPoint2<int8_t>   IPoint2b;		//!< 8-bit signed integer (int8_t) 2D integer point class
+typedef IPoint3<int8_t>   IPoint3b;		//!< 8-bit signed integer (int8_t) 3D integer point class
+typedef IPoint2<uint8_t>  IPoint2ub;	//!< 8-bit unsigned integer (uint8_t) 2D integer point class
+typedef IPoint3<uint8_t>  IPoint3ub;	//!< 8-bit unsigned integer (uint8_t) 3D integer point class
+typedef IPoint2<int16_t>  IPoint2s;		//!< 16-bit signed integer (int16_t) 2D integer point class
+typedef IPoint3<int16_t>  IPoint3s;		//!< 16-bit signed integer (int16_t) 3D integer point class
+typedef IPoint2<uint16_t> IPoint2us;	//!< 16-bit unsigned integer (uint16_t) 2D integer point class
+typedef IPoint3<uint16_t> IPoint3us;	//!< 16-bit unsigned integer (uint16_t) 3D integer point class
 typedef IPoint2<int32_t>  IPoint2i;		//!< 32-bit signed integer (int32_t) 2D integer point class
 typedef IPoint3<int32_t>  IPoint3i;		//!< 32-bit signed integer (int32_t) 3D integer point class
 typedef IPoint2<uint32_t> IPoint2ui;	//!< 32-bit unsigned integer (uint32_t) 2D integer point class
@@ -427,10 +435,18 @@ typedef IPoint3<uint64_t> IPoint3ul;	//!< 64-bit unsigned integer (uint64_t) 3D 
 } // namespace cy
 //-------------------------------------------------------------------------------
 
+typedef cy::IPoint2b  cyIPoint2b;		//!< 8-bit signed integer (int8_t) 2D integer point class
+typedef cy::IPoint3b  cyIPoint3b;		//!< 8-bit signed integer (int8_t) 3D integer point class
+typedef cy::IPoint2ub cyIPoint2ub;		//!< 8-bit unsigned integer (uint8_t) 2D integer point class
+typedef cy::IPoint3ub cyIPoint3ub;		//!< 8-bit unsigned integer (uint8_t) 3D integer point class
+typedef cy::IPoint2s  cyIPoint2s;		//!< 16-bit signed integer (int16_t) 2D integer point class
+typedef cy::IPoint3s  cyIPoint3s;		//!< 16-bit signed integer (int16_t) 3D integer point class
+typedef cy::IPoint2us cyIPoint2us;		//!< 16-bit unsigned integer (uint16_t) 2D integer point class
+typedef cy::IPoint3us cyIPoint3us;		//!< 16-bit unsigned integer (uint16_t) 3D integer point class
 typedef cy::IPoint2i  cyIPoint2i;		//!< 32-bit signed integer (int32_t) 2D integer point class
 typedef cy::IPoint3i  cyIPoint3i;		//!< 32-bit signed integer (int32_t) 3D integer point class
-typedef cy::IPoint2ui cyIPoint2ui;		//!< 32-bit unsigned integer (uint32_t) 2D integer point class;
-typedef cy::IPoint3ui cyIPoint3ui;		//!< 32-bit unsigned integer (uint32_t) 3D integer point class;
+typedef cy::IPoint2ui cyIPoint2ui;		//!< 32-bit unsigned integer (uint32_t) 2D integer point class
+typedef cy::IPoint3ui cyIPoint3ui;		//!< 32-bit unsigned integer (uint32_t) 3D integer point class
 typedef cy::IPoint2l  cyIPoint2l;		//!< 64-bit signed integer (int64_t) 2D integer point class
 typedef cy::IPoint3l  cyIPoint3l;		//!< 64-bit signed integer (int64_t) 3D integer point class
 typedef cy::IPoint2ul cyIPoint2ul;		//!< 64-bit unsigned integer (uint64_t) 2D integer point class;
