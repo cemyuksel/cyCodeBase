@@ -216,6 +216,16 @@ inline void TriMesh::ComputeNormals(bool clockwise)
 	for ( unsigned int i=0; i<nvn; i++ ) vn[i].Normalize();
 }
 
+struct MtlData
+{
+	char mtlName[256];
+	unsigned int firstFace;
+	unsigned int faceCount;
+	MtlData() { mtlName[0]='\0'; faceCount=0; firstFace=0; }
+};
+
+struct MtlLibName { char filename[1024]; };
+
 inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 {
 	FILE *fp = fopen(filename,"r");
@@ -274,13 +284,6 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 	Buffer buffer;
 
 
-	struct MtlData
-	{
-		char mtlName[256];
-		unsigned int firstFace;
-		unsigned int faceCount;
-		MtlData() { mtlName[0]='\0'; faceCount=0; firstFace=0; }
-	};
 	struct MtlList {
 		std::vector<MtlData> mtlData;
 		int GetMtlIndex(const char *mtlName)
@@ -292,7 +295,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 		}
 		int CreateMtl(const char *mtlName, unsigned int firstFace)
 		{
-			if ( mtlName[0] == '\0' ) return NULL;
+			if ( mtlName[0] == '\0' ) return 0;
 			int i = GetMtlIndex(mtlName);
 			if ( i >= 0 ) return i;
 			MtlData m;
@@ -304,7 +307,6 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 	};
 	MtlList mtlList;
 	MtlData *currentMtlData = NULL;
-	struct MtlLibName { char filename[1024]; };
 	std::vector<Point3f>	_v;		// vertices
 	std::vector<TriFace>	_f;		// faces
 	std::vector<Point3f>	_vn;	// vertex normal

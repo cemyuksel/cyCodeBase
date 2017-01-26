@@ -44,6 +44,7 @@
 
 //-------------------------------------------------------------------------------
 
+#include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include <stdint.h>
@@ -80,12 +81,12 @@ template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
 #define CY_MEMCOPY(type,dest,source,n) \
 	if ( !std::is_trivially_copyable<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
-		for ( int i=0; i<n; i++ ) (dest)[i] = (source)[i]; \
+		for ( int i=0; i<(n); i++ ) (dest)[i] = (source)[i]; \
 	} else { \
 		memcpy( dest, source, (n)*sizeof(type) ); \
 	}
 
-#define CY_MEMCONVERT(type,dest,source,n) { for ( int i=0; i<n; i++ ) (dest)[i] = type((source)[i]); }
+#define CY_MEMCONVERT(type,dest,source,n) { for ( int i=0; i<(n); i++ ) (dest)[i] = type((source)[i]); }
 
 #define CY_MEMCLEAR(type,dest,n) memset(dest,0,(n)*sizeof(type))
 
@@ -93,14 +94,14 @@ template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 // Auto Vectorization
 
 #ifdef _MSC_VER
-# define _CY_IVDEP loop( ivdep )
+# define _CY_IVDEP __pragma(loop(ivdep))
 #elif defined __GNUC__
-# define _CY_IVDEP GLL ivdep
+# define _CY_IVDEP _Pragma("GLL ivdep");
 #else
-# define _CY_IVDEP ivdep
+# define _CY_IVDEP _Pragma("ivdep");
 #endif
 
-#define _CY_IVDEP_FOR __pragma(_CY_IVDEP) for
+#define _CY_IVDEP_FOR _CY_IVDEP for
 
 //////////////////////////////////////////////////////////////////////////
 

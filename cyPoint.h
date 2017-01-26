@@ -73,13 +73,13 @@ public:
 	template <typename T> explicit Point( const Point<T,N> &p ) { CY_MEMCONVERT(TYPE,data,p.data,N); }
 	template <int M> explicit Point( const Point<TYPE,M> &p )
 	{
-		if ( N <= M ) CY_MEMCOPY(TYPE,data,p.data,N);
-		else {        CY_MEMCOPY(TYPE,data,p.data,M); CY_MEMCLEAR(TYPE,data,N-M); }
+		if ( N <= M ) { CY_MEMCOPY(TYPE,data,p.data,N); }
+		else          { CY_MEMCOPY(TYPE,data,p.data,M); CY_MEMCLEAR(TYPE,data,N-M); }
 	}
 	template <typename T, int M> explicit Point( const Point<T,M> &p )
 	{
-		if ( N <= M ) CY_MEMCONVERT(TYPE,data,p.data,N);
-		else {        CY_MEMCONVERT(TYPE,data,p.data,M); CY_MEMCLEAR(TYPE,data,N-M); }
+		if ( N <= M ) { CY_MEMCONVERT(TYPE,data,p.data,N); }
+		else          { CY_MEMCONVERT(TYPE,data,p.data,M); CY_MEMCLEAR(TYPE,data,N-M); }
 	}
 	explicit Point( const Point2<TYPE> &p );
 	explicit Point( const Point3<TYPE> &p );
@@ -94,8 +94,8 @@ public:
 	void Get( TYPE *p ) const { CY_MEMCOPY(TYPE,p,data,N); }				//!< Puts the coordinate values into the array
 	void Set( const TYPE *p ) { CY_MEMCOPY(TYPE,data,p,N); }				//!< Sets the coordinates using the values in the given array
 	void Set( const TYPE &v ) { for ( int i=0; i<N; ++i ) data[i] = v; }	//!< Sets all coordinates using the given value
-	template <int M> void CopyData( TYPE *p ) { if ( M <= N ) CY_MEMCOPY(TYPE,p,data,M); else { CY_MEMCOPY(TYPE,p,data,N); CY_MEMCLEAR(TYPE,p+N,M-N); }	}
-	template <typename T, int M> void ConvertData( T *p ) { if ( M <= N ) CY_MEMCONVERT(T,p,data,M); else { CY_MEMCONVERT(T,p,data,N); CY_MEMCLEAR(T,p+N,M-N); }	}
+	template <int M> void CopyData( TYPE *p ) { if ( M <= N ) { CY_MEMCOPY(TYPE,p,data,M); } else { CY_MEMCOPY(TYPE,p,data,N); CY_MEMCLEAR(TYPE,p+N,M-N); }	}
+	template <typename T, int M> void ConvertData( T *p ) { if ( M <= N ) { CY_MEMCONVERT(T,p,data,M); } else { CY_MEMCONVERT(T,p,data,N); CY_MEMCLEAR(T,p+N,M-N); }	}
 
 	//!@name General methods
 	TYPE  LengthSquared() const { Point p=operator*(*this); return p.Sum(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
@@ -456,12 +456,12 @@ public:
 //-------------------------------------------------------------------------------
 
 // Definitions of the conversion constructors
-template <typename TYPE, int N> Point<TYPE,N>::Point( const Point2<TYPE> &p ) { if ( N <= 2 ) CY_MEMCOPY(TYPE,data,&p.x,N); else { CY_MEMCOPY(TYPE,data,&p.x,2); CY_MEMCLEAR(TYPE,data,N-2); } }
-template <typename TYPE, int N> Point<TYPE,N>::Point( const Point3<TYPE> &p ) { if ( N <= 3 ) CY_MEMCOPY(TYPE,data,&p.x,N); else { CY_MEMCOPY(TYPE,data,&p.x,3); CY_MEMCLEAR(TYPE,data,N-3); } }
-template <typename TYPE, int N> Point<TYPE,N>::Point( const Point4<TYPE> &p ) { if ( N <= 4 ) CY_MEMCOPY(TYPE,data,&p.x,N); else { CY_MEMCOPY(TYPE,data,&p.x,4); CY_MEMCLEAR(TYPE,data,N-4); } }
-template <typename TYPE, int N> template <typename T> Point<TYPE,N>::Point( const Point2<T> &p ) { if ( N <= 2 ) CY_MEMCONVERT(TYPE,data,&p.x,N); else { CY_MEMCONVERT(TYPE,data,&p.x,2); CY_MEMCLEAR(TYPE,data,N-2); } }
-template <typename TYPE, int N> template <typename T> Point<TYPE,N>::Point( const Point3<T> &p ) { if ( N <= 3 ) CY_MEMCONVERT(TYPE,data,&p.x,N); else { CY_MEMCONVERT(TYPE,data,&p.x,3); CY_MEMCLEAR(TYPE,data,N-3); } }
-template <typename TYPE, int N> template <typename T> Point<TYPE,N>::Point( const Point4<T> &p ) { if ( N <= 4 ) CY_MEMCONVERT(TYPE,data,&p.x,N); else { CY_MEMCONVERT(TYPE,data,&p.x,4); CY_MEMCLEAR(TYPE,data,N-4); } }
+template <typename TYPE, int N> Point<TYPE,N>::Point( const Point2<TYPE> &p ) { if ( N <= 2 ) { CY_MEMCOPY(TYPE,data,&p.x,N); } else { CY_MEMCOPY(TYPE,data,&p.x,2); CY_MEMCLEAR(TYPE,data,N-2); } }
+template <typename TYPE, int N> Point<TYPE,N>::Point( const Point3<TYPE> &p ) { if ( N <= 3 ) { CY_MEMCOPY(TYPE,data,&p.x,N); } else { CY_MEMCOPY(TYPE,data,&p.x,3); CY_MEMCLEAR(TYPE,data,N-3); } }
+template <typename TYPE, int N> Point<TYPE,N>::Point( const Point4<TYPE> &p ) { if ( N <= 4 ) { CY_MEMCOPY(TYPE,data,&p.x,N); } else { CY_MEMCOPY(TYPE,data,&p.x,4); CY_MEMCLEAR(TYPE,data,N-4); } }
+template <typename TYPE, int N> template <typename T> Point<TYPE,N>::Point( const Point2<T> &p ) { if ( N <= 2 ) { CY_MEMCONVERT(TYPE,data,&p.x,N); } else { CY_MEMCONVERT(TYPE,data,&p.x,2); CY_MEMCLEAR(TYPE,data,N-2); } }
+template <typename TYPE, int N> template <typename T> Point<TYPE,N>::Point( const Point3<T> &p ) { if ( N <= 3 ) { CY_MEMCONVERT(TYPE,data,&p.x,N); } else { CY_MEMCONVERT(TYPE,data,&p.x,3); CY_MEMCLEAR(TYPE,data,N-3); } }
+template <typename TYPE, int N> template <typename T> Point<TYPE,N>::Point( const Point4<T> &p ) { if ( N <= 4 ) { CY_MEMCONVERT(TYPE,data,&p.x,N); } else { CY_MEMCONVERT(TYPE,data,&p.x,4); CY_MEMCLEAR(TYPE,data,N-4); } }
 template <typename TYPE> Point2<TYPE>::Point2( const Point3<TYPE> &p ) : x(p.x), y(p.y)         {}
 template <typename TYPE> Point2<TYPE>::Point2( const Point4<TYPE> &p ) : x(p.x), y(p.y)         {}
 template <typename TYPE> Point3<TYPE>::Point3( const Point4<TYPE> &p ) : x(p.x), y(p.y), z(p.z) {}
