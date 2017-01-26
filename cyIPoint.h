@@ -200,7 +200,7 @@ public:
 	template <typename T> explicit IPoint2( const IPoint3<T> &p );
 	template <typename T> explicit IPoint2( const IPoint4<T> &p );
 	template <int M> explicit IPoint2( const IPoint<TYPE,M> &p ) { p.CopyData<2>(&x); }
-	template <typename T, int M> explicit IPoint2( const IPoint<T,M> &p ) { p.ConvertData<TYPE,2>(&x); }
+	template <typename T, int M> explicit IPoint2( const IPoint<T,M> &p ) { p.template ConvertData<TYPE,2>(&x); }
 	template <typename P> explicit IPoint2( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]) {}
 
 	//!@name Set & Get value methods
@@ -316,7 +316,7 @@ public:
 	template <typename T> explicit IPoint3( const IPoint2<T> &p, TYPE _z=0 ) : x(TYPE(p.x)), y(TYPE(p.y)), z(      _z) {}
 	template <typename T> explicit IPoint3( const IPoint4<T> &p );
 	template <int M> explicit IPoint3( const IPoint<TYPE,M> &p ) { p.CopyData<3>(&x); }
-	template <typename T, int M> explicit IPoint3( const IPoint<T,M> &p ) { p.ConvertData<TYPE,3>(&x); }
+	template <typename T, int M> explicit IPoint3( const IPoint<T,M> &p ) { p.template ConvertData<TYPE,3>(&x); }
 	template <typename P> explicit IPoint3( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]), z((TYPE)p[2]) {}
 
 	//!@name Set & Get value methods
@@ -435,7 +435,7 @@ public:
 	template <typename T> explicit IPoint4( const IPoint3<T> &p,            TYPE _w=0 )  : x(TYPE(p.x)), y(TYPE(p.y)), z(TYPE(p.z)), z(      _w ) {}
 	template <typename T> explicit IPoint4( const IPoint2<T> &p, TYPE _z=0, TYPE _w=0 )  : x(TYPE(p.x)), y(TYPE(p.y)), z(      _z ), z(      _w ) {}
 	template <int M> explicit IPoint4( const IPoint<TYPE,M> &p ) { p.CopyData<3>(&x); }
-	template <typename T, int M> explicit IPoint4( const IPoint<T,M> &p ) { p.ConvertData<TYPE,3>(&x); }
+	template <typename T, int M> explicit IPoint4( const IPoint<T,M> &p ) { p.template ConvertData<TYPE,3>(&x); }
 	template <typename P> explicit IPoint4( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]), z((TYPE)p[2]) {}
 
 	//!@name Set & Get value methods
