@@ -44,7 +44,15 @@
 #error gl.h not included before cyGL.h
 #endif
 #ifndef GL_VERSION_2_0
-#error OpenGL 2.0 extensions are required for cyGL.h
+#error OpenGL 2.0 extensions are required for cyGL.h. You must include an OpenGL extensions header before including cyGL.h.
+#endif
+#ifndef GL_VERSION_3_0
+# define _CY_GL_VERSION_3_0_WARNING "OpenGL version 3 is required for using geometry and tessellation shaders, but the OpenGL extensions header included before cyGL.h does not include OpenGL version 3.0 definitions."
+# if _MSC_VER
+#  pragma message ("Warning: " _CY_GL_VERSION_3_0_WARNING)
+# elif   __GNUC__
+#  warning (_CY_GL_VERSION_3_0_WARNING)
+# endif
 #endif
 //-------------------------------------------------------------------------------
 #ifndef GL_GEOMETRY_SHADER
@@ -262,107 +270,134 @@ public:
 	//! The names should be separated by a space character.
 	void RegisterUniforms( const char *names, unsigned int startingIndex=0, std::ostream *outStream=&std::cout );
 
-	void SetUniform(int param, float x)                                { glUniform1f  (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, float x, float y)                       { glUniform2f  (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, float x, float y, float z)              { glUniform3f  (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, float x, float y, float z, float w)     { glUniform4f  (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int count, const float  *data)          { glUniform2fv (params[param],count,data); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int x)                                  { glUniform1i  (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int x, int y)                           { glUniform2i  (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int x, int y, int z)                    { glUniform3i  (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int x, int y, int z, int w)             { glUniform4i  (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int count, const int    *data)          { glUniform2iv (params[param],count,data); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, float x)                                { glUniform1f  (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, float x, float y)                       { glUniform2f  (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, float x, float y, float z)              { glUniform3f  (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, float x, float y, float z, float w)     { glUniform4f  (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform1(int param, int count, const float  *data)          { glUniform1fv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform2(int param, int count, const float  *data)          { glUniform2fv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform3(int param, int count, const float  *data)          { glUniform3fv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform4(int param, int count, const float  *data)          { glUniform4fv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, int x)                                  { glUniform1i  (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, int x, int y)                           { glUniform2i  (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, int x, int y, int z)                    { glUniform3i  (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, int x, int y, int z, int w)             { glUniform4i  (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform1(int param, int count, const int    *data)          { glUniform1iv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform2(int param, int count, const int    *data)          { glUniform2iv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform3(int param, int count, const int    *data)          { glUniform3iv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform4(int param, int count, const int    *data)          { glUniform4iv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 #ifdef GL_VERSION_3_0
-	void SetUniform(int param, GLuint x)                               { glUniform1ui (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, GLuint x, GLuint y)                     { glUniform2ui (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, GLuint x, GLuint y, GLuint z)           { glUniform3ui (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, GLuint x, GLuint y, GLuint z, GLuint w) { glUniform4ui (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int count, const GLuint *data)          { glUniform2uiv(params[param],count,data); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, GLuint x)                               { glUniform1ui (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, GLuint x, GLuint y)                     { glUniform2ui (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, GLuint x, GLuint y, GLuint z)           { glUniform3ui (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, GLuint x, GLuint y, GLuint z, GLuint w) { glUniform4ui (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform1(int param, int count, const GLuint *data)          { glUniform1uiv(params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform2(int param, int count, const GLuint *data)          { glUniform2uiv(params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform3(int param, int count, const GLuint *data)          { glUniform3uiv(params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform4(int param, int count, const GLuint *data)          { glUniform4uiv(params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 #endif
 #ifdef GL_VERSION_4_0
-	void SetUniform(int param, double x)                               { glUniform1d  (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, double x, double y)                     { glUniform2d  (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, double x, double y, double z)           { glUniform3d  (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, double x, double y, double z, double w) { glUniform4d  (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, int count, const double *data)          { glUniform2dv (params[param],count,data); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, double x)                               { glUniform1d  (params[param],x); }				//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, double x, double y)                     { glUniform2d  (params[param],x,y); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, double x, double y, double z)           { glUniform3d  (params[param],x,y,z); }			//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform (int param, double x, double y, double z, double w) { glUniform4d  (params[param],x,y,z,w); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform1(int param, int count, const double *data)          { glUniform1dv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform2(int param, int count, const double *data)          { glUniform2dv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform3(int param, int count, const double *data)          { glUniform3dv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform4(int param, int count, const double *data)          { glUniform4dv (params[param],count,data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 #endif
 
-	void SetUniformMatrix2  (int param, const float  *m, bool transpose=false) { glUniformMatrix2fv  (params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix3  (int param, const float  *m, bool transpose=false) { glUniformMatrix3fv  (params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix4  (int param, const float  *m, bool transpose=false) { glUniformMatrix4fv  (params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix2  (int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix2fv  (params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix3  (int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix3fv  (params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix4  (int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix4fv  (params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 #ifdef GL_VERSION_2_1
-	void SetUniformMatrix2x3(int param, const float  *m, bool transpose=false) { glUniformMatrix2x3fv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix2x4(int param, const float  *m, bool transpose=false) { glUniformMatrix2x4fv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix3x2(int param, const float  *m, bool transpose=false) { glUniformMatrix3x2fv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix3x4(int param, const float  *m, bool transpose=false) { glUniformMatrix3x4fv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix4x2(int param, const float  *m, bool transpose=false) { glUniformMatrix4x2fv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix4x3(int param, const float  *m, bool transpose=false) { glUniformMatrix4x3fv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix2x3(int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix2x3fv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix2x4(int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix2x4fv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix3x2(int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix3x2fv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix3x4(int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix3x4fv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix4x2(int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix4x2fv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix4x3(int param, const float  *m, int count=1, bool transpose=false) { glUniformMatrix4x3fv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 #endif
 #ifdef GL_VERSION_4_0
-	void SetUniformMatrix2  (int param, const double *m, bool transpose=false) { glUniformMatrix2dv  (params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix3  (int param, const double *m, bool transpose=false) { glUniformMatrix3dv  (params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix4  (int param, const double *m, bool transpose=false) { glUniformMatrix4dv  (params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix2x3(int param, const double *m, bool transpose=false) { glUniformMatrix2x3dv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix2x4(int param, const double *m, bool transpose=false) { glUniformMatrix2x4dv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix3x2(int param, const double *m, bool transpose=false) { glUniformMatrix3x2dv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix3x4(int param, const double *m, bool transpose=false) { glUniformMatrix3x4dv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix4x2(int param, const double *m, bool transpose=false) { glUniformMatrix4x2dv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniformMatrix4x3(int param, const double *m, bool transpose=false) { glUniformMatrix4x3dv(params[param],1,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix2  (int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix2dv  (params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix3  (int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix3dv  (params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix4  (int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix4dv  (params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix2x3(int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix2x3dv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix2x4(int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix2x4dv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix3x2(int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix3x2dv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix3x4(int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix3x4dv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix4x2(int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix4x2dv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniformMatrix4x3(int param, const double *m, int count=1, bool transpose=false) { glUniformMatrix4x3dv(params[param],count,transpose,m); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 #endif
-
 
 #ifdef _CY_POINT_H_INCLUDED_
-	void SetUniform(int param, const Point2<float>   &p) { glUniform2fv (params[param],2,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point3<float>   &p) { glUniform3fv (params[param],3,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point4<float>   &p) { glUniform4fv (params[param],4,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	template <int N> 
-	void SetUniform(int param, const Point<float, N> &p) { glUniform4fv (params[param],N,p.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point2<int>     &p) { glUniform2iv (params[param],2,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point3<int>     &p) { glUniform3iv (params[param],3,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point4<int>     &p) { glUniform4iv (params[param],4,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	template <int N> 
-	void SetUniform(int param, const Point<int,   N> &p) { glUniform4iv (params[param],N,p.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<float>  &p)              { glUniform2fv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<float>  &p)              { glUniform3fv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<float>  &p)              { glUniform4fv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<int>    &p)              { glUniform2iv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<int>    &p)              { glUniform3iv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<int>    &p)              { glUniform4iv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<float>  *p, int count=1) { glUniform2fv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<float>  *p, int count=1) { glUniform3fv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<float>  *p, int count=1) { glUniform4fv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<int>    *p, int count=1) { glUniform2iv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<int>    *p, int count=1) { glUniform3iv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<int>    *p, int count=1) { glUniform4iv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # ifdef GL_VERSION_3_0
-	void SetUniform(int param, const Point2<GLuint>  &p) { glUniform2uiv(params[param],2,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point3<GLuint>  &p) { glUniform3uiv(params[param],3,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point4<GLuint>  &p) { glUniform4uiv(params[param],4,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	template <int N> 
-	void SetUniform(int param, const Point<GLuint,N> &p) { glUniform4uiv(params[param],N,p.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<GLuint> &p)              { glUniform2uiv(params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<GLuint> &p)              { glUniform3uiv(params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<GLuint> &p)              { glUniform4uiv(params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<GLuint> *p, int count=1) { glUniform2uiv(params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<GLuint> *p, int count=1) { glUniform3uiv(params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<GLuint> *p, int count=1) { glUniform4uiv(params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(int param, const Point2<double>  &p) { glUniform2dv (params[param],2,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point3<double>  &p) { glUniform3dv (params[param],3,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Point4<double>  &p) { glUniform4dv (params[param],4,&p.x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	template <int N> 
-	void SetUniform(int param, const Point<double,N> &p) { glUniform4dv (params[param],N,p.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<double> &p)              { glUniform2dv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<double> &p)              { glUniform3dv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<double> &p)              { glUniform4dv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point2<double> *p, int count=1) { glUniform2dv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point3<double> *p, int count=1) { glUniform3dv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Point4<double> *p, int count=1) { glUniform4dv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # endif
 #endif
 
 #ifdef _CY_IPOINT_H_INCLUDED_
-	void SetUniform(int param, const IPoint2<int>     &p) { glUniform2iv (params[param],2,&p.x); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const IPoint3<int>     &p) { glUniform3iv (params[param],3,&p.x); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	template <int N> 
-	void SetUniform(int param, const IPoint<int,   N> &p) { glUniform4iv (params[param],N,p.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint2<int>    &p)              { glUniform2iv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint3<int>    &p)              { glUniform3iv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint4<int>    &p)              { glUniform4iv (params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint2<int>    *p, int count=1) { glUniform2iv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint3<int>    *p, int count=1) { glUniform3iv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint4<int>    *p, int count=1) { glUniform4iv (params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # ifdef GL_VERSION_3_0
-	void SetUniform(int param, const IPoint2<GLuint>  &p) { glUniform2uiv(params[param],2,&p.x); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const IPoint3<GLuint>  &p) { glUniform3uiv(params[param],3,&p.x); }		//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	template <int N> 
-	void SetUniform(int param, const IPoint<GLuint,N> &p) { glUniform4uiv(params[param],N,p.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint2<GLuint> &p)              { glUniform2uiv(params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint3<GLuint> &p)              { glUniform3uiv(params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint4<GLuint> &p)              { glUniform4uiv(params[param],1,    &p.x ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint2<GLuint> *p, int count=1) { glUniform2uiv(params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint3<GLuint> *p, int count=1) { glUniform3uiv(params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const IPoint4<GLuint> *p, int count=1) { glUniform4uiv(params[param],count,&p->x); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # endif
 #endif
 
 #ifdef _CY_MATRIX_H_INCLUDED_
-	void SetUniform(int param, const Matrix2 <float>  &m) { glUniformMatrix2fv  (params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Matrix3 <float>  &m) { glUniformMatrix3fv  (params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Matrix4 <float>  &m) { glUniformMatrix4fv  (params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix2 <float>  &m)              { glUniformMatrix2fv  (params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix3 <float>  &m)              { glUniformMatrix3fv  (params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix4 <float>  &m)              { glUniformMatrix4fv  (params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix2 <float>  *m, int count=1) { glUniformMatrix2fv  (params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix3 <float>  *m, int count=1) { glUniformMatrix3fv  (params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix4 <float>  *m, int count=1) { glUniformMatrix4fv  (params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # ifdef GL_VERSION_2_1
-	void SetUniform(int param, const Matrix34<float>  &m) { glUniformMatrix3x4fv(params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix34<float>  &m)              { glUniformMatrix3x4fv(params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix34<float>  *m, int count=1) { glUniformMatrix3x4fv(params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(int param, const Matrix2 <double> &m) { glUniformMatrix2dv  (params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Matrix3 <double> &m) { glUniformMatrix3dv  (params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Matrix4 <double> &m) { glUniformMatrix4dv  (params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
-	void SetUniform(int param, const Matrix34<double> &m) { glUniformMatrix3x4dv(params[param],1,GL_FALSE,m.data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix2 <double> &m)              { glUniformMatrix2dv  (params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix3 <double> &m)              { glUniformMatrix3dv  (params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix4 <double> &m)              { glUniformMatrix4dv  (params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix34<double> &m)              { glUniformMatrix3x4dv(params[param],1,    GL_FALSE,m.data ); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix2 <double> *m, int count=1) { glUniformMatrix2dv  (params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix3 <double> *m, int count=1) { glUniformMatrix3dv  (params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix4 <double> *m, int count=1) { glUniformMatrix4dv  (params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
+	void SetUniform(int param, const Matrix34<double> *m, int count=1) { glUniformMatrix3x4dv(params[param],count,GL_FALSE,m->data); }	//!< Sets the value of the uniform parameter with the given index. The parameter must be registered before.
 # endif
 #endif
 

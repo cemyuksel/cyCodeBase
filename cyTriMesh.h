@@ -175,6 +175,15 @@ private:
 	template <class T> void Allocate(unsigned int n, T* &t) { if (t) delete [] t; if (n>0) t = new T[n]; else t=NULL; }
 	template <class T> bool Allocate(unsigned int n, T* &t, unsigned int &nt) { if (n==nt) return false; nt=n; Allocate(n,t); return true; }
 	static Point3f Interpolate( int i, const Point3f *v, const TriFace *f, const Point3f &bc ) { return v[f[i].v[0]]*bc.x + v[f[i].v[1]]*bc.y + v[f[i].v[2]]*bc.z; }
+
+	struct MtlData
+	{
+		char mtlName[256];
+		unsigned int firstFace;
+		unsigned int faceCount;
+		MtlData() { mtlName[0]='\0'; faceCount=0; firstFace=0; }
+	};
+	struct MtlLibName { char filename[1024]; };
 };
 
 //-------------------------------------------------------------------------------
@@ -215,16 +224,6 @@ inline void TriMesh::ComputeNormals(bool clockwise)
 	}
 	for ( unsigned int i=0; i<nvn; i++ ) vn[i].Normalize();
 }
-
-struct MtlData
-{
-	char mtlName[256];
-	unsigned int firstFace;
-	unsigned int faceCount;
-	MtlData() { mtlName[0]='\0'; faceCount=0; firstFace=0; }
-};
-
-struct MtlLibName { char filename[1024]; };
 
 inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 {
