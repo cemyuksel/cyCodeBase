@@ -342,7 +342,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 			int type = 0;
 			unsigned int index;
 			TriFace face, textureFace, normalFace;
-			unsigned int nFacesBefore = _f.size();
+			unsigned int nFacesBefore = (unsigned int)_f.size();
 			for ( int i=2; i<rb; i++ ) {
 				if ( buffer[i] == ' ' ) inspace = true;
 				else {
@@ -391,13 +391,13 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 			if ( hasTextures ) _ft.push_back(textureFace);
 			if ( hasNormals  ) _fn.push_back(normalFace);
 			faceMtlIndex.push_back(currentMtlIndex);
-			if ( currentMtlIndex>=0 ) mtlList.mtlData[currentMtlIndex].faceCount += _f.size() - nFacesBefore;
+			if ( currentMtlIndex>=0 ) mtlList.mtlData[currentMtlIndex].faceCount += (unsigned int)_f.size() - nFacesBefore;
 		}
 		else if ( loadMtl ) {
 			if ( buffer.IsCommand("usemtl") ) {
 				char mtlName[256];
 				buffer.Copy(mtlName,256,7);
-				currentMtlIndex = mtlList.CreateMtl(mtlName, _f.size());
+				currentMtlIndex = mtlList.CreateMtl(mtlName, (unsigned int)_f.size());
 			}
 			if ( buffer.IsCommand("mtllib") ) {
 				MtlLibName libName;
@@ -412,11 +412,11 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 
 
 	if ( _f.size() == 0 ) return true; // No faces found
-	SetNumVertex(_v.size());
-	SetNumFaces(_f.size());
-	SetNumTexVerts(_vt.size());
-	SetNumNormals(_vn.size());
-	if ( loadMtl ) SetNumMtls(mtlList.mtlData.size());
+	SetNumVertex((unsigned int)_v.size());
+	SetNumFaces((unsigned int)_f.size());
+	SetNumTexVerts((unsigned int)_vt.size());
+	SetNumNormals((unsigned int)_vn.size());
+	if ( loadMtl ) SetNumMtls((unsigned int)mtlList.mtlData.size());
 
 	// Copy data
 	memcpy(v, _v.data(), sizeof(Point3f)*_v.size());
@@ -460,7 +460,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 		const char* pathEnd = strrchr(filename,'\\');
 		if ( !pathEnd ) pathEnd = strrchr(filename,'/');
 		if ( pathEnd ) {
-			int n = pathEnd-filename + 1;
+			int n = int(pathEnd-filename) + 1;
 			mtlFullFilename = new char[n+1024];
 			strncpy(mtlFullFilename,filename,n);
 			mtlFilename = &mtlFullFilename[n];
