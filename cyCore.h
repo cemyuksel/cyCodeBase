@@ -74,18 +74,20 @@ template<> inline float cyAbs <float>( float a ) { return ::fabsf(a); }
 template<> inline float cySqrt<float>( float a ) { return ::sqrtf(a); }
 template<> inline float cyPow <float>( float a, float e ) { return ::powf(a,e); }
 
-template<> inline double cyAbs ( double a ) { return ::fabs(a); }
+template<> inline double cyAbs(double a) { return ::fabs(a); }
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Operations
 
 #define CY_MEMCOPY(type,dest,source,n) \
-	if ( !std::is_trivially_copyable<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
-		for ( int i=0; i<(n); i++ ) (dest)[i] = (source)[i]; \
-	} else { \
-		memcpy( dest, source, (n)*sizeof(type) ); \
+	{ \
+		using namespace std; \
+		if ( !is_trivially_copyable<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
+			for ( int i=0; i<(n); i++ ) (dest)[i] = (source)[i]; \
+		} else { \
+			memcpy( dest, source, (n)*sizeof(type) ); \
+		} \
 	}
-
 #define CY_MEMCONVERT(type,dest,source,n) { for ( int i=0; i<(n); i++ ) (dest)[i] = type((source)[i]); }
 
 #define CY_MEMCLEAR(type,dest,n) memset(dest,0,(n)*sizeof(type))
