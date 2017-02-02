@@ -187,6 +187,7 @@ protected:
 	//! Placing the break point in this function allows easily identifying the
 	//! OpenGL call that triggered the debug message (using the call stack).
 	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam );
+	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam );
 };
 
 //! Registers the OpenGL callback by ignoring notifications.
@@ -589,6 +590,16 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
 	// You can set a breakpoint at the following line. Your debugger will stop the execution,
 	// and the call stack will show the OpenGL call causing this callback.
 	*outStream << std::endl;
+}
+
+inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
+                                                    GLenum type,
+                                                    GLuint id,
+                                                    GLenum severity,
+                                                    GLsizei length,
+                                                    const GLchar* message,
+                                                    void* userParam ) {
+    GLDebugCallback::Callback(source, type, id, severity, length, message,(const void*) userParam);
 }
 
 //-------------------------------------------------------------------------------
