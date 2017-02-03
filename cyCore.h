@@ -150,7 +150,7 @@ template<> inline float cyAbs <float>( float a ) { return ::fabsf(a); }
 template<> inline float cySqrt<float>( float a ) { return ::sqrtf(a); }
 template<> inline float cyPow <float>( float a, float e ) { return ::powf(a,e); }
 
-template<> inline double cyAbs(double a) { return ::fabs(a); }
+template<> inline double cyAbs ( double a ) { return ::fabs(a); }
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Operations
@@ -179,3 +179,4 @@ template<> inline double cyAbs(double a) { return ::fabs(a); }
 //-------------------------------------------------------------------------------
 
 #endif
+

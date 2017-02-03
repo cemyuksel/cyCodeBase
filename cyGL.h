@@ -186,10 +186,9 @@ protected:
 	//! See the OpenGL documentation for glDebugMessageCallback for details.
 	//! Placing the break point in this function allows easily identifying the
 	//! OpenGL call that triggered the debug message (using the call stack).
-	static void _CY_APIENTRY Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-	static void _CY_APIENTRY Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam) { Callback(source, type, id, severity, length, message, (const void*)userParam); }
+	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam );
+	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam ) { Callback(source,type,id,severity,length,message,(const void*)userParam); }
 };
-
 
 //! Registers the OpenGL callback by ignoring notifications.
 //! After this macro is called, the debug messages get printed to the default output stream.
