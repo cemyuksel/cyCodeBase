@@ -68,7 +68,7 @@ namespace cy {
 class HairFile
 {
 public:
-	HairFile() : segments(NULL), points(NULL), thickness(NULL), transparency(NULL), colors(NULL) { Initialize(); }
+	HairFile() : segments(nullptr), points(nullptr), thickness(nullptr), transparency(nullptr), colors(nullptr) { Initialize(); }
 	~HairFile() { Initialize(); }
 
 	//! Hair file header
@@ -174,15 +174,15 @@ public:
 	{
 		header.arrays = array_types;
 		if ( header.arrays & CY_HAIR_FILE_SEGMENTS_BIT && !segments ) segments = new unsigned short[header.hair_count];
-		if ( ! (header.arrays & CY_HAIR_FILE_SEGMENTS_BIT) && segments ) { delete [] segments; segments=NULL; }
+		if ( ! (header.arrays & CY_HAIR_FILE_SEGMENTS_BIT) && segments ) { delete [] segments; segments=nullptr; }
 		if ( header.arrays & CY_HAIR_FILE_POINTS_BIT && !points ) points = new float[header.point_count*3];
-		if ( ! (header.arrays & CY_HAIR_FILE_POINTS_BIT) && points ) { delete [] points; points=NULL; }
+		if ( ! (header.arrays & CY_HAIR_FILE_POINTS_BIT) && points ) { delete [] points; points=nullptr; }
 		if ( header.arrays & CY_HAIR_FILE_THICKNESS_BIT && !thickness ) thickness = new float[header.point_count];
-		if ( ! (header.arrays & CY_HAIR_FILE_THICKNESS_BIT) && thickness ) { delete [] thickness; thickness=NULL; }
+		if ( ! (header.arrays & CY_HAIR_FILE_THICKNESS_BIT) && thickness ) { delete [] thickness; thickness=nullptr; }
 		if ( header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT && !transparency ) transparency = new float[header.point_count];
-		if ( ! (header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT) && transparency ) { delete [] transparency; transparency=NULL; }
+		if ( ! (header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT) && transparency ) { delete [] transparency; transparency=nullptr; }
 		if ( header.arrays & CY_HAIR_FILE_COLORS_BIT && !colors ) colors = new float[header.point_count*3];
-		if ( ! (header.arrays & CY_HAIR_FILE_COLORS_BIT) && colors ) { delete [] colors; colors=NULL; }
+		if ( ! (header.arrays & CY_HAIR_FILE_COLORS_BIT) && colors ) { delete [] colors; colors=nullptr; }
 	}
 
 	//! Sets default number of segments for all hair strands, which is used if segments array does not exist.
@@ -208,7 +208,7 @@ public:
 
 		FILE *fp;
 		fp = fopen( filename, "rb" );
-		if ( fp == NULL ) return CY_HAIR_FILE_ERROR_CANT_OPEN_FILE;
+		if ( fp == nullptr ) return CY_HAIR_FILE_ERROR_CANT_OPEN_FILE;
 
 		// read the header
 		size_t headread = fread( &header, sizeof(Header), 1, fp );
@@ -267,7 +267,7 @@ public:
 	{
 		FILE *fp;
 		fp = fopen( filename, "wb" );
-		if ( fp == NULL ) return -1;
+		if ( fp == nullptr ) return -1;
 
 		// Write header
 		fwrite( &header, sizeof(Header), 1, fp );
@@ -294,7 +294,7 @@ public:
 	//! Returns point count, returns zero if fails.
 	int FillDirectionArray( float *dir )
 	{
-		if ( dir==NULL || header.point_count<=0 || points==NULL ) return 0;
+		if ( dir==nullptr || header.point_count<=0 || points==nullptr ) return 0;
 
 		int p = 0;	// point index
 		for ( unsigned int i=0; i<header.hair_count; i++ ) {
