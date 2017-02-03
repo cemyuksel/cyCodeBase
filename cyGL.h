@@ -163,7 +163,7 @@ public:
 	//! OpenGL may not call the callback function.
 	//! If there is a previously registered callback function,
 	//! calling this function overwrites the previous callback registration.
-	void Register(std::ostream *outStream=&std::cout) { glEnable(GL_DEBUG_OUTPUT); glDebugMessageCallback(Callback,outStream); }
+	void Register(std::ostream *outStream=&std::cout) { glEnable(GL_DEBUG_OUTPUT); glDebugMessageCallback((GLDEBUGPROC)Callback,outStream); }
 
 	//! Unregisters the OpenGL debug callback function.
 	void Unregister() { glDisable(GL_DEBUG_OUTPUT); glDebugMessageCallback(0,0); }
@@ -187,7 +187,6 @@ protected:
 	//! Placing the break point in this function allows easily identifying the
 	//! OpenGL call that triggered the debug message (using the call stack).
 	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam );
-	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam ) { Callback(source,type,id,severity,length,message,(const void*)userParam); }
 };
 
 //! Registers the OpenGL callback by ignoring notifications.

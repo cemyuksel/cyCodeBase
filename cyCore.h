@@ -76,13 +76,14 @@
 
 // nullptr
 #if (defined(_MSC_VER) && _MSC_VER < 1600) || (defined(_CY_GCC_VER) && _CY_GCC_VER < 40600) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 209000) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1210)
-const class {
+class _cy_nullptr_t {
 public:
   template<class T> operator T*() const { return 0; }
   template<class C, class T> operator T C::*() const { return 0; }
 private:
   void operator & () const {}
-} nullptr = {};
+};
+static _cy_nullptr_t nullptr;
 #endif
 
 // template aliases
@@ -94,7 +95,7 @@ private:
 #endif
 
 // std::is_trivially_copyable
-#if (defined(_MSC_VER) && _MSC_VER >= 1700) || (defined(_CY_GCC_VER) && _CY_GCC_VER >= 40600) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 304000)
+#if (defined(_MSC_VER) && _MSC_VER >= 1700) || (defined(_CY_GCC_VER) && _CY_GCC_VER >= 50000) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 304000)
 #define _cy_has_std_is_trivially_copyable 1
 #endif
 
