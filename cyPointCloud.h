@@ -281,18 +281,10 @@ private:
 		SIZE_TYPE Index() const { return indexAndSplitPlane >> NBits(); }
 		const PointType& Pos() const { return p; }
 	private:
-#ifndef __cpp_constexpr
+#if defined(__cpp_constexpr) || (defined(_MSC_VER) && _MSC_VER >= 1900)
 		constexpr int NBits(uint32_t v=DIMENSIONS) const { return v < 2 ? v : 1+NBits(v>>1); }
 #else
-		constexpr int NBits() const
-		{
-			int v = DIMENSIONS-1;
-			v |= v >> 1;
-			v |= v >> 2;
-			v |= v >> 4;
-			v++;
-			return v;
-		}
+		int NBits() const { int v = DIMENSIONS-1, r, s; r=(v>0xF)<<2; v>>=r; s=(v>0x3)<<1; v>>=s; r|=s|(v>>1); return r+1; }	// Supports up to 256 dimensions
 #endif
 	};
 
