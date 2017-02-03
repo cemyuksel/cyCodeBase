@@ -109,7 +109,7 @@ inline void GLPrintVersion(std::ostream *outStream=&std::cout)
 //-------------------------------------------------------------------------------
 
 //! Checks all previously triggered OpenGL errors and prints them to the given output stream.
-static void GLCheckError(const char *sourcefile, int line, const char *call=NULL, std::ostream *outStream=&std::cout)
+static void GLCheckError(const char *sourcefile, int line, const char *call=nullptr, std::ostream *outStream=&std::cout)
 {
 	GLenum error;
     while ( (error = glGetError()) != GL_NO_ERROR) {
@@ -186,9 +186,10 @@ protected:
 	//! See the OpenGL documentation for glDebugMessageCallback for details.
 	//! Placing the break point in this function allows easily identifying the
 	//! OpenGL call that triggered the debug message (using the call stack).
-	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam );
-	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam );
+	static void _CY_APIENTRY Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+	static void _CY_APIENTRY Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam) { Callback(source, type, id, severity, length, message, (const void*)userParam); }
 };
+
 
 //! Registers the OpenGL callback by ignoring notifications.
 //! After this macro is called, the debug messages get printed to the default output stream.
@@ -225,7 +226,7 @@ public:
 
 	//! Compiles the shader using the given file.
 	//! If the shader was previously compiled, it is deleted.
-	bool CompileFile( const char *filename, GLenum shaderType, std::ostream *outStream=&std::cout ) { return CompileFile(filename,shaderType,0,NULL,outStream); }
+	bool CompileFile( const char *filename, GLenum shaderType, std::ostream *outStream=&std::cout ) { return CompileFile(filename,shaderType,0,nullptr,outStream); }
 
 	//! Compiles the shader using the given file.
 	//! If the shader was previously compiled, it is deleted.
@@ -239,7 +240,7 @@ public:
 
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
-	bool Compile( const char *shaderSourceCode, GLenum shaderType, std::ostream *outStream=&std::cout ) { return Compile(shaderSourceCode,shaderType,0,NULL,outStream); }
+	bool Compile( const char *shaderSourceCode, GLenum shaderType, std::ostream *outStream=&std::cout ) { return Compile(shaderSourceCode,shaderType,0,nullptr,outStream); }
 
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
@@ -301,9 +302,9 @@ public:
 	//! Writes any error or warning messages to the given output stream.
 	bool Build( const GLSLShader *vertexShader, 
                 const GLSLShader *fragmentShader,
-	            const GLSLShader *geometryShader=NULL,
-	            const GLSLShader *tessControlShader=NULL,
-	            const GLSLShader *tessEvaluationShader=NULL,
+	            const GLSLShader *geometryShader=nullptr,
+	            const GLSLShader *tessControlShader=nullptr,
+	            const GLSLShader *tessEvaluationShader=nullptr,
 	            std::ostream *outStream=&std::cout );
 
 	//! Creates a program, compiles the given shaders, and links them.
@@ -311,11 +312,11 @@ public:
 	//! Writes any error or warning messages to the given output stream.
 	bool BuildFiles( const char *vertexShaderFile, 
                      const char *fragmentShaderFile,
-	                 const char *geometryShaderFile=NULL,
-	                 const char *tessControlShaderFile=NULL,
-	                 const char *tessEvaluationShaderFile=NULL,
+	                 const char *geometryShaderFile=nullptr,
+	                 const char *tessControlShaderFile=nullptr,
+	                 const char *tessEvaluationShaderFile=nullptr,
 	                 std::ostream *outStream=&std::cout )
-	{ return BuildFiles(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,0,NULL,outStream); }
+	{ return BuildFiles(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,0,nullptr,outStream); }
 
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
@@ -348,11 +349,11 @@ public:
 	//! Writes any error or warning messages to the given output stream.
 	bool BuildSources( const char *vertexShaderSourceCode, 
                        const char *fragmentShaderSourceCode,
-	                   const char *geometryShaderSourceCode=NULL,
-	                   const char *tessControlShaderSourceCode=NULL,
-	                   const char *tessEvaluationShaderSourceCode=NULL,
+	                   const char *geometryShaderSourceCode=nullptr,
+	                   const char *tessControlShaderSourceCode=nullptr,
+	                   const char *tessEvaluationShaderSourceCode=nullptr,
 	                   std::ostream *outStream=&std::cout )
-	{ return BuildSources(vertexShaderSourceCode,fragmentShaderSourceCode,geometryShaderSourceCode,tessControlShaderSourceCode,tessEvaluationShaderSourceCode,0,NULL,outStream); }
+	{ return BuildSources(vertexShaderSourceCode,fragmentShaderSourceCode,geometryShaderSourceCode,tessControlShaderSourceCode,tessEvaluationShaderSourceCode,0,nullptr,outStream); }
 
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
@@ -592,16 +593,6 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
 	*outStream << std::endl;
 }
 
-inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
-                                                    GLenum type,
-                                                    GLuint id,
-                                                    GLenum severity,
-                                                    GLsizei length,
-                                                    const GLchar* message,
-                                                    void* userParam ) {
-    GLDebugCallback::Callback(source, type, id, severity, length, message,(const void*) userParam);
-}
-
 //-------------------------------------------------------------------------------
 // GLSLShader Implementation
 //-------------------------------------------------------------------------------
@@ -641,9 +632,9 @@ inline bool GLSLShader::Compile( const char *shaderSourceCode, GLenum shaderType
 		std::vector<const char*> sources(prependSourceCount+1);
 		for ( int i=0; i<prependSourceCount; i++ ) sources[i] = prependSources[i];
 		sources[prependSourceCount] = shaderSourceCode;
-		glShaderSource(shaderID, prependSourceCount+1, sources.data(), NULL);
+		glShaderSource(shaderID, prependSourceCount+1, sources.data(), nullptr);
 	} else {
-		glShaderSource(shaderID, 1, &shaderSourceCode, NULL);
+		glShaderSource(shaderID, 1, &shaderSourceCode, nullptr);
 	}
 	glCompileShader(shaderID);
 
@@ -654,7 +645,7 @@ inline bool GLSLShader::Compile( const char *shaderSourceCode, GLenum shaderType
 	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if ( infoLogLength > 1 ) {
 		std::vector<char> compilerMessage(infoLogLength);
-		glGetShaderInfoLog( shaderID, infoLogLength, NULL, compilerMessage.data() );
+		glGetShaderInfoLog( shaderID, infoLogLength, nullptr, compilerMessage.data() );
 		if ( outStream ) {
 			if ( !result ) *outStream << "ERROR: Cannot compile shader." << std::endl;
 			*outStream << "OpenGL Version: ";
@@ -703,7 +694,7 @@ inline bool GLSLProgram::Link( std::ostream *outStream )
 	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if ( infoLogLength > 1 ) {
 		std::vector<char> compilerMessage(infoLogLength);
-		glGetProgramInfoLog( programID, infoLogLength, NULL, compilerMessage.data() );
+		glGetProgramInfoLog( programID, infoLogLength, nullptr, compilerMessage.data() );
 		if ( outStream ) *outStream << "ERROR: " << compilerMessage.data() << std::endl;
 	}
 

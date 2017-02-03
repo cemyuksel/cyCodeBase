@@ -115,7 +115,7 @@ protected:
 public:
 
 	//!@name Constructor and destructor
-	TriMesh() : v(NULL), f(NULL), vn(NULL), fn(NULL), vt(NULL), ft(NULL), m(NULL), mcfc(NULL)
+	TriMesh() : v(nullptr), f(nullptr), vn(nullptr), fn(nullptr), vt(nullptr), ft(nullptr), m(nullptr), mcfc(nullptr)
 				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(0,0,0), boundMax(0,0,0) {}
 	virtual ~TriMesh() { Clear(); }
 
@@ -172,7 +172,7 @@ public:
 	bool SaveToFileObj( const char *filename );
 
 private:
-	template <class T> void Allocate(unsigned int n, T* &t) { if (t) delete [] t; if (n>0) t = new T[n]; else t=NULL; }
+	template <class T> void Allocate(unsigned int n, T* &t) { if (t) delete [] t; if (n>0) t = new T[n]; else t=nullptr; }
 	template <class T> bool Allocate(unsigned int n, T* &t, unsigned int &nt) { if (n==nt) return false; nt=n; Allocate(n,t); return true; }
 	static Point3f Interpolate( int i, const Point3f *v, const TriFace *f, const Point3f &bc ) { return v[f[i].v[0]]*bc.x + v[f[i].v[1]]*bc.y + v[f[i].v[2]]*bc.z; }
 
@@ -305,7 +305,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 		}
 	};
 	MtlList mtlList;
-	MtlData *currentMtlData = NULL;
+	MtlData *currentMtlData = nullptr;
 	std::vector<Point3f>	_v;		// vertices
 	std::vector<TriFace>	_f;		// faces
 	std::vector<Point3f>	_vn;	// vertex normal
@@ -455,8 +455,8 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 	// Load the .mtl files
 	if ( loadMtl ) {
 		// get the path from filename
-		char *mtlFullFilename = NULL;
-		char *mtlFilename = NULL;
+		char *mtlFullFilename = nullptr;
+		char *mtlFilename = nullptr;
 		const char* pathEnd = strrchr(filename,'\\');
 		if ( !pathEnd ) pathEnd = strrchr(filename,'/');
 		if ( pathEnd ) {

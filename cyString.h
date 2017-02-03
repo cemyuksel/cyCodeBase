@@ -71,30 +71,30 @@ public:
 	//!@name Constructors and Destructor
 
 	//! Default constructor
-	String() : string(NULL), length(0) { EmptyString(); }
+	String() : string(nullptr), length(0) { EmptyString(); }
 
 	//! Copy constructor
-	String( const String &src ) : string(NULL), length(0) { Set(src); }
+	String( const String &src ) : string(nullptr), length(0) { Set(src); }
 
 	//! Sets the string using the given array.
-	String( const char *src ) : string(NULL), length(0) { Set(src); }
+	String( const char *src ) : string(nullptr), length(0) { Set(src); }
 
 	//! Sets the string using the given number.
-	String( char src ) : string(NULL), length(0) { Set(src); }
-	String( int src ) : string(NULL), length(0) { Set(src); }
-	String( long src ) : string(NULL), length(0) { Set(src); }
-	String( float src ) : string(NULL), length(0) { Set(src); }
-	String( double src ) : string(NULL), length(0) { Set(src); }
+	String( char   src ) : string(nullptr), length(0) { Set(src); }
+	String( int    src ) : string(nullptr), length(0) { Set(src); }
+	String( long   src ) : string(nullptr), length(0) { Set(src); }
+	String( float  src ) : string(nullptr), length(0) { Set(src); }
+	String( double src ) : string(nullptr), length(0) { Set(src); }
 
 	//! Sets the string using the first 'count' characters of the given array.
-	String( const char *src, unsigned int count ) : string(NULL), length(0) { Set(src,count); }
+	String( const char *src, unsigned int count ) : string(nullptr), length(0) { Set(src,count); }
 
 	//! Sets the string as the given double number 'src' using given number of digits and precision.
-	String( double src, int digits, int precisition ) : string(NULL), length(0) { Set(src,digits,precisition); }
+	String( double src, int digits, int precisition ) : string(nullptr), length(0) { Set(src,digits,precisition); }
 
 	//! Sets the string using the given format and predicted string size.
 	//! The predicted size should be greater than or equal to the final size.
-	String( int size, const char *format, ... ) : string(NULL), length(0)
+	String( int size, const char *format, ... ) : string(nullptr), length(0)
 	{
 		va_list args;
 		va_start(args,format);
@@ -309,11 +309,11 @@ public:
 	{
 		int n = 0;
 		char *str = strchr( string, c );
-		while ( str != NULL ) {
+		while ( str != nullptr ) {
 			n++;
 			int count;
 			char *str2 = strchr( ++str, c );
-			if ( str2 != NULL ) count = int(str2 - str);
+			if ( str2 != nullptr ) count = int(str2 - str);
 			else count = int(string - str) + length + 1;
 			memmove( str-n, str, count );
 			str = str2;
@@ -328,11 +328,11 @@ public:
 	{
 		int n = 0;
 		char *str = strpbrk( string, set.string );
-		while ( str != NULL ) {
+		while ( str != nullptr ) {
 			n++;
 			int count;
 			char *str2 = strpbrk( ++str, set.string );
-			if ( str2 != NULL ) count = int(str2 - str);
+			if ( str2 != nullptr ) count = int(str2 - str);
 			else count = int(string - str) + length + 1;
 			memmove( str-n, str, count );
 			str = str2;
@@ -383,11 +383,11 @@ public:
 	int IsEmpty() const { return (length==0); }
 
 	//! Returns a pointer to the last character before the first null character.
-	//! If null character is not found, or the string is empty returns NULL pointer.
+	//! If null character is not found, or the string is empty returns nullptr pointer.
 	char* LastChar() const
 	{
 		char * lc = strchr(string,'\0') - 1;
-		if ( lc < string ) return NULL;
+		if ( lc < string ) return nullptr;
 		else return lc;
 	}
 
@@ -437,7 +437,7 @@ public:
 	int GetPosition( char c ) const
 	{
 		char *cp = strchr( string, c );
-		if ( cp != NULL ) return int(cp - string);
+		if ( cp != nullptr ) return int(cp - string);
 		else return -1;
 	}
 
@@ -446,7 +446,7 @@ public:
 	int GetPosition( const String &str ) const
 	{
 		char *sub = strstr( string, str.GetString() );
-		if ( sub != NULL ) return int(sub - string);
+		if ( sub != nullptr ) return int(sub - string);
 		else return -1;
 	}
 
@@ -455,7 +455,7 @@ public:
 	int GetLastPosition( char c ) const
 	{
 		char *cp = strrchr( string, c );
-		if ( cp != NULL ) return int(cp - string);
+		if ( cp != nullptr ) return int(cp - string);
 		else return -1;
 	}
 
@@ -478,7 +478,7 @@ public:
 	{
 		if ( start > length ) return -1;
 		char *cp = strchr( string+start, c );
-		if ( cp != NULL ) return int(cp - string);
+		if ( cp != nullptr ) return int(cp - string);
 		else return -1;
 	}
 
@@ -488,7 +488,7 @@ public:
 	{
 		if ( start > length ) return -1;
 		char *sub = strstr( string+start, str.GetString() );
-		if ( sub != NULL ) return int(sub - string);
+		if ( sub != nullptr ) return int(sub - string);
 		else return -1;
 	}
 
@@ -503,7 +503,7 @@ public:
 	{
 		int n = 0;
 		char *str = strchr( string, c );
-		while ( str != NULL ) {
+		while ( str != nullptr ) {
 			n++;
 			str = strchr( str+1, c );
 		}
@@ -522,7 +522,7 @@ public:
 		char *str = string + start;
 
 		str = strchr( str, c );
-		while ( str != NULL &&  str <= (string + end) ) {
+		while ( str != nullptr &&  str <= (string + end) ) {
 			n++;
 			str = strchr( str+1, c );
 		}
@@ -844,7 +844,7 @@ public:
 	void Shrink()
 	{
 		char *end = strchr(string,'\0');
-		if ( end != NULL ) {
+		if ( end != nullptr ) {
 			int count = int(end - string);
 			if ( count < length ) SubString(0,count);
 		}
@@ -955,7 +955,7 @@ public:
 	int LoadFromFile( const String &filename )
 	{
 		FILE *fp = fopen( filename.GetString(), "r" );
-		if ( fp != NULL ) {
+		if ( fp != nullptr ) {
 			int seek = fseek( fp, 0, SEEK_END );
 			if ( seek == 0 ) {
 				int count = ftell(fp);
@@ -979,7 +979,7 @@ public:
 	int SaveToFile( const String &filename ) const
 	{
 		FILE *fp = fopen( filename.GetString(), "w" );
-		if ( fp != NULL ) {
+		if ( fp != nullptr ) {
 			int count = SaveToStream( fp );
 			fclose ( fp );
 			return count;

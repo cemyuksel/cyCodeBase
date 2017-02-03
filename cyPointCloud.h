@@ -61,14 +61,14 @@ template <typename PointType, typename FType, uint32_t DIMENSIONS, typename SIZE
 class PointCloud
 {
 public:
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Constructors and Destructor
 
 	PointCloud() : points(nullptr), pointCount(0) {}
 	PointCloud( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices=nullptr ) : points(nullptr), pointCount(0) { Build(numPts,pts,customIndices); }
 	~PointCloud() { delete [] points; }
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@ Initialization
 
 	//! Builds a k-d tree for the given points.
@@ -85,7 +85,7 @@ public:
 		delete [] order;
 	}
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@ General search methods
 
 	//! Returns all points to the given position within the given radius.
@@ -174,7 +174,7 @@ public:
 		return GetPoints( position, std::numeric_limits<FType>::max(), maxCount, closestPoints );
 	}
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Closest point methods
 
 	//! Returns the closest point to the given position within the given radius.
@@ -263,11 +263,11 @@ public:
 		return GetClosest( position, closestIndex, closestPosition, closestDistanceSquared );
 	}
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 
 private:
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Internal Structures and Methods
 
 	class PointData
@@ -281,7 +281,19 @@ private:
 		SIZE_TYPE Index() const { return indexAndSplitPlane >> NBits(); }
 		const PointType& Pos() const { return p; }
 	private:
+#ifndef __cpp_constexpr
 		constexpr int NBits(uint32_t v=DIMENSIONS) const { return v < 2 ? v : 1+NBits(v>>1); }
+#else
+		constexpr int NBits() const
+		{
+			int v = DIMENSIONS-1;
+			v |= v >> 1;
+			v |= v >> 2;
+			v |= v >> 4;
+			v++;
+			return v;
+		}
+#endif
 	};
 
 	PointData *points;		// Keeps the points as a k-d tree.
@@ -348,15 +360,15 @@ private:
 		return axis;
 	}
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 };
 
 //-------------------------------------------------------------------------------
 
 #ifdef _CY_POINT_H_INCLUDED_
-template <typename TYPE> using PointCloud2 = PointCloud<Point2<TYPE>,TYPE,2>;	//!< A 2D point cloud using a k-d tree
-template <typename TYPE> using PointCloud3 = PointCloud<Point2<TYPE>,TYPE,3>;	//!< A 3D point cloud using a k-d tree
-template <typename TYPE> using PointCloud4 = PointCloud<Point2<TYPE>,TYPE,4>;	//!< A 4D point cloud using a k-d tree
+template <typename TYPE> _CY_TEMPLATE_ALIAS( PointCloud2, (PointCloud<Point2<TYPE>,TYPE,2>) );	//!< A 2D point cloud using a k-d tree
+template <typename TYPE> _CY_TEMPLATE_ALIAS( PointCloud3, (PointCloud<Point3<TYPE>,TYPE,3>) );	//!< A 3D point cloud using a k-d tree
+template <typename TYPE> _CY_TEMPLATE_ALIAS( PointCloud4, (PointCloud<Point4<TYPE>,TYPE,4>) );	//!< A 4D point cloud using a k-d tree
 
 typedef PointCloud<Point2f,float,2>  PointCloud2f;	//!< A 2D point cloud using a k-d tree with single precision (float)
 typedef PointCloud<Point3f,float,3>  PointCloud3f;	//!< A 3D point cloud using a k-d tree with single precision (float)
@@ -382,13 +394,13 @@ typedef PointCloud<Point2f,uint64_t,2> PointCloud2ul;	//!< A 2D point cloud usin
 typedef PointCloud<Point3f,uint64_t,3> PointCloud3ul;	//!< A 3D point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
 typedef PointCloud<Point4f,uint64_t,4> PointCloud4ul;	//!< A 4D point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
 
-template <typename TYPE, uint32_t DIMENSIONS> using PointCloudN = PointCloud<Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree
-template <uint32_t DIMENSIONS> using PointCloudNf  = PointCloudN<float,   DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with single precision (float)
-template <uint32_t DIMENSIONS> using PointCloudNd  = PointCloudN<double,  DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with double precision (double)
-template <uint32_t DIMENSIONS> using PointCloudNi  = PointCloudN<int32_t, DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 32-bit signed integer (int32_t)
-template <uint32_t DIMENSIONS> using PointCloudNui = PointCloudN<uint32_t,DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 32-bit unsigned integer (uint32_t)
-template <uint64_t DIMENSIONS> using PointCloudNl  = PointCloudN<int64_t, DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 64-bit signed integer (int64_t)
-template <uint64_t DIMENSIONS> using PointCloudNul = PointCloudN<uint64_t,DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
+template <typename TYPE, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudN, (PointCloud<Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNf , (PointCloudN<float,   DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with single precision (float)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNd , (PointCloudN<double,  DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with double precision (double)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNi , (PointCloudN<int32_t, DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 32-bit signed integer (int32_t)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNui, (PointCloudN<uint32_t,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 32-bit unsigned integer (uint32_t)
+template <uint64_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNl , (PointCloudN<int64_t, DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 64-bit signed integer (int64_t)
+template <uint64_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNul, (PointCloudN<uint64_t,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
 #endif
 
 //-------------------------------------------------------------------------------
@@ -396,9 +408,9 @@ template <uint64_t DIMENSIONS> using PointCloudNul = PointCloudN<uint64_t,DIMENS
 //-------------------------------------------------------------------------------
 
 #ifdef _CY_POINT_H_INCLUDED_
-template <typename TYPE> using cyPointCloud2 = cy::PointCloud<cy::Point2<TYPE>,TYPE,2>;	//!< A 2D point cloud using a k-d tree
-template <typename TYPE> using cyPointCloud3 = cy::PointCloud<cy::Point2<TYPE>,TYPE,3>;	//!< A 3D point cloud using a k-d tree
-template <typename TYPE> using cyPointCloud4 = cy::PointCloud<cy::Point2<TYPE>,TYPE,4>;	//!< A 4D point cloud using a k-d tree
+template <typename TYPE> _CY_TEMPLATE_ALIAS( cyPointCloud2, (cy::PointCloud<cy::Point2<TYPE>,TYPE,2>) );	//!< A 2D point cloud using a k-d tree
+template <typename TYPE> _CY_TEMPLATE_ALIAS( cyPointCloud3, (cy::PointCloud<cy::Point3<TYPE>,TYPE,3>) );	//!< A 3D point cloud using a k-d tree
+template <typename TYPE> _CY_TEMPLATE_ALIAS( cyPointCloud4, (cy::PointCloud<cy::Point4<TYPE>,TYPE,4>) );	//!< A 4D point cloud using a k-d tree
 
 typedef cy::PointCloud<cy::Point2f,float,2>  cyPointCloud2f;	//!< A 2D point cloud using a k-d tree with single precision (float)
 typedef cy::PointCloud<cy::Point3f,float,3>  cyPointCloud3f;	//!< A 3D point cloud using a k-d tree with single precision (float)
@@ -424,13 +436,13 @@ typedef cy::PointCloud<cy::Point2f,uint64_t,2> cyPointCloud2ul;	//!< A 2D point 
 typedef cy::PointCloud<cy::Point3f,uint64_t,3> cyPointCloud3ul;	//!< A 3D point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
 typedef cy::PointCloud<cy::Point4f,uint64_t,4> cyPointCloud4ul;	//!< A 4D point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
 
-template <typename TYPE, uint32_t DIMENSIONS> using cyPointCloudN = cy::PointCloud<cy::Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree
-template <uint32_t DIMENSIONS> using cyPointCloudNf  = cyPointCloudN<float,   DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with single precision (float)
-template <uint32_t DIMENSIONS> using cyPointCloudNd  = cyPointCloudN<double,  DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with double precision (double)
-template <uint32_t DIMENSIONS> using cyPointCloudNi  = cyPointCloudN<int32_t, DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 32-bit signed integer (int32_t)
-template <uint32_t DIMENSIONS> using cyPointCloudNui = cyPointCloudN<uint32_t,DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 32-bit unsigned integer (uint32_t)
-template <uint64_t DIMENSIONS> using cyPointCloudNl  = cyPointCloudN<int64_t, DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 64-bit signed integer (int64_t)
-template <uint64_t DIMENSIONS> using cyPointCloudNul = cyPointCloudN<uint64_t,DIMENSIONS>;	//!< A multi-dimensional point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
+template <typename TYPE, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudN, (cy::PointCloud<cy::Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNf , (cyPointCloudN<float,   DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with single precision (float)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNd , (cyPointCloudN<double,  DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with double precision (double)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNi , (cyPointCloudN<int32_t, DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 32-bit signed integer (int32_t)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNui, (cyPointCloudN<uint32_t,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 32-bit unsigned integer (uint32_t)
+template <uint64_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNl , (cyPointCloudN<int64_t, DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 64-bit signed integer (int64_t)
+template <uint64_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNul, (cyPointCloudN<uint64_t,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with 64-bit unsigned integer (uint64_t)
 #endif
 
 //-------------------------------------------------------------------------------
