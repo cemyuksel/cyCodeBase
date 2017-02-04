@@ -38,28 +38,29 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 //-------------------------------------------------------------------------------
 namespace cy {
 //-------------------------------------------------------------------------------
 
 #define CY_HAIR_FILE_SEGMENTS_BIT		1
-#define CY_HAIR_FILE_POINTS_BIT		2
+#define CY_HAIR_FILE_POINTS_BIT			2
 #define CY_HAIR_FILE_THICKNESS_BIT		4
 #define CY_HAIR_FILE_TRANSPARENCY_BIT	8
-#define CY_HAIR_FILE_COLORS_BIT		16
+#define CY_HAIR_FILE_COLORS_BIT			16
 
 #define CY_HAIR_FILE_INFO_SIZE			88
 
 // File read errors
-#define CY_HAIR_FILE_ERROR_CANT_OPEN_FILE			-1
+#define CY_HAIR_FILE_ERROR_CANT_OPEN_FILE		-1
 #define CY_HAIR_FILE_ERROR_CANT_READ_HEADER		-2
-#define	CY_HAIR_FILE_ERROR_WRONG_SIGNATURE			-3
+#define	CY_HAIR_FILE_ERROR_WRONG_SIGNATURE		-3
 #define	CY_HAIR_FILE_ERROR_READING_SEGMENTS		-4
-#define	CY_HAIR_FILE_ERROR_READING_POINTS			-5
-#define	CY_HAIR_FILE_ERROR_READING_THICKNESS		-6
+#define	CY_HAIR_FILE_ERROR_READING_POINTS		-5
+#define	CY_HAIR_FILE_ERROR_READING_THICKNESS	-6
 #define	CY_HAIR_FILE_ERROR_READING_TRANSPARENCY	-7
-#define	CY_HAIR_FILE_ERROR_READING_COLORS			-8
+#define	CY_HAIR_FILE_ERROR_READING_COLORS		-8
 
 //-------------------------------------------------------------------------------
 
@@ -173,16 +174,16 @@ public:
 	void SetArrays( int array_types )
 	{
 		header.arrays = array_types;
-		if ( header.arrays & CY_HAIR_FILE_SEGMENTS_BIT && !segments ) segments = new unsigned short[header.hair_count];
-		if ( ! (header.arrays & CY_HAIR_FILE_SEGMENTS_BIT) && segments ) { delete [] segments; segments=nullptr; }
-		if ( header.arrays & CY_HAIR_FILE_POINTS_BIT && !points ) points = new float[header.point_count*3];
-		if ( ! (header.arrays & CY_HAIR_FILE_POINTS_BIT) && points ) { delete [] points; points=nullptr; }
-		if ( header.arrays & CY_HAIR_FILE_THICKNESS_BIT && !thickness ) thickness = new float[header.point_count];
-		if ( ! (header.arrays & CY_HAIR_FILE_THICKNESS_BIT) && thickness ) { delete [] thickness; thickness=nullptr; }
-		if ( header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT && !transparency ) transparency = new float[header.point_count];
-		if ( ! (header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT) && transparency ) { delete [] transparency; transparency=nullptr; }
-		if ( header.arrays & CY_HAIR_FILE_COLORS_BIT && !colors ) colors = new float[header.point_count*3];
-		if ( ! (header.arrays & CY_HAIR_FILE_COLORS_BIT) && colors ) { delete [] colors; colors=nullptr; }
+		if (  (header.arrays & CY_HAIR_FILE_SEGMENTS_BIT    ) && !segments     ) { segments = new unsigned short[header.hair_count]; }
+		if ( !(header.arrays & CY_HAIR_FILE_SEGMENTS_BIT    ) &&  segments     ) { delete [] segments; segments=nullptr; }
+		if (  (header.arrays & CY_HAIR_FILE_POINTS_BIT      ) && !points       ) { points = new float[header.point_count*3]; }
+		if ( !(header.arrays & CY_HAIR_FILE_POINTS_BIT      ) &&  points       ) { delete [] points; points=nullptr; }
+		if (  (header.arrays & CY_HAIR_FILE_THICKNESS_BIT   ) && !thickness    ) { thickness = new float[header.point_count]; }
+		if ( !(header.arrays & CY_HAIR_FILE_THICKNESS_BIT   ) &&  thickness    ) { delete [] thickness; thickness=nullptr; }
+		if (  (header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT) && !transparency ) { transparency = new float[header.point_count]; }
+		if ( !(header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT) &&  transparency ) { delete [] transparency; transparency=nullptr; }
+		if (  (header.arrays & CY_HAIR_FILE_COLORS_BIT      ) && !colors       ) { colors = new float[header.point_count*3]; }
+		if ( !(header.arrays & CY_HAIR_FILE_COLORS_BIT      ) &&  colors       ) { delete [] colors; colors=nullptr; }
 	}
 
 	//! Sets default number of segments for all hair strands, which is used if segments array does not exist.
@@ -273,11 +274,11 @@ public:
 		fwrite( &header, sizeof(Header), 1, fp );
 
 		// Write arrays
-		if ( header.arrays & CY_HAIR_FILE_SEGMENTS_BIT ) fwrite( segments, sizeof(unsigned short), header.hair_count, fp );
-		if ( header.arrays & CY_HAIR_FILE_POINTS_BIT ) fwrite( points, sizeof(float), header.point_count*3, fp );
-		if ( header.arrays & CY_HAIR_FILE_THICKNESS_BIT ) fwrite( thickness, sizeof(float), header.point_count, fp );
-		if ( header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT ) fwrite( transparency, sizeof(float), header.point_count, fp );
-		if ( header.arrays & CY_HAIR_FILE_COLORS_BIT ) fwrite( colors, sizeof(float), header.point_count*3, fp );
+		if ( header.arrays & CY_HAIR_FILE_SEGMENTS_BIT     ) fwrite( segments,     sizeof(unsigned short), header.hair_count,    fp );
+		if ( header.arrays & CY_HAIR_FILE_POINTS_BIT       ) fwrite( points,       sizeof(float),          header.point_count*3, fp );
+		if ( header.arrays & CY_HAIR_FILE_THICKNESS_BIT    ) fwrite( thickness,    sizeof(float),          header.point_count,   fp );
+		if ( header.arrays & CY_HAIR_FILE_TRANSPARENCY_BIT ) fwrite( transparency, sizeof(float),          header.point_count,   fp );
+		if ( header.arrays & CY_HAIR_FILE_COLORS_BIT       ) fwrite( colors,       sizeof(float),          header.point_count*3, fp );
 
 		fclose( fp );
 
