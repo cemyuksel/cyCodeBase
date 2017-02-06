@@ -339,6 +339,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 		else if ( buffer.IsCommand("f") ) {
 			int facevert = -1;
 			bool inspace = true;
+			bool negative = false;
 			int type = 0;
 			unsigned int index;
 			TriFace face, textureFace, normalFace;
@@ -348,6 +349,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 				else {
 					if ( inspace ) {
 						inspace=false;
+						negative = false;
 						type=0;
 						index=0;
 						switch ( facevert ) {
@@ -355,7 +357,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 								// initialize face
 								face.v[0] = face.v[1] = face.v[2] = 0;
 								textureFace.v[0] = textureFace.v[1] = textureFace.v[2] = 0;
-								normalFace.v[0] = normalFace.v[1] = normalFace.v[2] = 0;
+								normalFace. v[0] = normalFace. v[1] = normalFace. v[2] = 0;
 							case 0:
 							case 1:
 								facevert++;
@@ -377,12 +379,13 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 						}
 					}
 					if ( buffer[i] == '/' ) { type++; index=0; }
+					if ( buffer[i] == '-' ) negative = true;
 					if ( buffer[i] >= '0' && buffer[i] <= '9' ) {
 						index = index*10 + (buffer[i]-'0');
 						switch ( type ) {
-							case 0: face.v[facevert] = index-1; break;
-							case 1: textureFace.v[facevert] = index-1; hasTextures=true; break;
-							case 2: normalFace.v[facevert] = index-1; hasNormals=true; break;
+							case 0: face.v       [facevert] = negative ? _v. size()-index : index-1; break;
+							case 1: textureFace.v[facevert] = negative ? _vt.size()-index : index-1; hasTextures=true; break;
+							case 2: normalFace.v [facevert] = negative ? _vn.size()-index : index-1; hasNormals =true; break;
 						}
 					}
 				}
