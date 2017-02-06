@@ -383,9 +383,9 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 					if ( buffer[i] >= '0' && buffer[i] <= '9' ) {
 						index = index*10 + (buffer[i]-'0');
 						switch ( type ) {
-							case 0: face.v       [facevert] = negative ? _v. size()-index : index-1; break;
-							case 1: textureFace.v[facevert] = negative ? _vt.size()-index : index-1; hasTextures=true; break;
-							case 2: normalFace.v [facevert] = negative ? _vn.size()-index : index-1; hasNormals =true; break;
+							case 0: face.v       [facevert] = negative ? (unsigned int)_v. size()-index : index-1; break;
+							case 1: textureFace.v[facevert] = negative ? (unsigned int)_vt.size()-index : index-1; hasTextures=true; break;
+							case 2: normalFace.v [facevert] = negative ? (unsigned int)_vn.size()-index : index-1; hasNormals =true; break;
 						}
 					}
 				}
