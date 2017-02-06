@@ -89,45 +89,52 @@ namespace cy {
 
 //-------------------------------------------------------------------------------
 
-//! This global function prints the OpenGL version to the given stream.
-inline void GLPrintVersion(std::ostream *outStream=&std::cout)
+//! General OpenGL queries
+//!
+//! This class includes static functions for general OpenGL queries.
+class GL
 {
-	const GLubyte* version = glGetString(GL_VERSION);
-	if ( version ) *outStream << version;
-	else {
-		int versionMajor=0, versionMinor=0;
+public:
+	//! Prints the OpenGL version to the given stream.
+	static void PrintVersion(std::ostream *outStream=&std::cout)
+	{
+		const GLubyte* version = glGetString(GL_VERSION);
+		if ( version ) *outStream << version;
+		else {
+			int versionMajor=0, versionMinor=0;
 #ifdef GL_VERSION_3_0
-		glGetIntegerv(GL_MAJOR_VERSION,&versionMajor);
-		glGetIntegerv(GL_MINOR_VERSION,&versionMinor);
+			glGetIntegerv(GL_MAJOR_VERSION,&versionMajor);
+			glGetIntegerv(GL_MINOR_VERSION,&versionMinor);
 #endif
-		if ( versionMajor > 0 && versionMajor < 100 ) {
-			*outStream << versionMajor << "." << versionMinor;
-		} else *outStream << "Unknown";
+			if ( versionMajor > 0 && versionMajor < 100 ) {
+				*outStream << versionMajor << "." << versionMinor;
+			} else *outStream << "Unknown";
+		}
 	}
-}
+
+	//! Checks all previously triggered OpenGL errors and prints them to the given output stream.
+	static void CheckError(const char *sourcefile, int line, const char *call=nullptr, std::ostream *outStream=&std::cout)
+	{
+		GLenum error;
+		while ( (error = glGetError()) != GL_NO_ERROR) {
+			*outStream << "OpenGL ERROR: " << sourcefile << " (line " << line << "): ";
+			if ( call ) *outStream << call << " triggered ";
+			*outStream << gluErrorString(error) << std::endl;
+		}
+	}
+};
 
 //-------------------------------------------------------------------------------
 
-//! Checks all previously triggered OpenGL errors and prints them to the given output stream.
-static void GLCheckError(const char *sourcefile, int line, const char *call=nullptr, std::ostream *outStream=&std::cout)
-{
-	GLenum error;
-    while ( (error = glGetError()) != GL_NO_ERROR) {
-        *outStream << "OpenGL ERROR: " << sourcefile << " (line " << line << "): ";
-		if ( call ) *outStream << call << " triggered ";
-		*outStream << gluErrorString(error) << std::endl;
-    }
-}
-
 //! Checks and prints OpenGL error messages to the default output stream.
 #define CY_GL_ERROR _CY_GL_ERROR
-#define _CY_GL_ERROR cy::GLCheckError(__FILE__,__LINE__)
+#define _CY_GL_ERROR cy::GL::CheckError(__FILE__,__LINE__)
 
 //! Checks OpenGL errors before calling the given function,
 //! calls the function, and then checks OpenGL errors again.
 //! If an error is found, it is printed to the default output stream.
 #define CY_GL_ERR(gl_function_call) _CY_GL_ERR(gl_function_call)
-#define _CY_GL_ERR(f) cy::GLCheckError(__FILE__,__LINE__,"a prior call"); f; cy::GLCheckError(__FILE__,__LINE__,#f)
+#define _CY_GL_ERR(f) cy::GL::CheckError(__FILE__,__LINE__,"a prior call"); f; cy::GL::CheckError(__FILE__,__LINE__,#f)
 
 #ifdef _DEBUG
 # define CY_GL_ERROR_D CY_GL_ERROR //!< Checks and prints OpenGL error messages using CY_GL_ERROR in code compiled in debug mode only (with _DEBUG defined).
@@ -544,7 +551,7 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
 	*outStream << std::endl;
 	*outStream << "OpenGL Debug Output:" << std::endl;
 	*outStream << "VERSION:  ";
-	GLPrintVersion(outStream);
+	GL::PrintVersion(outStream);
 	*outStream << std::endl;
 
 	*outStream << "SOURCE:   ";
@@ -647,7 +654,7 @@ inline bool GLSLShader::Compile( const char *shaderSourceCode, GLenum shaderType
 		if ( outStream ) {
 			if ( !result ) *outStream << "ERROR: Cannot compile shader." << std::endl;
 			*outStream << "OpenGL Version: ";
-			GLPrintVersion(outStream);
+			GL::PrintVersion(outStream);
 			*outStream << std::endl;
 			*outStream << compilerMessage.data() << std::endl;
 		}
@@ -656,7 +663,7 @@ inline bool GLSLShader::Compile( const char *shaderSourceCode, GLenum shaderType
 	if ( result ) {
 		GLint stype;
 		glGetShaderiv(shaderID, GL_SHADER_TYPE, &stype);
-		if ( stype != shaderType ) {
+		if ( stype != (GLint)shaderType ) {
 			if ( outStream ) *outStream << "ERROR: Incorrect shader type." << std::endl;
 			return false;
 		}

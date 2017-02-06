@@ -67,7 +67,7 @@
 
 // constexpr
 #ifndef __cpp_constexpr
-# if (defined(_MSC_VER) && _MSC_VER >= 1900) || (defined(_CY_GCC_VER) && _CY_GCC_VER >= 40600) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER >= 301000) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 1310)
+# if (defined(_MSC_VER) && _MSC_VER >= 1900) || (defined(_CY_GCC_VER) && _CY_GCC_VER >= 40600) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER >= 30100) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 1310)
 #  define __cpp_constexpr
 # else
 #  define constexpr
@@ -75,7 +75,7 @@
 #endif
 
 // nullptr
-#if (defined(_MSC_VER) && _MSC_VER < 1600) || (defined(_CY_GCC_VER) && _CY_GCC_VER < 40600) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 209000) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1210)
+#if (defined(_MSC_VER) && _MSC_VER < 1600) || (defined(_CY_GCC_VER) && _CY_GCC_VER < 40600) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 20900) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1210)
 class _cy_nullptr_t {
 public:
   template<class T> operator T*() const { return 0; }
@@ -88,14 +88,14 @@ static _cy_nullptr_t nullptr;
 
 // template aliases
 # define _CY_TEMPLATE_ALIAS_UNPACK(...) __VA_ARGS__
-#if (defined(_MSC_VER) && _MSC_VER < 1800) || (defined(_CY_GCC_VER) && _CY_GCC_VER < 40700) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 300000) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1210)
+#if (defined(_MSC_VER) && _MSC_VER < 1800) || (defined(_CY_GCC_VER) && _CY_GCC_VER < 40700) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 30000) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1210)
 # define _CY_TEMPLATE_ALIAS(template_name,template_equivalent) class template_name : public _CY_TEMPLATE_ALIAS_UNPACK template_equivalent {}
 #else
 # define _CY_TEMPLATE_ALIAS(template_name,template_equivalent) using template_name = _CY_TEMPLATE_ALIAS_UNPACK template_equivalent
 #endif
 
 // std::is_trivially_copyable
-#if (defined(_MSC_VER) && _MSC_VER >= 1700) || (defined(_CY_GCC_VER) && _CY_GCC_VER >= 50000) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 304000)
+#if (defined(_MSC_VER) && _MSC_VER >= 1700) || (defined(_CY_GCC_VER) && _CY_GCC_VER >= 50000) || (defined(_CY_CLANG_VER) && _CY_CLANG_VER < 30400)
 #define _cy_has_std_is_trivially_copyable 1
 #endif
 
@@ -108,11 +108,11 @@ static _cy_nullptr_t nullptr;
 #  define _CY_IVDEP __pragma(loop(ivdep))
 # endif
 #elif defined __GNUC__
-# if _CY_GCC_VER >= 409000
+# if _CY_GCC_VER >= 40900
 #  define _CY_IVDEP _Pragma("GCC ivdep");
 # endif
 #elif defined __clang__
-# if _CY_CLANG_VER >= 305000
+# if _CY_CLANG_VER >= 30500
 #  define _CY_IVDEP _Pragma("clang loop vectorize(enable) interleave(enable)");
 # endif
 #else

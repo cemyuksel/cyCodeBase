@@ -305,7 +305,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 		}
 	};
 	MtlList mtlList;
-	MtlData *currentMtlData = nullptr;
+
 	std::vector<Point3f>	_v;		// vertices
 	std::vector<TriFace>	_f;		// faces
 	std::vector<Point3f>	_vn;	// vertex normal
@@ -473,7 +473,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl )
 			FILE *fp = fopen(mtlFullFilename,"r");
 			if ( !fp ) continue;
 			int mtlID = -1;
-			while ( int rb = buffer.ReadLine(fp) ) {
+			while ( buffer.ReadLine(fp) ) {
 				if ( buffer.IsCommand("newmtl") ) {
 					char mtlName[256];
 					buffer.Copy(mtlName,256,7);

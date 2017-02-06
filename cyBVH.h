@@ -40,15 +40,21 @@
 namespace cy {
 //-------------------------------------------------------------------------------
 
-#define CY_BVH_ELEMENT_COUNT_BITS	3		// Determines the maximum number of elements in a node (8)
-#define CY_BVH_MAX_ELEMENT_COUNT	(1<<CY_BVH_ELEMENT_COUNT_BITS)
-#define CY_BVH_NODE_DATA_BITS		(sizeof(unsigned int)*8)
-#define CY_BVH_ELEMENT_COUNT_MASK	((1<<CY_BVH_ELEMENT_COUNT_BITS)-1)
-#define CY_BVH_LEAF_BIT_MASK		((unsigned int)1<<(CY_BVH_NODE_DATA_BITS-1))
-#define CY_BVH_CHILD_INDEX_BITS		(CY_BVH_NODE_DATA_BITS-1)
-#define CY_BVH_CHILD_INDEX_MASK		(CY_BVH_LEAF_BIT_MASK-1)
-#define CY_BVH_ELEMENT_OFFSET_BITS	(CY_BVH_NODE_DATA_BITS-1-CY_BVH_ELEMENT_COUNT_BITS)
-#define CY_BVH_ELEMENT_OFFSET_MASK	((1<<CY_BVH_ELEMENT_OFFSET_BITS)-1)
+#ifndef CY_BVH_ELEMENT_COUNT_BITS
+#define CY_BVH_ELEMENT_COUNT_BITS	3	//!< Determines the number of bits needed to represent the maximum number of elements in a node (8)
+#endif
+
+#ifndef CY_BVH_MAX_ELEMENT_COUNT
+#define CY_BVH_MAX_ELEMENT_COUNT	(1<<CY_BVH_ELEMENT_COUNT_BITS)	//!< Determines the maximum number of elements in a node (8)
+#endif
+
+#define _CY_BVH_NODE_DATA_BITS		(sizeof(unsigned int)*8)
+#define _CY_BVH_ELEMENT_COUNT_MASK	((1<<CY_BVH_ELEMENT_COUNT_BITS)-1)
+#define _CY_BVH_LEAF_BIT_MASK		((unsigned int)1<<(_CY_BVH_NODE_DATA_BITS-1))
+#define _CY_BVH_CHILD_INDEX_BITS	(_CY_BVH_NODE_DATA_BITS-1)
+#define _CY_BVH_CHILD_INDEX_MASK	(_CY_BVH_LEAF_BIT_MASK-1)
+#define _CY_BVH_ELEMENT_OFFSET_BITS	(_CY_BVH_NODE_DATA_BITS-1-CY_BVH_ELEMENT_COUNT_BITS)
+#define _CY_BVH_ELEMENT_OFFSET_MASK	((1<<_CY_BVH_ELEMENT_OFFSET_BITS)-1)
 
 //-------------------------------------------------------------------------------
 
@@ -181,12 +187,12 @@ private:
 	class Node
 	{
 	public:
-		void SetLeafNode( const Box &bound, unsigned int elemCount, unsigned int elemOffset ) { box=bound; data=(elemOffset&CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<CY_BVH_ELEMENT_OFFSET_BITS)|CY_BVH_LEAF_BIT_MASK; }
-		void SetInternalNode( const Box &bound, unsigned int chilIndex ) { box=bound; data=(chilIndex&CY_BVH_CHILD_INDEX_MASK); }
-		unsigned int	ChildIndex()	const { return (data&CY_BVH_CHILD_INDEX_MASK); }									//!< returns the index to the first child (must be internal node)
-		unsigned int	ElementOffset()	const { return (data&CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
-		unsigned int	ElementCount()	const { return ((data>>CY_BVH_ELEMENT_OFFSET_BITS)&CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
-		bool			IsLeafNode()	const { return (data&CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
+		void SetLeafNode( const Box &bound, unsigned int elemCount, unsigned int elemOffset ) { box=bound; data=(elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)|_CY_BVH_LEAF_BIT_MASK; }
+		void SetInternalNode( const Box &bound, unsigned int chilIndex ) { box=bound; data=(chilIndex&_CY_BVH_CHILD_INDEX_MASK); }
+		unsigned int	ChildIndex()	const { return (data&_CY_BVH_CHILD_INDEX_MASK); }									//!< returns the index to the first child (must be internal node)
+		unsigned int	ElementOffset()	const { return (data&_CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
+		unsigned int	ElementCount()	const { return ((data>>_CY_BVH_ELEMENT_OFFSET_BITS)&_CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
+		bool			IsLeafNode()	const { return (data&_CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
 		const float*	GetBounds()		const { return box.b; }																//!< returns the bounding box of the node
 	private:
 		Box				box;	//!< bounding box of the node
