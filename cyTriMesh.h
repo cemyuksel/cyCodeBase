@@ -39,7 +39,7 @@
 #include "cyPoint.h"
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h>
+#include <string>
 #include <vector>
 #include <iostream>
 
@@ -94,6 +94,17 @@ public:
 			map_d    = nullptr;
 			map_bump = nullptr;
 			map_disp = nullptr;
+		}
+		~Mtl()
+		{
+			if ( name     ) delete [] name;
+			if ( map_Ka   ) delete [] map_Ka;
+			if ( map_Kd   ) delete [] map_Kd;
+			if ( map_Ks   ) delete [] map_Ks;
+			if ( map_Ns   ) delete [] map_Ns;
+			if ( map_d    ) delete [] map_d;
+			if ( map_bump ) delete [] map_bump;
+			if ( map_disp ) delete [] map_disp;
 		}
 	};
 
