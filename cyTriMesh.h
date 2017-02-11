@@ -460,6 +460,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 					if ( fn ) fn[fid] = _fn[i];
 					if ( ft ) ft[fid] = _ft[i];
 					fid++;
+					j++;
 				}
 			}
 			mcfc[m] = fid;
