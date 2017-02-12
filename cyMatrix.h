@@ -904,9 +904,9 @@ public:
 		data[ 0]=s.x; data[ 1]=u.x; data[ 2]=-f.x;
 		data[ 3]=s.y; data[ 4]=u.y; data[ 5]=-f.y;
 		data[ 6]=s.z; data[ 7]=u.z; data[ 8]=-f.z;
-		data[ 9]= s % pos;
-		data[10]= u % pos;
-		data[11]=-f % pos;
+		data[ 9]= -s % pos;
+		data[10]= -u % pos;
+		data[11]=  f % pos;
 	}
 	//! Set matrix using normal and approximate x direction
 	void SetNormal(const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y=normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal,Point3<TYPE>(TYPE(0),TYPE(0),TYPE(0))); }
@@ -1464,10 +1464,10 @@ public:
 		data[ 0]=s.x; data[ 1]=u.x; data[ 2]=-f.x; data[ 3]=TYPE(0);
 		data[ 4]=s.y; data[ 5]=u.y; data[ 6]=-f.y; data[ 7]=TYPE(0);
 		data[ 8]=s.z; data[ 9]=u.z; data[10]=-f.z; data[11]=TYPE(0);
-		data[12]= s % pos;
-		data[13]= u % pos;
-		data[14]=-f % pos;
-		data[15]=TYPE(0);
+		data[12]= -s % pos;
+		data[13]= -u % pos;
+		data[14]=  f % pos;
+		data[15]=TYPE(1);
 	}
 	//! Set matrix using normal and approximate x direction
 	void SetNormal(const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y=normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal,Point3<TYPE>(TYPE(0),TYPE(0),TYPE(0))); }
