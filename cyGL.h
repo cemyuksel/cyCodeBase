@@ -82,6 +82,28 @@
 #include <sstream>
 
 //-------------------------------------------------------------------------------
+
+// These includes are needed for checking the OpenGL context.
+// If CY_GL_DONT_CHECK_CONTEXT is defined before including this file,
+// checking the OpenGL context is disabled and these includes are skipped.
+#ifndef CY_GL_DONT_CHECK_CONTEXT
+# ifdef _WIN32
+#  include <Wingdi.h>
+#  define _CY_GL_GET_CONTEXT wglGetCurrentContext()
+# elif defined(__APPLE__)
+#  include <OpenGL/OpenGL.h>
+#  define _CY_GL_GET_CONTEXT CGLGetCurrentContext()
+# elif defined(__unix__)
+#  include <GL/glx.h>
+#  define _CY_GL_GET_CONTEXT glXGetCurrentContext()
+# else
+#  define _CY_GL_GET_CONTEXT 1
+# endif
+#else
+# define _CY_GL_GET_CONTEXT 1
+#endif
+
+//-------------------------------------------------------------------------------
 namespace cy {
 //-------------------------------------------------------------------------------
 
@@ -122,6 +144,10 @@ public:
 			*outStream << gluErrorString(error) << std::endl;
 		}
 	}
+
+	//! Checks if an OpenGL context exists. Returns false if a valid OpenGL context cannot be retrieved.
+	//! This is mostly useful for safely deleting previously allocated OpenGL objects.
+	static bool CheckContext() { return _CY_GL_GET_CONTEXT ? true : false; }
 };
 
 //-------------------------------------------------------------------------------
@@ -292,7 +318,6 @@ public:
 		if ( minificationFilter  != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_MIN_FILTER, minificationFilter);
 	}
 
-
 };
 
 //-------------------------------------------------------------------------------
@@ -310,12 +335,12 @@ private:
 	GLuint shaderID;	//!< The shader ID
 
 public:
-	GLSLShader() : shaderID(CY_GL_INVALID_ID) {}	//!< Constructor.
-	virtual ~GLSLShader() { Delete(); }				//!< Destructor that deletes the shader.
+	GLSLShader() : shaderID(CY_GL_INVALID_ID) {}					//!< Constructor.
+	virtual ~GLSLShader() { if ( GL::CheckContext() ) Delete(); }	//!< Destructor that deletes the shader.
 
 	//!@name General Methods
 
-	void   Delete();												//!< Deletes the shader.
+	void   Delete() { if (shaderID!=CY_GL_INVALID_ID) { glDeleteShader(shaderID); shaderID=CY_GL_INVALID_ID; } }	//!< Deletes the shader.
 	GLuint GetID () const { return shaderID; }						//!< Returns the shader ID.
 	bool   IsNull() const { return shaderID == CY_GL_INVALID_ID; }	//!< Returns true if the OpenGL shader object is not generated, i.e. the shader id is invalid.
 
@@ -366,12 +391,12 @@ private:
 	std::vector<GLint> params;	//!< A list of registered uniform parameter IDs
 
 public:
-	GLSLProgram() : programID(CY_GL_INVALID_ID) {}		//!< Constructor
-	virtual ~GLSLProgram() { Delete(); }				//!< Destructor that deletes the program
+	GLSLProgram() : programID(CY_GL_INVALID_ID) {}					//!< Constructor
+	virtual ~GLSLProgram() { if ( GL::CheckContext() ) Delete(); }	//!< Destructor that deletes the program
 
 	//!@name General Methods
 
-	void   Delete();												//!< Deletes the program.
+	void   Delete() { if (programID!=CY_GL_INVALID_ID) { glDeleteProgram(programID); programID=CY_GL_INVALID_ID; } }	//!< Deletes the program.
 	GLuint GetID () const { return programID; }						//!< Returns the program ID
 	bool   IsNull() const { return programID == CY_GL_INVALID_ID; }	//!< Returns true if the OpenGL program object is not generated, i.e. the program id is invalid.
 	void   Bind  () const { glUseProgram(programID); }				//!< Binds the program for rendering
@@ -833,18 +858,6 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
 // GLSLShader Implementation
 //-------------------------------------------------------------------------------
 
-inline void GLSLShader::Delete()
-{
-	if ( shaderID != CY_GL_INVALID_ID ) {
-		try { 
-			// If the OpenGL context is deleted before calling this function,
-			// it can cause crash.
-			glDeleteShader(shaderID);
-		} catch (...) {}
-		shaderID = CY_GL_INVALID_ID;
-	}
-}
-
 inline bool GLSLShader::CompileFile( const char *filename, GLenum shaderType, int prependSourceCount, const char **prependSources, std::ostream *outStream )
 {
 	std::ifstream shaderStream(filename, std::ios::in);
@@ -906,18 +919,6 @@ inline bool GLSLShader::Compile( const char *shaderSourceCode, GLenum shaderType
 //-------------------------------------------------------------------------------
 // GLSLProgram Implementation
 //-------------------------------------------------------------------------------
-
-inline void GLSLProgram::Delete()
-{
-	if ( programID != CY_GL_INVALID_ID ) {
-		try { 
-			// If the OpenGL context is deleted before calling this function,
-			// it can cause crash.
-			glDeleteProgram(programID);
-		} catch (...) {}
-		programID = CY_GL_INVALID_ID;
-	}
-}
 
 inline bool GLSLProgram::Link( std::ostream *outStream )
 {
