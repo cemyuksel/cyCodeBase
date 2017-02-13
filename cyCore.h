@@ -71,7 +71,7 @@
 # define _CY_COMPILER_GCC (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 # define _CY_COMPILER_VER_MEETS(msc,gcc,clang,intel) _CY_COMPILER_GCC >= gcc
 # define _CY_COMPILER_VER_BELOW(msc,gcc,clang,intel) _CY_COMPILER_GCC <  gcc
-#elif
+#else
 # define _CY_COMPILER_UNKNOWN
 # define _CY_COMPILER_VER_MEETS(msc,gcc,clang,intel) false
 # define _CY_COMPILER_VER_BELOW(msc,gcc,clang,intel) false
