@@ -118,16 +118,16 @@ protected:
 	unsigned int nvt;	//!< number of texture vertices
 	unsigned int nm;	//!< number of materials
 
-	//!@{
-	//! Bounding box
-	Point3f boundMin, boundMax;
-	//!@}
+	Point3f boundMin;	//!< Bounding box minimum bound
+	Point3f boundMax;	//!< Bounding box maximum bound
 
 public:
 
-	//!@name Constructor and destructor
+	//!@name Constructors and Destructor
 	TriMesh() : v(nullptr), f(nullptr), vn(nullptr), fn(nullptr), vt(nullptr), ft(nullptr), m(nullptr), mcfc(nullptr)
-				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(0,0,0), boundMax(0,0,0) {}
+				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(1,1,1), boundMax(0,0,0) {}
+	TriMesh(const TriMesh &t) : v(nullptr), f(nullptr), vn(nullptr), fn(nullptr), vt(nullptr), ft(nullptr), m(nullptr), mcfc(nullptr)
+				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(1,1,1), boundMax(0,0,0) { *this = t; }
 	virtual ~TriMesh() { Clear(); }
 
 	//!@name Component Access Methods
@@ -156,21 +156,22 @@ public:
 	bool HasTextureVertices() const { return NVT() > 0; }	//!< returns true if the mesh has texture vertices
 
 	//!@name Set Component Count
-	void Clear() { SetNumVertex(0); SetNumFaces(0); SetNumNormals(0); SetNumTexVerts(0); SetNumMtls(0); boundMin.Zero(); boundMax.Zero(); }
-	void SetNumVertex  (unsigned int n) { Allocate(n,v,nv); }
-	void SetNumFaces   (unsigned int n) { Allocate(n,f,nf); if (fn||vn) Allocate(n,fn); if (ft||vt) Allocate(n,ft); }
-	void SetNumNormals (unsigned int n) { Allocate(n,vn,nvn); Allocate(n==0?0:nf,fn); }
-	void SetNumTexVerts(unsigned int n) { Allocate(n,vt,nvt); Allocate(n==0?0:nf,ft); }
-	void SetNumMtls    (unsigned int n) { Allocate(n,m,nm); Allocate(n,mcfc); }
+	void Clear() { SetNumVertex(0); SetNumFaces(0); SetNumNormals(0); SetNumTexVerts(0); SetNumMtls(0); boundMin.Zero(); boundMax.Zero(); }	//!< Deletes all components of the mesh
+	void SetNumVertex  (unsigned int n) { Allocate(n,v,nv); }															//!< Sets the number of vertices and allocates memory for vertex positions
+	void SetNumFaces   (unsigned int n) { Allocate(n,f,nf); if (fn||vn) Allocate(n,fn); if (ft||vt) Allocate(n,ft); }	//!< Sets the number of faces and allocates memory for face data. Normal faces and texture faces are also allocated, if they are used.
+	void SetNumNormals (unsigned int n) { Allocate(n,vn,nvn); Allocate(n==0?0:nf,fn); }									//!< Sets the number of normals and allocates memory for normals and normal faces.
+	void SetNumTexVerts(unsigned int n) { Allocate(n,vt,nvt); Allocate(n==0?0:nf,ft); }									//!< Sets the number of texture coordinates and allocates memory for texture coordinates and texture faces.
+	void SetNumMtls    (unsigned int n) { Allocate(n,m,nm); Allocate(n,mcfc); }											//!< Sets the number of materials and allocates memory for material data.
+	void operator = (const TriMesh &t);																					//!< Copies mesh data from the given mesh.
 
 	//!@name Get Property Methods
-	bool    IsBoundBoxReady() const { return boundMin.x!=0 && boundMin.y!=0 && boundMin.z!=0 && boundMax.x!=0 && boundMax.y!=0 && boundMax.z!=0; }
+	bool    IsBoundBoxReady() const { return boundMin.x<=boundMax.x && boundMin.y<=boundMax.y && boundMin.z<=boundMax.z; }	//!< Returns true if the bounding box has been computed.
 	Point3f GetBoundMin() const { return boundMin; }		//!< Returns the minimum values of the bounding box
 	Point3f GetBoundMax() const { return boundMax; }		//!< Returns the maximum values of the bounding box
-	Point3f GetPoint   (int faceID, const Point3f &bc) const { return Interpolate(faceID,v,f,bc); }	//!< Returns the point on the given face with the given barycentric coordinates (bc).
+	Point3f GetPoint   (int faceID, const Point3f &bc) const { return Interpolate(faceID,v,f,bc); }		//!< Returns the point on the given face with the given barycentric coordinates (bc).
 	Point3f GetNormal  (int faceID, const Point3f &bc) const { return Interpolate(faceID,vn,fn,bc); }	//!< Returns the the surface normal on the given face at the given barycentric coordinates (bc). The returned vector is not normalized.
 	Point3f GetTexCoord(int faceID, const Point3f &bc) const { return Interpolate(faceID,vt,ft,bc); }	//!< Returns the texture coordinate on the given face at the given barycentric coordinates (bc).
-	int     GetMaterialIndex(int faceID) const;				//!< Returns the material index of the face. This method goes through material counts of all materials to find the material index of the face. Returns a negaive number if the face as no material
+	int     GetMaterialIndex(int faceID) const;				//!< Returns the material index of the face. This method goes through material counts of all materials to find the material index of the face. Returns a negative number if the face as no material
 	int     GetMaterialFaceCount(int mtlID) const { return mtlID>0 ? mcfc[mtlID]-mcfc[mtlID-1] : mcfc[0]; }	//!< Returns the number of faces associated with the given material ID.
 	int     GetMaterialFirstFace(int mtlID) const { return mtlID>0 ? mcfc[mtlID-1] : 0; }	//!< Returns the first face index associated with the given material ID. Other faces associated with the same material are placed are placed consecutively.
 
@@ -185,6 +186,8 @@ public:
 private:
 	template <class T> void Allocate(unsigned int n, T* &t) { if (t) delete [] t; if (n>0) t = new T[n]; else t=nullptr; }
 	template <class T> bool Allocate(unsigned int n, T* &t, unsigned int &nt) { if (n==nt) return false; nt=n; Allocate(n,t); return true; }
+	template <class T> void Copy(const T* from, unsigned int n, T* &t, unsigned int &nt) { if (!from) n=0; Allocate(n,t,nt); if (t) memcpy(t,from,sizeof(T)*n); }
+	template <class T> void Copy(const T* from, unsigned int n, T* &t) { if (!from) n=0; Allocate(n,t); if (t) memcpy(t,from,sizeof(T)*n); }
 	static Point3f Interpolate( int i, const Point3f *v, const TriFace *f, const Point3f &bc ) { return v[f[i].v[0]]*bc.x + v[f[i].v[1]]*bc.y + v[f[i].v[2]]*bc.z; }
 
 	// Temporary structures
@@ -200,6 +203,21 @@ private:
 
 //-------------------------------------------------------------------------------
 
+inline void TriMesh::operator = (const TriMesh &t)
+{
+	Copy( t.v,  t.nv,  v,  nv  );
+	Copy( t.f,  t.nf,  f,  nf  );
+	Copy( t.vn, t.nvn, vn, nvn );
+	Copy( t.fn, t.nf,  fn );
+	Copy( t.vt, t.nvt, vt, nvt );
+	Copy( t.ft, t.nf,  ft );
+	Allocate(t.nm, m, nm);
+	for ( unsigned int i=0; i<nm; i++ ) m[i] = t.m[i];
+	Copy( t.mcfc, t.nm,  mcfc );
+	boundMin = t.boundMin;
+	boundMax = t.boundMax;
+}
+
 inline int TriMesh::GetMaterialIndex(int faceID) const
 {
 	for ( unsigned int i=0; i<nm; i++ ) {
@@ -210,15 +228,20 @@ inline int TriMesh::GetMaterialIndex(int faceID) const
 
 inline void TriMesh::ComputeBoundingBox()
 {
-	boundMin=v[0];
-	boundMax=v[0];
-	for ( unsigned int i=1; i<nv; i++ ) {
-		if ( boundMin.x > v[i].x ) boundMin.x = v[i].x;
-		if ( boundMin.y > v[i].y ) boundMin.y = v[i].y;
-		if ( boundMin.z > v[i].z ) boundMin.z = v[i].z;
-		if ( boundMax.x < v[i].x ) boundMax.x = v[i].x;
-		if ( boundMax.y < v[i].y ) boundMax.y = v[i].y;
-		if ( boundMax.z < v[i].z ) boundMax.z = v[i].z;
+	if ( nv > 0 ) {
+		boundMin=v[0];
+		boundMax=v[0];
+		for ( unsigned int i=1; i<nv; i++ ) {
+			if ( boundMin.x > v[i].x ) boundMin.x = v[i].x;
+			if ( boundMin.y > v[i].y ) boundMin.y = v[i].y;
+			if ( boundMin.z > v[i].z ) boundMin.z = v[i].z;
+			if ( boundMax.x < v[i].x ) boundMax.x = v[i].x;
+			if ( boundMax.y < v[i].y ) boundMax.y = v[i].y;
+			if ( boundMax.z < v[i].z ) boundMax.z = v[i].z;
+		}
+	} else {
+		boundMin.Set(1,1,1);
+		boundMax.Set(0,0,0);
 	}
 }
 
