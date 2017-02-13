@@ -58,28 +58,40 @@ public:
 		unsigned int v[3];	//!< vertex indices
 	};
 
+	//! Simple character string
+	struct Str
+	{
+		char *data;	//!< String data
+		Str() : data(nullptr) {}							//!< Constructor
+		Str(const Str  &s) : data(nullptr) { *this = s; }	//!< Copy constructor
+		~Str() { if ( data ) delete [] data; }				//!< Destructor
+		operator const char* () { return data; }			//!< Implicit conversion to const char
+		void operator = (const Str  &s) { *this = s.data; }	//!< Assignment operator
+		void operator = (const char *s) { if (s) { size_t n=strlen(s); if (data) delete [] data; data=new char[n+1]; strncpy(data,s,n); data[n]='\0'; } else if (data) { delete [] data; data=nullptr; } }	//!< Assignment operator
+	};
+
 	//! Material definition
 	struct Mtl
 	{
-		char *name;		//!< Material name
+		Str   name;		//!< Material name
 		float Ka[3];	//!< Ambient color
 		float Kd[3];	//!< Diffuse color
 		float Ks[3];	//!< Specular color
 		float Tf[3];	//!< Transmission color
 		float Ns;		//!< Specular exponent
 		float Ni;		//!< Index of refraction
-		int illum;		//!< Illumination model
-		char *map_Ka;	//!< Ambient color texture map
-		char *map_Kd;	//!< Diffuse color texture map
-		char *map_Ks;	//!< Specular color texture map
-		char *map_Ns;	//!< Specular exponent texture map
-		char *map_d;	//!< Alpha texture map
-		char *map_bump;	//!< Bump texture map
-		char *map_disp;	//!< Displacement texture map
+		int   illum;	//!< Illumination model
+		Str   map_Ka;	//!< Ambient color texture map
+		Str   map_Kd;	//!< Diffuse color texture map
+		Str   map_Ks;	//!< Specular color texture map
+		Str   map_Ns;	//!< Specular exponent texture map
+		Str   map_d;	//!< Alpha texture map
+		Str   map_bump;	//!< Bump texture map
+		Str   map_disp;	//!< Displacement texture map
 
+		//! Constructor sets the default material values
 		Mtl()
 		{
-			name = nullptr;
 			Ka[0]=Ka[1]=Ka[2]=0;
 			Kd[0]=Kd[1]=Kd[2]=1;
 			Ks[0]=Ks[1]=Ks[2]=0;
@@ -87,24 +99,6 @@ public:
 			Ns=0;
 			Ni=1;
 			illum=2;
-			map_Ka   = nullptr;
-			map_Kd   = nullptr;
-			map_Ks   = nullptr;
-			map_Ns   = nullptr;
-			map_d    = nullptr;
-			map_bump = nullptr;
-			map_disp = nullptr;
-		}
-		~Mtl()
-		{
-			if ( name     ) delete [] name;
-			if ( map_Ka   ) delete [] map_Ka;
-			if ( map_Kd   ) delete [] map_Kd;
-			if ( map_Ks   ) delete [] map_Ks;
-			if ( map_Ns   ) delete [] map_Ns;
-			if ( map_d    ) delete [] map_d;
-			if ( map_bump ) delete [] map_bump;
-			if ( map_disp ) delete [] map_disp;
 		}
 	};
 
@@ -284,8 +278,8 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 			return i;
 		}
 		char& operator[](int i) { return data[i]; }
-		void ReadVertex( Point3f &v ) const { sscanf( data+2, "%f %f %f", &v.x, &v.y, &v.z ); }
-		void ReadFloat3( float f[3] ) const { sscanf( data+2, "%f %f %f", &f[0], &f[1], &f[2] ); }
+		void ReadVertex( Point3f &v ) const { v.Zero(); sscanf( data+2, "%f %f %f", &v.x, &v.y, &v.z ); }
+		void ReadFloat3( float f[3] ) const { f[2]=f[1]=f[0]=0; int n = sscanf( data+2, "%f %f %f", &f[0], &f[1], &f[2] ); if ( n==1 ) f[2]=f[1]=f[0]; }
 		void ReadFloat( float *f ) const { sscanf( data+2, "%f", f ); }
 		void ReadInt( int *i, int start ) const { sscanf( data+start, "%d", i ); }
 		bool IsCommand( const char *cmd ) const {
@@ -297,14 +291,10 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 			return (data[i]=='\0' || data[i]==' ');
 		}
 		const char* Data(int start=0) { return data+start; }
-		void Copy( char * &str, int start=0 )
+		void Copy( Str &str, int start=0 )
 		{
 			while ( data[start] != '\0' && data[start] <= ' ' ) start++;
-			if ( str ) delete [] str;
-			size_t len = strlen( Data(start) );
-			str = new char[len+1];
-			strncpy( str, Data(start), len );
-			str[len] = '\0';
+			str = Data(start);
 		}
 	};
 	Buffer buffer;
