@@ -344,7 +344,7 @@ public:
 
 //-------------------------------------------------------------------------------
 
-#ifdef GL_ARB_framebuffer_object
+#ifdef GL_VERSION_3_0
 
 //! OpenGL render buffer
 //!
@@ -378,9 +378,7 @@ public:
 
 	GLuint GetTextureID() const { return texture.GetID(); }						//!< Returns the texture ID.
 	void   BindTexture(int textureUnit=0) const { texture.Bind(textureUnit); }	//!< Binds the texture to the given texture unit for rendering.
-#ifdef GL_VERSION_3_0
 	void   BuildTextureMipmaps() { texture.BuildMipmaps(); }					//!< Builds mipmap levels for the texture.
-#endif
 
 	//! Sets the wrapping parameter for the texture.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
