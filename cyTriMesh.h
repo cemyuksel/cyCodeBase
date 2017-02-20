@@ -156,7 +156,7 @@ public:
 	bool HasTextureVertices() const { return NVT() > 0; }	//!< returns true if the mesh has texture vertices
 
 	//!@name Set Component Count
-	void Clear() { SetNumVertex(0); SetNumFaces(0); SetNumNormals(0); SetNumTexVerts(0); SetNumMtls(0); boundMin.Zero(); boundMax.Zero(); }	//!< Deletes all components of the mesh
+	void Clear() { SetNumVertex(0); SetNumFaces(0); SetNumNormals(0); SetNumTexVerts(0); SetNumMtls(0); boundMin.Set(1,1,1); boundMax.Zero(); }	//!< Deletes all components of the mesh
 	void SetNumVertex  (unsigned int n) { Allocate(n,v,nv); }															//!< Sets the number of vertices and allocates memory for vertex positions
 	void SetNumFaces   (unsigned int n) { Allocate(n,f,nf); if (fn||vn) Allocate(n,fn); if (ft||vt) Allocate(n,ft); }	//!< Sets the number of faces and allocates memory for face data. Normal faces and texture faces are also allocated, if they are used.
 	void SetNumNormals (unsigned int n) { Allocate(n,vn,nvn); Allocate(n==0?0:nf,fn); }									//!< Sets the number of normals and allocates memory for normals and normal faces.
