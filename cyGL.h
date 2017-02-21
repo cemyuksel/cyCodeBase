@@ -133,33 +133,30 @@ public:
 		TYPE_UINT32,
 	};
 
+	static GLenum GetGLType( const GLubyte  * ) { return GL_UNSIGNED_BYTE ; }	//!< Returns the OpenGL type identifier that corresponds to unsigned byte.
+	static GLenum GetGLType( const GLushort * ) { return GL_UNSIGNED_SHORT; }	//!< Returns the OpenGL type identifier that corresponds to unsigned short.
+	static GLenum GetGLType( const GLfloat  * ) { return GL_FLOAT         ; }	//!< Returns the OpenGL type identifier that corresponds to float.
+	static GLenum GetGLType( const GLbyte   * ) { return GL_BYTE          ; }	//!< Returns the OpenGL type identifier that corresponds to byte.
+	static GLenum GetGLType( const GLshort  * ) { return GL_SHORT         ; }	//!< Returns the OpenGL type identifier that corresponds to short.
+	static GLenum GetGLType( const GLint    * ) { return GL_INT           ; }	//!< Returns the OpenGL type identifier that corresponds to int.
+	static GLenum GetGLType( const GLuint   * ) { return GL_UNSIGNED_INT  ; }	//!< Returns the OpenGL type identifier that corresponds to unsigned int.
+
+	static Type GetType( const GLubyte  * ) { return TYPE_UBYTE ; }				//!< Returns the Type that corresponds to unsigned byte.
+	static Type GetType( const GLushort * ) { return TYPE_USHORT; }				//!< Returns the Type that corresponds to unsigned short.
+	static Type GetType( const GLfloat  * ) { return TYPE_FLOAT ; }				//!< Returns the Type that corresponds to float.
+	static Type GetType( const GLbyte   * ) { return TYPE_INT8  ; }				//!< Returns the Type that corresponds to byte.
+	static Type GetType( const GLshort  * ) { return TYPE_INT16 ; }				//!< Returns the Type that corresponds to short.
+	static Type GetType( const GLint    * ) { return TYPE_INT32 ; }				//!< Returns the Type that corresponds to int.
+	static Type GetType( const GLuint   * ) { return TYPE_UINT32; }				//!< Returns the Type that corresponds to unsigned int.
+
+	static GLenum TextureFormat    ( Type type, int numChannels );				//!< Returns the internal OpenGL texture type identifier for the given Type and the number of channels.
+	static GLenum TextureDataFormat( Type type, int numChannels );				//!< Returns the OpenGL texture data format identifier for the given Type and the number of channels.
+
 	//! Prints the OpenGL version to the given stream.
-	static void PrintVersion(std::ostream *outStream=&std::cout)
-	{
-		const GLubyte* version = glGetString(GL_VERSION);
-		if ( version ) *outStream << version;
-		else {
-			int versionMajor=0, versionMinor=0;
-#ifdef GL_VERSION_3_0
-			glGetIntegerv(GL_MAJOR_VERSION,&versionMajor);
-			glGetIntegerv(GL_MINOR_VERSION,&versionMinor);
-#endif
-			if ( versionMajor > 0 && versionMajor < 100 ) {
-				*outStream << versionMajor << "." << versionMinor;
-			} else *outStream << "Unknown";
-		}
-	}
+	static void PrintVersion(std::ostream *outStream=&std::cout);
 
 	//! Checks all previously triggered OpenGL errors and prints them to the given output stream.
-	static void CheckError(const char *sourcefile, int line, const char *call=nullptr, std::ostream *outStream=&std::cout)
-	{
-		GLenum error;
-		while ( (error = glGetError()) != GL_NO_ERROR) {
-			*outStream << "OpenGL ERROR: " << sourcefile << " (line " << line << "): ";
-			if ( call ) *outStream << call << " triggered ";
-			*outStream << gluErrorString(error) << std::endl;
-		}
-	}
+	static void CheckError(const char *sourcefile, int line, const char *call=nullptr, std::ostream *outStream=&std::cout);
 
 	//! Checks if an OpenGL context exists. Returns false if a valid OpenGL context cannot be retrieved.
 	//! This is mostly useful for safely deleting previously allocated OpenGL objects.
@@ -189,6 +186,7 @@ public:
 //-------------------------------------------------------------------------------
 
 #ifdef GL_KHR_debug
+#define _CY_GLDebugCallback
 
 //! OpenGL debug callback class.
 //!
@@ -249,7 +247,7 @@ protected:
 
 //-------------------------------------------------------------------------------
 
-//! OpenGL texture class.
+//! OpenGL texture base class.
 //!
 //! This class provides a convenient interface for handling basic texture
 //! operations with OpenGL. The template argument TEXTURE_TYPE should be a
@@ -258,7 +256,7 @@ protected:
 //! GL_TEXTURE_1D_ARRAY, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_CUBE_MAP_ARRAY,
 //! GL_TEXTURE_BUFFER, GL_TEXTURE_2D_MULTISAMPLE, or 
 //! GL_TEXTURE_2D_MULTISAMPLE_ARRAY. This class merely stores the texture id.
-//! Note that deleting an object of this class does not automatically deletes 
+//! Note that deleting an object of this class does not automatically delete
 //! the texture from the GPU memory. You must explicitly call the Delete() 
 //! method to free the texture storage on the GPU.
 template <GLenum TEXTURE_TYPE>
@@ -273,9 +271,10 @@ public:
 	//!@name General Methods
 
 	void   Delete() { if ( textureID != CY_GL_INVALID_ID ) glDeleteTextures(1,&textureID); textureID = CY_GL_INVALID_ID; }	//!< Deletes the texture.
-	GLuint GetID () const { return textureID; }						//!< Returns the texture ID.
-	bool   IsNull() const { return textureID == CY_GL_INVALID_ID; }	//!< Returns true if the OpenGL texture object is not generated, i.e. the texture id is invalid.
-	void   Bind  (int textureUnit=0) const { glActiveTexture(GL_TEXTURE0+textureUnit); glBindTexture(TEXTURE_TYPE, textureID); }	//!< Binds the texture to the given texture unit for rendering.
+	GLuint GetID () const { return textureID; }													//!< Returns the texture ID.
+	bool   IsNull() const { return textureID == CY_GL_INVALID_ID; }								//!< Returns true if the OpenGL texture object is not generated, i.e. the texture id is invalid.
+	void   Bind  () const { glBindTexture(TEXTURE_TYPE, textureID); }							//!< Binds the texture to the current texture unit.
+	void   Bind  (int textureUnit) const { glActiveTexture(GL_TEXTURE0+textureUnit); Bind(); }	//!< Binds the texture to the given texture unit.
 
 	//!@name Texture Creation and Initialization
 
@@ -283,56 +282,22 @@ public:
 	//! Initializes the texture sampling parameters
 	void Initialize();
 
-	//!@{
-	//! Sets the texture image data.
-	void SetImage( const GLbyte   *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_BYTE,          data,internalFormat,format,width,height,depth); }
-	void SetImage( const GLubyte  *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_UNSIGNED_BYTE, data,internalFormat,format,width,height,depth); }
-	void SetImage( const GLshort  *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_SHORT,         data,internalFormat,format,width,height,depth); }
-	void SetImage( const GLushort *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_UNSIGNED_SHORT,data,internalFormat,format,width,height,depth); }
-	void SetImage( const GLint    *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_INT,           data,internalFormat,format,width,height,depth); }
-	void SetImage( const GLuint   *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_UNSIGNED_INT,  data,internalFormat,format,width,height,depth); }
-	void SetImage( const GLfloat  *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(GL_FLOAT,         data,internalFormat,format,width,height,depth); }
-	void SetImage( GLenum dataType, const void *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height=0, GLsizei depth=0 );
-	//!@}
-
-	void SetImage( int numChannels, GL::Type type, GLenum dataType, const void *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ); //!< Sets the texture image with the given number of channels using the given type.
-	void SetImage( int numChannels, const GLubyte  *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(numChannels,GL::TYPE_UBYTE, GL_UNSIGNED_BYTE, data,width,height,depth); }	//!< Sets the texture image as normalized unsigned byte data
-	void SetImage( int numChannels, const GLushort *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(numChannels,GL::TYPE_USHORT,GL_UNSIGNED_SHORT,data,width,height,depth); }	//!< Sets the texture image as normalized unsigned short data
-	void SetImage( int numChannels, const GLfloat  *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(numChannels,GL::TYPE_FLOAT, GL_FLOAT,         data,width,height,depth); }	//!< Sets the texture image as float data
-	void SetImage( int numChannels, const GLint    *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(numChannels,GL::TYPE_INT32, GL_INT,           data,width,height,depth); }	//!< Sets the texture image as int data
-	void SetImage( int numChannels, const GLuint   *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(numChannels,GL::TYPE_UINT32,GL_UNSIGNED_INT,  data,width,height,depth); }	//!< Sets the texture image as unsigned int data
-
-	template <typename T> void SetImageRGBA( GL::Type type, const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(4,type,data,width,height,depth); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( GL::Type type, const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(3,type,data,width,height,depth); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( GL::Type type, const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(2,type,data,width,height,depth); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( GL::Type type, const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(1,type,data,width,height,depth); }	//!< Sets the texture image with 1 channel.
-
-	template <typename T> void SetImageRGBA( const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(4,data,width,height,depth); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(3,data,width,height,depth); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(2,data,width,height,depth); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( const T *data, GLsizei width, GLsizei height=0, GLsizei depth=0 ) { SetImage(1,data,width,height,depth); }	//!< Sets the texture image with 1 channel.
-
 #ifdef GL_VERSION_3_0
 	//! Builds mipmap levels for the texture. The texture image must be set first.
-	void BuildMipmaps() { glBindTexture(TEXTURE_TYPE, textureID); glGenerateMipmap(TEXTURE_TYPE); }
+	void BuildMipmaps() { Bind(); glGenerateMipmap(TEXTURE_TYPE); }
 #endif
-
-	//! Sets the texture wrapping parameter.
-	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
-	//! If the wrap argument is zero, the corresponding wrapping parameter is not changed.
-	void SetWrappingMode(GLenum wrapS, GLenum wrapT=0, GLenum wrapR=0);
 
 	//! Sets the texture filtering mode.
 	//! The acceptable values are GL_NEAREST and GL_LINEAR.
 	//! The minification filter values can also be GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR, or GL_LINEAR_MIPMAP_LINEAR.
 	//! If the filter argument is zero, the corresponding filter parameter is not changed.
-	void SetFilteringMode(GLenum magnificationFilter=0, GLenum minificationFilter=0);
+	void SetFilteringMode(GLenum magnificationFilter, GLenum minificationFilter);
 
 #ifdef GL_EXT_texture_filter_anisotropic
 	//! Sets the anisotropy level of the texture.
 	//! The anisotropy value of 1 disables anisotropic filtering.
 	//! Larger values provide provide better anisotropic filtering.
-	void SetAnisotropy(float anisotropy) { glBindTexture(TEXTURE_TYPE, textureID); glTexParameterf(TEXTURE_TYPE, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy ); }
+	void SetAnisotropy(float anisotropy) { Bind(); glTexParameterf(TEXTURE_TYPE, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy ); }
 
 	//! Sets anisotropic filtering to the maximum permissible value.
 	void SetMaxAnisotropy() { float largest; glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest); SetAnisotropy(largest); }
@@ -344,7 +309,221 @@ public:
 
 //-------------------------------------------------------------------------------
 
+//! OpenGL 1D texture class.
+//!
+//! This class provides a convenient interface for handling 1D texture
+//! operations with OpenGL. The template argument TEXTURE_TYPE should be a
+//! 1D texture type supported by OpenGL, such as GL_TEXTURE_1D.
+//! This class merely stores the texture id.
+//! Note that deleting an object of this class does not automatically delete
+//! the texture from the GPU memory. You must explicitly call the Delete() 
+//! method to free the texture storage on the GPU.
+template <GLenum TEXTURE_TYPE>
+class GLTexture1 : public GLTexture<TEXTURE_TYPE>
+{
+public:
+	//! Sets the texture image using the given texture format, data format, and data type.
+	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, int level=0 ) { Bind(); glTexImage1D(TEXTURE_TYPE,level,textureFormat,width,0,dataFormat,dataType,data); }
+
+	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
+	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,level); }
+
+	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
+	//! The texture format is determined by the texture type and the number of channels.
+	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,level); }
+
+	//! Sets the texture image. The texture format uses the matching data pointer type.
+	//! If unsigned char is used, the texture uses 8-bit normalized values.
+	//! If unsigned short is used, the texture uses 16-bit normalized values.
+	//! If float is used, the texture uses non-normalized 32-bit float values.
+	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
+	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,level); }
+
+	template <typename T> void SetImageRGBA( GL::Type texureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,4,width,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( GL::Type texureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,3,width,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( GL::Type texureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,2,width,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( GL::Type texureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,1,width,level); }	//!< Sets the texture image with 1 channel.
+
+	template <typename T> void SetImageRGBA( const T *data, GLsizei width, int level=0 ) { SetImage(data,4,width,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( const T *data, GLsizei width, int level=0 ) { SetImage(data,3,width,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( const T *data, GLsizei width, int level=0 ) { SetImage(data,2,width,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( const T *data, GLsizei width, int level=0 ) { SetImage(data,1,width,level); }	//!< Sets the texture image with 1 channel.
+
+	//! Sets the texture wrapping parameter.
+	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
+	void SetWrappingMode(GLenum wrapS) { Bind(); glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_S, wrapS); }
+
+};
+
+//-------------------------------------------------------------------------------
+
+//! OpenGL 2D texture class.
+//!
+//! This class provides a convenient interface for handling 2D texture
+//! operations with OpenGL. The template argument TEXTURE_TYPE should be a
+//! 2D texture type supported by OpenGL, such as GL_TEXTURE_2D, 
+//! GL_TEXTURE_RECTANGLE, or GL_TEXTURE_1D_ARRAY. This class merely stores the texture id.
+//! Note that deleting an object of this class does not automatically delete
+//! the texture from the GPU memory. You must explicitly call the Delete() 
+//! method to free the texture storage on the GPU.
+template <GLenum TEXTURE_TYPE>
+class GLTexture2 : public GLTexture<TEXTURE_TYPE>
+{
+public:
+	//! Sets the texture image using the given texture format, data format, and data type.
+	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, GLsizei height, int level=0 ) { Bind(); glTexImage2D(TEXTURE_TYPE,level,textureFormat,width,height,0,dataFormat,dataType,data); }
+
+	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
+	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,height,level); }
+
+	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
+	//! The texture format is determined by the texture type and the number of channels.
+	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
+
+	//! Sets the texture image. The texture format uses the matching data pointer type.
+	//! If unsigned char is used, the texture uses 8-bit normalized values.
+	//! If unsigned short is used, the texture uses 16-bit normalized values.
+	//! If float is used, the texture uses non-normalized 32-bit float values.
+	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
+	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,level); }
+
+	template <typename T> void SetImageRGBA( GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+
+	template <typename T> void SetImageRGBA( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+
+	//! Sets the texture wrapping parameter.
+	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
+	//! If the wrap argument is zero, the corresponding wrapping parameter is not changed.
+	void SetWrappingMode(GLenum wrapS, GLenum wrapT)
+	{
+		Bind();
+		if ( wrapS != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_S, wrapS);
+		if ( wrapT != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_T, wrapT);
+	}
+
+};
+
+//-------------------------------------------------------------------------------
+
+//! OpenGL 3D texture class.
+//!
+//! This class provides a convenient interface for handling 3D texture
+//! operations with OpenGL. The template argument TEXTURE_TYPE should be a
+//! 3D texture type supported by OpenGL, such as GL_TEXTURE_3D or
+//! GL_TEXTURE_2D_ARRAY. This class merely stores the texture id.
+//! Note that deleting an object of this class does not automatically delete
+//! the texture from the GPU memory. You must explicitly call the Delete() 
+//! method to free the texture storage on the GPU.
+template <GLenum TEXTURE_TYPE>
+class GLTexture3 : public GLTexture<TEXTURE_TYPE>
+{
+public:
+	//! Sets the texture image using the given texture format, data format, and data type.
+	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { Bind(); glTexImage3D(TEXTURE_TYPE,level,textureFormat,width,height,depth,0,dataFormat,dataType,data); }
+
+	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
+	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,height,depth,level); }
+
+	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
+	//! The texture format is determined by the texture type and the number of channels.
+	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,depth,level); }
+
+	//! Sets the texture image. The texture format uses the matching data pointer type.
+	//! If unsigned char is used, the texture uses 8-bit normalized values.
+	//! If unsigned short is used, the texture uses 16-bit normalized values.
+	//! If float is used, the texture uses non-normalized 32-bit float values.
+	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
+	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,depth,level); }
+
+	template <typename T> void SetImageRGBA( GL::Type texureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,4,width,height,depth,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( GL::Type texureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( GL::Type texureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( GL::Type texureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
+
+	template <typename T> void SetImageRGBA( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,4,width,height,depth,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
+
+	//! Sets the texture wrapping parameter.
+	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
+	//! If the wrap argument is zero, the corresponding wrapping parameter is not changed.
+	void SetWrappingMode(GLenum wrapS, GLenum wrapT, GLenum wrapR)
+	{
+		Bind();
+		if ( wrapS != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_S, wrapS);
+		if ( wrapT != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_T, wrapT);
+		if ( wrapR != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_R, wrapR);
+	}
+
+};
+
+//-------------------------------------------------------------------------------
+
+//! OpenGL cube map texture class.
+//!
+//! This class provides a convenient interface for handling cube map texture
+//! operations with OpenGL. This class merely stores the texture id.
+//! Note that deleting an object of this class does not automatically delete
+//! the texture from the GPU memory. You must explicitly call the Delete() 
+//! method to free the texture storage on the GPU.
+class GLTextureCubeMap : public GLTexture<GL_TEXTURE_CUBE_MAP>
+{
+public:
+	//! Sides of the cube map.
+	enum Side {
+		POSITIVE_X=0,
+		NEGATIVE_X,
+		POSITIVE_Y,
+		NEGATIVE_Y,
+		POSITIVE_Z,
+		NEGATIVE_Z
+	};
+
+	//! Sets the texture image using the given texture format, data format, and data type.
+	void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, GLsizei height, int level=0 ) { Bind(); glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+side,level,textureFormat,width,height,0,dataFormat,dataType,data); }
+
+	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
+	template <typename T> void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureFormat,dataFormat,GL::GetGLType(data),data,width,height,level); }
+
+	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
+	//! The texture format is determined by the texture type and the number of channels.
+	template <typename T> void SetImage( Side side, GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
+
+	//! Sets the texture image. The texture format uses the matching data pointer type.
+	//! If unsigned char is used, the texture uses 8-bit normalized values.
+	//! If unsigned short is used, the texture uses 16-bit normalized values.
+	//! If float is used, the texture uses non-normalized 32-bit float values.
+	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
+	template <typename T> void SetImage( Side side, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,GL::GetType(data),data,numChannels,width,height,level); }
+
+	template <typename T> void SetImageRGBA( Side side, GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( Side side, GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( Side side, GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( Side side, GL::Type texureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+
+	template <typename T> void SetImageRGBA( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+
+#ifdef GL_TEXTURE_CUBE_MAP_SEAMLESS
+	//! Sets the global seamless cube mapping flag, if supported by the hardware.
+	static void SetSeamless(bool enable=true) { if (enable) glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); else glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS); }
+#endif
+
+};
+
+//-------------------------------------------------------------------------------
+
 #ifdef GL_VERSION_3_0
+#define _CY_GLRenderBuffer
 
 //! OpenGL render buffer
 //!
@@ -352,11 +531,11 @@ public:
 class GLRenderBuffer
 {
 protected:
-	GLuint  framebufferID;				//!< The frame-buffer ID
-	GLuint  depthbufferID;				//!< The depth-buffer ID
-	GLTexture<GL_TEXTURE_2D> texture;	//!< The buffer texture
-	GLsizei bufferWidth;				//!< The width of the frame buffer
-	GLsizei bufferHeight;				//!< The height of the frame buffer
+	GLuint        framebufferID;		//!< The frame-buffer ID
+	GLuint        depthbufferID;		//!< The depth-buffer ID
+	GLTexture2<GL_TEXTURE_2D> texture;	//!< The buffer texture
+	GLsizei       bufferWidth;			//!< The width of the frame buffer
+	GLsizei       bufferHeight;			//!< The height of the frame buffer
 	mutable GLint prevBufferID;			//!< Temporary storage for previous frame-buffer used before binding this buffer
 	mutable GLint prevViewport[4];		//!< Temporary storage for the size and position of the previous frame-buffer used before binding this buffer
 
@@ -377,7 +556,8 @@ public:
 	//!@name Texture Methods
 
 	GLuint GetTextureID() const { return texture.GetID(); }						//!< Returns the texture ID.
-	void   BindTexture(int textureUnit=0) const { texture.Bind(textureUnit); }	//!< Binds the texture to the given texture unit for rendering.
+	void   BindTexture () const { texture.Bind(); }								//!< Binds the texture to the current texture unit.
+	void   BindTexture (int textureUnit=0) const { texture.Bind(textureUnit); }	//!< Binds the texture to the given texture unit.
 	void   BuildTextureMipmaps() { texture.BuildMipmaps(); }					//!< Builds mipmap levels for the texture.
 
 	//! Sets the wrapping parameter for the texture.
@@ -885,8 +1065,81 @@ public:
 };
 
 //-------------------------------------------------------------------------------
+// Implementation of GL
+//-------------------------------------------------------------------------------
+
+inline void GL::PrintVersion(std::ostream *outStream)
+{
+	const GLubyte* version = glGetString(GL_VERSION);
+	if ( version ) *outStream << version;
+	else {
+		int versionMajor=0, versionMinor=0;
+#ifdef GL_VERSION_3_0
+		glGetIntegerv(GL_MAJOR_VERSION,&versionMajor);
+		glGetIntegerv(GL_MINOR_VERSION,&versionMinor);
+#endif
+		if ( versionMajor > 0 && versionMajor < 100 ) {
+			*outStream << versionMajor << "." << versionMinor;
+		} else *outStream << "Unknown";
+	}
+}
+
+inline void GL::CheckError(const char *sourcefile, int line, const char *call, std::ostream *outStream)
+{
+	GLenum error;
+	while ( (error = glGetError()) != GL_NO_ERROR) {
+		*outStream << "OpenGL ERROR: " << sourcefile << " (line " << line << "): ";
+		if ( call ) *outStream << call << " triggered ";
+		*outStream << gluErrorString(error) << std::endl;
+	}
+}
+
+inline GLenum GL::TextureFormat( GL::Type type, int numChannels )
+{
+	assert( numChannels > 0 && numChannels <= 4 );
+	const GLenum internalFormats[][4] = {
+		{ GL_R8,    GL_RG8,    GL_RGB8,    GL_RGBA8	   },
+		{ GL_R16,   GL_RG16,   GL_RGB16,   GL_RGBA16   },
+#ifdef GL_VERSION_3_0
+		{ GL_R16F,  GL_RG16F,  GL_RGB16F,  GL_RGBA16F  },
+		{ GL_R32F,  GL_RG32F,  GL_RGB32F,  GL_RGBA32F  },
+		{ GL_R8I,   GL_RG8I,   GL_RGB8I,   GL_RGBA8I   },
+		{ GL_R8UI,  GL_RG8UI,  GL_RGB8UI,  GL_RGBA8UI  },
+		{ GL_R16I,  GL_RG16I,  GL_RGB16I,  GL_RGBA16I  },
+		{ GL_R16UI, GL_RG16UI, GL_RGB16UI, GL_RGBA16UI },
+		{ GL_R32I,  GL_RG32I,  GL_RGB32I,  GL_RGBA32I  },
+		{ GL_R32UI, GL_RG32UI, GL_RGB32UI, GL_RGBA32UI },
+#else
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+#endif
+	};
+	return internalFormats[type][numChannels-1];
+}
+
+inline GLenum GL::TextureDataFormat( GL::Type type, int numChannels )
+{
+	const GLenum formats[][4] = {
+		{ GL_RED,         GL_RG,         GL_RGB,         GL_RGBA         },
+#ifdef GL_VERSION_3_0
+		{ GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER },
+#else
+		{ GL_RED,         GL_RG,         GL_RGB,         GL_RGBA         },
+#endif
+	};
+	return formats[type>=GL::TYPE_INT8][numChannels-1];
+}
+
+//-------------------------------------------------------------------------------
 // Implementation of GLDebugCallback
 //-------------------------------------------------------------------------------
+#ifdef _CY_GLDebugCallback
 
 inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
                                                     GLenum type,
@@ -948,6 +1201,7 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
 	*outStream << std::endl;
 }
 
+#endif
 //-------------------------------------------------------------------------------
 // GLTexture Implementation
 //-------------------------------------------------------------------------------
@@ -962,61 +1216,17 @@ inline void GLTexture<TEXTURE_TYPE>::Initialize()
 }
 
 template <GLenum TEXTURE_TYPE>
-inline void GLTexture<TEXTURE_TYPE>::SetImage( GLenum dataType, const void *data, GLenum internalFormat, GLenum format, GLsizei width, GLsizei height, GLsizei depth )
+void GLTexture<TEXTURE_TYPE>::SetFilteringMode(GLenum magnificationFilter, GLenum minificationFilter)
 {
-	glBindTexture(TEXTURE_TYPE, textureID);
-	if ( depth > 0 ) glTexImage3D(TEXTURE_TYPE,0,internalFormat,width,height,depth,0,format,dataType,data);
-	else if ( height > 0 ) glTexImage2D(TEXTURE_TYPE,0,internalFormat,width,height,0,format,dataType,data);
-	else glTexImage1D(TEXTURE_TYPE,0,internalFormat,width,0,format,dataType,data);
-}
-
-template <GLenum TEXTURE_TYPE>
-inline void GLTexture<TEXTURE_TYPE>::SetImage( int numChannels, GL::Type type, GLenum dataType, const void *data, GLsizei width, GLsizei height, GLsizei depth )
-{
-	assert( numChannels > 0 && numChannels <= 4 );
-	GLenum internalFormats[][4] = {
-		{ GL_R8,    GL_RG8,    GL_RGB8,    GL_RGBA8	   },
-		{ GL_R16,   GL_RG16,   GL_RGB16,   GL_RGBA16   },
-#ifdef GL_VERSION_3_0
-		{ GL_R16F,  GL_RG16F,  GL_RGB16F,  GL_RGBA16F  },
-		{ GL_R32F,  GL_RG32F,  GL_RGB32F,  GL_RGBA32F  },
-		{ GL_R8I,   GL_RG8I,   GL_RGB8I,   GL_RGBA8I   },
-		{ GL_R8UI,  GL_RG8UI,  GL_RGB8UI,  GL_RGBA8UI  },
-		{ GL_R16I,  GL_RG16I,  GL_RGB16I,  GL_RGBA16I  },
-		{ GL_R16UI, GL_RG16UI, GL_RGB16UI, GL_RGBA16UI },
-		{ GL_R32I,  GL_RG32I,  GL_RGB32I,  GL_RGBA32I  },
-		{ GL_R32UI, GL_RG32UI, GL_RGB32UI, GL_RGBA32UI },
-#endif
-	};
-	GLenum formats[][4] = {
-		{ GL_RED,         GL_RG,         GL_RGB,         GL_RGBA         },
-#ifdef GL_VERSION_3_0
-		{ GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER },
-#endif
-	};
-	SetImage(dataType, data, internalFormats[type][numChannels-1], formats[type>=GL::TYPE_INT8][numChannels-1], width, height, depth );
-}
-
-template <GLenum TEXTURE_TYPE>
-inline void GLTexture<TEXTURE_TYPE>::SetWrappingMode(GLenum wrapS, GLenum wrapT, GLenum wrapR)
-{
-	glBindTexture(TEXTURE_TYPE, textureID);
-	if ( wrapS != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_S, wrapS);
-	if ( wrapT != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_T, wrapT);
-	if ( wrapR != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_R, wrapR);
-}
-
-template <GLenum TEXTURE_TYPE>
-inline void GLTexture<TEXTURE_TYPE>::SetFilteringMode(GLenum magnificationFilter, GLenum minificationFilter)
-{
-	glBindTexture(TEXTURE_TYPE, textureID);
+	Bind();
 	if ( magnificationFilter != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_MAG_FILTER, magnificationFilter);
 	if ( minificationFilter  != 0 ) glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_MIN_FILTER, minificationFilter);
 }
 
 //-------------------------------------------------------------------------------
-// GLFrameBuffer Implementation
+// GLRenderBuffer Implementation
 //-------------------------------------------------------------------------------
+#ifdef _CY_GLRenderBuffer
 
 inline void GLRenderBuffer::Delete()
 {
@@ -1028,16 +1238,16 @@ inline void GLRenderBuffer::Delete()
 inline void GLRenderBuffer::Bind() const
 {
 	glGetIntegerv(GL_VIEWPORT, prevViewport);
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBufferID);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &prevBufferID);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferID);
 	glViewport(0,0,bufferWidth,bufferHeight);
 }
+
 inline void GLRenderBuffer::Unbind() const
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, prevBufferID);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prevBufferID);
 	glViewport(prevViewport[0],prevViewport[1],prevViewport[2],prevViewport[3]);
 }
-
 
 inline bool GLRenderBuffer::IsComplete() const
 {
@@ -1073,7 +1283,7 @@ inline bool GLRenderBuffer::Initialize( bool useDepthBuffer )
 
 inline bool GLRenderBuffer::Resize( int numChannels, GLsizei width, GLsizei height, GL::Type type )
 {
-	texture.SetImage(numChannels,type,GL_UNSIGNED_BYTE,nullptr,width,height);
+	texture.SetImage(GL::TextureFormat(type,numChannels),GL_RGBA,GL_UNSIGNED_BYTE,nullptr,width,height);
 	if ( depthbufferID != CY_GL_INVALID_ID ) {
 		glBindRenderbuffer(GL_RENDERBUFFER, depthbufferID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
@@ -1083,6 +1293,7 @@ inline bool GLRenderBuffer::Resize( int numChannels, GLsizei width, GLsizei heig
 	return IsComplete();
 }
 
+#endif
 //-------------------------------------------------------------------------------
 // GLSLShader Implementation
 //-------------------------------------------------------------------------------
@@ -1309,58 +1520,47 @@ inline void GLSLProgram::RegisterUniforms( const char *names, unsigned int start
 
 //-------------------------------------------------------------------------------
 
-typedef GLTexture<GL_TEXTURE_1D                  > GLTexture1D;					//!< OpenGL 1D Texture
-typedef GLTexture<GL_TEXTURE_2D                  > GLTexture2D;					//!< OpenGL 2D Texture
-typedef GLTexture<GL_TEXTURE_3D                  > GLTexture3D;					//!< OpenGL 3D Texture
-typedef GLTexture<GL_TEXTURE_CUBE_MAP            > GLTextureCubeMap;			//!< OpenGL Cube Map Texture
-typedef GLTexture<GL_TEXTURE_CUBE_MAP_ARRAY      > GLTextureCubeMapArray;		//!< OpenGL Cube Map Texture Array
+typedef GLTexture1<GL_TEXTURE_1D       > GLTexture1D;				//!< OpenGL 1D Texture
+typedef GLTexture2<GL_TEXTURE_2D       > GLTexture2D;				//!< OpenGL 2D Texture
+typedef GLTexture3<GL_TEXTURE_3D       > GLTexture3D;				//!< OpenGL 3D Texture
 
 #ifdef GL_TEXTURE_1D_ARRAY
-typedef GLTexture<GL_TEXTURE_1D_ARRAY            > GLTexture1DArray;			//!< OpenGL 1D Texture Array
-typedef GLTexture<GL_TEXTURE_2D_ARRAY            > GLTexture2DArray;			//!< OpenGL 2D Texture Array
+typedef GLTexture2<GL_TEXTURE_1D_ARRAY > GLTexture1DArray;			//!< OpenGL 1D Texture Array
+typedef GLTexture3<GL_TEXTURE_2D_ARRAY > GLTexture2DArray;			//!< OpenGL 2D Texture Array
 #endif
 #ifdef GL_TEXTURE_RECTANGLE
-typedef GLTexture<GL_TEXTURE_RECTANGLE           > GLTextureRect;				//!< OpenGL Rectangle Texture
-typedef GLTexture<GL_TEXTURE_BUFFER              > GLTextureBuffer;				//!< OpenGL Buffer Texture
-#endif
-#ifdef GL_TEXTURE_2D_MULTISAMPLE
-typedef GLTexture<GL_TEXTURE_2D_MULTISAMPLE      > GLTexture2DMultisample;		//!< OpenGL 2D Multi-sample Texture
-typedef GLTexture<GL_TEXTURE_2D_MULTISAMPLE_ARRAY> GLTexture2DMultisampleArray;	//!< OpenGL 2D Multi-sample Texture Array
+typedef GLTexture2<GL_TEXTURE_RECTANGLE> GLTextureRect;				//!< OpenGL Rectangle Texture
+typedef GLTexture1<GL_TEXTURE_BUFFER   > GLTextureBuffer;			//!< OpenGL Buffer Texture
 #endif
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::GL cyGL;							//!< General OpenGL queries
+typedef cy::GL cyGL;								//!< General OpenGL queries
 
 #ifdef GL_KHR_debug
-typedef cy::GLDebugCallback cyGLDebugCallback;	//!< OpenGL debug callback class
+typedef cy::GLDebugCallback  cyGLDebugCallback;		//!< OpenGL debug callback class
 #endif
 
-typedef cy::GLTexture1D                 cyGLTexture1D;					//!< OpenGL 1D Texture
-typedef cy::GLTexture2D                 cyGLTexture2D;					//!< OpenGL 2D Texture
-typedef cy::GLTexture3D                 cyGLTexture3D;					//!< OpenGL 3D Texture
-typedef cy::GLTextureCubeMap            cyGLTextureCubeMap;				//!< OpenGL Cube Map Texture
-typedef cy::GLTextureCubeMapArray       cyGLTextureCubeMapArray;		//!< OpenGL Cube Map Texture Array
+typedef cy::GLTexture1D      cyGLTexture1D;			//!< OpenGL 1D Texture
+typedef cy::GLTexture2D      cyGLTexture2D;			//!< OpenGL 2D Texture
+typedef cy::GLTexture3D      cyGLTexture3D;			//!< OpenGL 3D Texture
+typedef cy::GLTextureCubeMap cyGLTextureCubeMap;	//!< OpenGL Cube Map Texture
 
 #ifdef GL_TEXTURE_1D_ARRAY
-typedef cy::GLTexture1DArray            cyGLTexture1DArray;				//!< OpenGL 1D Texture Array
-typedef cy::GLTexture2DArray            cyGLTexture2DArray;				//!< OpenGL 2D Texture Array
+typedef cy::GLTexture1DArray cyGLTexture1DArray;	//!< OpenGL 1D Texture Array
+typedef cy::GLTexture2DArray cyGLTexture2DArray;	//!< OpenGL 2D Texture Array
 #endif
 #ifdef GL_TEXTURE_RECTANGLE
-typedef cy::GLTextureRect               cyGLTextureRect;				//!< OpenGL Rectangle Texture
-typedef cy::GLTextureBuffer             cyGLTextureBuffer;				//!< OpenGL Buffer Texture
-#endif
-#ifdef GL_TEXTURE_2D_MULTISAMPLE
-typedef cy::GLTexture2DMultisample      cyGLTexture2DMultisample;		//!< OpenGL 2D Multi-sample Texture
-typedef cy::GLTexture2DMultisampleArray cyGLTexture2DMultisampleArray;	//!< OpenGL 2D Multi-sample Texture Array
+typedef cy::GLTextureRect    cyGLTextureRect;		//!< OpenGL Rectangle Texture
+typedef cy::GLTextureBuffer  cyGLTextureBuffer;		//!< OpenGL Buffer Texture
 #endif
 
-typedef cy::GLRenderBuffer cyGLRenderBuffer;	//!< OpenGL render buffer
+typedef cy::GLRenderBuffer   cyGLRenderBuffer;		//!< OpenGL render buffer
 
-typedef cy::GLSLShader  cyGLSLShader;			//!< GLSL shader class
-typedef cy::GLSLProgram cyGLSLProgram;			//!< GLSL program class
+typedef cy::GLSLShader       cyGLSLShader;			//!< GLSL shader class
+typedef cy::GLSLProgram      cyGLSLProgram;			//!< GLSL program class
 
 //-------------------------------------------------------------------------------
 #endif
