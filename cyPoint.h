@@ -443,7 +443,7 @@ public:
 	TYPE*       Data        ()              { return &x; }
 	const TYPE* Data        ()        const { return &x; }
 
-	//!@ Dot product
+	//!@name Dot product
 	TYPE Dot		( const Point4 &p ) const { Point4 r=operator*(p); return r.Sum(); }	//!< Dot product
 	TYPE operator % ( const Point4 &p ) const { return Dot(p); }							//!< Dot product
 
@@ -471,25 +471,25 @@ template <typename TYPE> template <typename T> Point3<TYPE>::Point3( const Point
 
 //-------------------------------------------------------------------------------
 
-typedef Point2<float>    Point2f;	//!< Single precision (float) 2D Point/Vector class
-typedef Point3<float>    Point3f;	//!< Single precision (float) 3D Point/Vector class
-typedef Point4<float>    Point4f;	//!< Single precision (float) 4D Point/Vector class
+typedef Point2<float>    Point2f;	//!< 2D point (vector) class with float type elements
+typedef Point3<float>    Point3f;	//!< 3D point (vector) class with float type elements
+typedef Point4<float>    Point4f;	//!< 4D point (vector) class with float type elements
 
-typedef Point2<double>   Point2d;	//!< Double precision (double) 2D Point/Vector class
-typedef Point3<double>   Point3d;	//!< Double precision (double) 3D Point/Vector class
-typedef Point4<double>   Point4d;	//!< Double precision (double) 4D Point/Vector class
+typedef Point2<double>   Point2d;	//!< 2D point (vector) class with double type elements
+typedef Point3<double>   Point3d;	//!< 3D point (vector) class with double type elements
+typedef Point4<double>   Point4d;	//!< 4D point (vector) class with double type elements
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Point2f  cyPoint2f;		//!< Single precision (float) 2D Point/Vector class
-typedef cy::Point3f  cyPoint3f;		//!< Single precision (float) 3D Point/Vector class
-typedef cy::Point4f  cyPoint4f;		//!< Single precision (float) 4D Point/Vector class
+typedef cy::Point2f  cyPoint2f;		//!< 2D point (vector) class with float type elements
+typedef cy::Point3f  cyPoint3f;		//!< 3D point (vector) class with float type elements
+typedef cy::Point4f  cyPoint4f;		//!< 4D point (vector) class with float type elements
 
-typedef cy::Point2d  cyPoint2d;		//!< Double precision (double) 2D Point/Vector class
-typedef cy::Point3d  cyPoint3d;		//!< Double precision (double) 3D Point/Vector class
-typedef cy::Point4d  cyPoint4d;		//!< Double precision (double) 4D Point/Vector class
+typedef cy::Point2d  cyPoint2d;		//!< 2D point (vector) class with double type elements
+typedef cy::Point3d  cyPoint3d;		//!< 3D point (vector) class with double type elements
+typedef cy::Point4d  cyPoint4d;		//!< 4D point (vector) class with double type elements
 
 //-------------------------------------------------------------------------------
 

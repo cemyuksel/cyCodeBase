@@ -247,25 +247,25 @@ template<typename TYPE> inline SpatialMatrix6<TYPE> operator & ( const SpatialVe
 
 //-------------------------------------------------------------------------------
 
-typedef SpatialVector6<float>  SpatialVector6f;	//!< Singe precision (float) 6D spatial vector (for 3D)
-typedef SpatialTrans6 <float>  SpatialTrans6f;	//!< Singe precision (float) 6D spatial matrix for coordinate transforms
-typedef SpatialMatrix6<float>  SpatialMatrix6f;	//!< Singe precision (float) 6D spatial matrix
+typedef SpatialVector6<float>  SpatialVector6f;	//!< 6D spatial vector (for 3D) with float type elements
+typedef SpatialTrans6 <float>  SpatialTrans6f;	//!< 6D spatial matrix for coordinate transforms with float type elements
+typedef SpatialMatrix6<float>  SpatialMatrix6f;	//!< 6D spatial matrix with float type elements
 
-typedef SpatialVector6<double> SpatialVector6d;	//!< Double precision (double) 6D spatial vector (for 3D)
-typedef SpatialTrans6 <double> SpatialTrans6d;	//!< Double precision (double) 6D spatial matrix for coordinate transforms
-typedef SpatialMatrix6<double> SpatialMatrix6d;	//!< Double precision (double) 6D spatial matrix
+typedef SpatialVector6<double> SpatialVector6d;	//!< 6D spatial vector (for 3D) with double type elements
+typedef SpatialTrans6 <double> SpatialTrans6d;	//!< 6D spatial matrix for coordinate transforms with double type elements
+typedef SpatialMatrix6<double> SpatialMatrix6d;	//!< 6D spatial matrix with double type elements
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::SpatialVector6f cySpatialVector6f;	//!< Singe precision (float) 6D spatial vector (for 3D)
-typedef cy::SpatialTrans6f  cySpatialTrans6f;	//!< Singe precision (float) 6D spatial matrix for coordinate transforms
-typedef cy::SpatialMatrix6f cySpatialMatrix6f;	//!< Singe precision (float) 6D spatial matrix
+typedef cy::SpatialVector6f cySpatialVector6f;	//!< 6D spatial vector (for 3D) with float type elements
+typedef cy::SpatialTrans6f  cySpatialTrans6f;	//!< 6D spatial matrix for coordinate transforms with float type elements
+typedef cy::SpatialMatrix6f cySpatialMatrix6f;	//!< 6D spatial matrix with float type elements
 
-typedef cy::SpatialVector6d cySpatialVector6d;	//!< Double precision (double) 6D spatial vector (for 3D)
-typedef cy::SpatialTrans6d  cySpatialTrans6d;	//!< Double precision (double) 6D spatial matrix for coordinate transforms
-typedef cy::SpatialMatrix6d cySpatialMatrix6d;	//!< Double precision (double) 6D spatial matrix
+typedef cy::SpatialVector6d cySpatialVector6d;	//!< 6D spatial vector (for 3D) with double type elements
+typedef cy::SpatialTrans6d  cySpatialTrans6d;	//!< 6D spatial matrix for coordinate transforms with double type elements
+typedef cy::SpatialMatrix6d cySpatialMatrix6d;	//!< 6D spatial matrix with double type elements
 
 //-------------------------------------------------------------------------------
 

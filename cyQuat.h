@@ -145,15 +145,15 @@ private:
 
 //-------------------------------------------------------------------------------
 
-typedef Quat<float>  Quatf;	//!< Single precision (float) Quaternion class
-typedef Quat<double> Quatd;	//!< Double precision (double) Quaternion class
+typedef Quat<float>  Quatf;	//!< Quaternion class with float  elements
+typedef Quat<double> Quatd;	//!< Quaternion class with double elements
 
 //-------------------------------------------------------------------------------
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-typedef cy::Quatf cyQuatf;	//!< Single precision (float) Quaternion class
-typedef cy::Quatd cyQuatd;	//!< Double precision (double) Quaternion class
+typedef cy::Quatf cyQuatf;	//!< Quaternion class with float  elements
+typedef cy::Quatd cyQuatd;	//!< Quaternion class with double elements
 
 //-------------------------------------------------------------------------------
 
