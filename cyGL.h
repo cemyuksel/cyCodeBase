@@ -525,9 +525,11 @@ public:
 #ifdef GL_VERSION_3_0
 #define _CY_GLRenderBuffer
 
+//-------------------------------------------------------------------------------
+
 //! OpenGL render buffer
 //!
-//! This class provides a convenient interface for OpenGL render buffers.
+//! This is the base class for helper classes for render to texture in OpenGL.
 template <GLenum TEXTURE_TYPE>
 class GLRenderBuffer
 {
@@ -542,7 +544,7 @@ protected:
 
 public:
 	GLRenderBuffer() : framebufferID(CY_GL_INVALID_ID), depthbufferID(CY_GL_INVALID_ID), prevBufferID(0) {}	//!< Constructor.
-	virtual ~GLRenderBuffer() { if ( GL::CheckContext() ) Delete(); }										//!< Destructor.
+	~GLRenderBuffer() { if ( GL::CheckContext() ) Delete(); }										//!< Destructor.
 
 	//!@name General Methods
 
@@ -578,6 +580,20 @@ public:
 	void SetTextureNoAnisotropy () { texture.SetNoAnisotropy(); }						//!< Turns off anisotropic filtering.
 #endif
 
+protected:
+	void GenerateBuffer();	//!< Generates the frame buffer and initializes the texture
+	void SetSize(GLsizei width, GLsizei height) { bufferWidth = width; bufferHeight = height; }	//!< Sets the size of the frame buffer
+};
+
+//-------------------------------------------------------------------------------
+
+//! OpenGL render color buffer
+//!
+//! This class provides a convenient interface for texture rendering in OpenGL with a color texture buffer.
+template <GLenum TEXTURE_TYPE>
+class GLRenderTexture : public GLRenderBuffer<TEXTURE_TYPE>
+{
+public:
 	//!@name Render Buffer Creation and Initialization
 
 	//! Generates the render buffer.
@@ -586,14 +602,42 @@ public:
 
 	//! Generates the render buffer and sets its size.
 	//! Returns true if the render buffer is ready and complete.
-	bool Initialize( bool useDepthBuffer, int numChannels, GLsizei width, GLsizei height, GL::Type type=GL::TYPE_UBYTE ) { if ( Initialize(useDepthBuffer) ) return Resize(numChannels,width,height,type); return false; }
+	bool Initialize( bool useDepthBuffer, int numChannels, GLsizei width, GLsizei height, GL::Type type=GL::TYPE_UBYTE ) { return Initialize(useDepthBuffer) ? Resize(numChannels,width,height,type) : false; }
 
 	//! Initializes or changes the size of the render buffer.
 	//! Returns true if the buffer is complete.
 	bool Resize( int numChannels, GLsizei width, GLsizei height, GL::Type type=GL::TYPE_UBYTE );
 };
 
-#endif
+//-------------------------------------------------------------------------------
+
+//! OpenGL render depth buffer
+//!
+//! This class provides a convenient interface for texture rendering in OpenGL with a depth texture buffer.
+template <GLenum TEXTURE_TYPE>
+class GLRenderDepth : public GLRenderBuffer<TEXTURE_TYPE>
+{
+public:
+	//!@name Render Buffer Creation and Initialization
+
+	//! Generates the render buffer.
+	//! Returns true if the render buffer is ready.
+	//! If depthComparisonTexture is true, initializes the texture for depth comparison.
+	bool Initialize( bool depthComparisonTexture=true );
+
+	//! Generates the render buffer and sets its size.
+	//! Returns true if the render buffer is ready and complete.
+	//! If depthComparisonTexture is true, initializes the texture for depth comparison.
+	bool Initialize( bool depthComparisonTexture, GLsizei width, GLsizei height, GLenum depthFormat=GL_DEPTH_COMPONENT ) { return Initialize(depthComparisonTexture) ? Resize(width,height,depthFormat) : false; }
+
+	//! Initializes or changes the size of the render buffer.
+	//! Returns true if the buffer is complete.
+	bool Resize( GLsizei width, GLsizei height, GLenum depthFormat=GL_DEPTH_COMPONENT );
+};
+
+//-------------------------------------------------------------------------------
+
+#endif // GL_VERSION_3_0
 
 //-------------------------------------------------------------------------------
 
@@ -1265,39 +1309,69 @@ inline bool GLRenderBuffer<TEXTURE_TYPE>::IsComplete() const
 }
 
 template <GLenum TEXTURE_TYPE>
-inline bool GLRenderBuffer<TEXTURE_TYPE>::Initialize( bool useDepthBuffer )
+inline void GLRenderBuffer<TEXTURE_TYPE>::GenerateBuffer()
 {
-	GLint prevBuffer;
-	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevBuffer );
-	Delete();
+	GLRenderBuffer<TEXTURE_TYPE>::Delete();
 	glGenFramebuffers(1, &framebufferID);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	texture.Initialize();
 	texture.SetFilteringMode(GL_NEAREST,GL_NEAREST);
 	texture.SetWrappingMode(GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE);
+}
+
+template <GLenum TEXTURE_TYPE>
+inline bool GLRenderTexture<TEXTURE_TYPE>::Initialize( bool useDepthBuffer )
+{
+	GLint prevBuffer;
+	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevBuffer );
+	GLRenderBuffer<TEXTURE_TYPE>::GenerateBuffer();
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	if ( useDepthBuffer ) {
 		glGenRenderbuffers(1, &depthbufferID);
 		glBindRenderbuffer(GL_RENDERBUFFER, depthbufferID);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbufferID);
 	}
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.GetID(), 0);
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, DrawBuffers);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
-	return IsReady();
+	return GLRenderBuffer<TEXTURE_TYPE>::IsReady();
 }
 
 template <GLenum TEXTURE_TYPE>
-inline bool GLRenderBuffer<TEXTURE_TYPE>::Resize( int numChannels, GLsizei width, GLsizei height, GL::Type type )
+inline bool GLRenderTexture<TEXTURE_TYPE>::Resize( int numChannels, GLsizei width, GLsizei height, GL::Type type )
 {
 	texture.SetImage(GL::TextureFormat(type,numChannels),GL_RGBA,GL_UNSIGNED_BYTE,nullptr,width,height);
 	if ( depthbufferID != CY_GL_INVALID_ID ) {
 		glBindRenderbuffer(GL_RENDERBUFFER, depthbufferID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 	}
-	bufferWidth = width;
-	bufferHeight = height;
-	return IsComplete();
+	GLRenderBuffer<TEXTURE_TYPE>::SetSize(width,height);
+	return GLRenderBuffer<TEXTURE_TYPE>::IsComplete();
+}
+
+template <GLenum TEXTURE_TYPE>
+inline bool GLRenderDepth<TEXTURE_TYPE>::Initialize( bool depthComparisonTexture )
+{
+	GLint prevBuffer;
+	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevBuffer );
+	GLRenderBuffer<TEXTURE_TYPE>::GenerateBuffer();
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+	if ( depthComparisonTexture ) {
+		glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	}
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture.GetID(), 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+	return GLRenderBuffer<TEXTURE_TYPE>::IsReady();
+}
+
+template <GLenum TEXTURE_TYPE>
+inline bool GLRenderDepth<TEXTURE_TYPE>::Resize( GLsizei width, GLsizei height, GLenum depthFormat )
+{
+	texture.SetImage(depthFormat,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr,width,height);
+	GLRenderBuffer<TEXTURE_TYPE>::SetSize(width,height);
+	return GLRenderBuffer<TEXTURE_TYPE>::IsComplete();
 }
 
 #endif
@@ -1540,8 +1614,10 @@ typedef GLTexture2<GL_TEXTURE_RECTANGLE>     GLTextureRect;			//!< OpenGL Rectan
 typedef GLTexture1<GL_TEXTURE_BUFFER   >     GLTextureBuffer;		//!< OpenGL Buffer Texture
 #endif
 
-typedef GLRenderBuffer<GL_TEXTURE_2D>        GLRenderBuffer2D;		//!< OpenGL render buffer with a 2D texture
-typedef GLRenderBuffer<GL_TEXTURE_RECTANGLE> GLRenderBufferRect;	//!< OpenGL render buffer with a rectangle texture
+typedef GLRenderTexture<GL_TEXTURE_2D>        GLRenderTexture2D;	//!< OpenGL render color buffer with a 2D texture
+typedef GLRenderTexture<GL_TEXTURE_RECTANGLE> GLRenderTextureRect;	//!< OpenGL render color buffer with a rectangle texture
+typedef GLRenderDepth  <GL_TEXTURE_2D>        GLRenderDepth2D;		//!< OpenGL render depth buffer with a 2D texture
+typedef GLRenderDepth  <GL_TEXTURE_RECTANGLE> GLRenderDepthRect;	//!< OpenGL render depth buffer with a rectangle texture
 
 //-------------------------------------------------------------------------------
 } // namespace cy
@@ -1567,8 +1643,10 @@ typedef cy::GLTextureRect      cyGLTextureRect;			//!< OpenGL Rectangle Texture
 typedef cy::GLTextureBuffer    cyGLTextureBuffer;		//!< OpenGL Buffer Texture
 #endif
 
-typedef cy::GLRenderBuffer2D   cyGLRenderBuffer2D;		//!< OpenGL render buffer with a 2D texture
-typedef cy::GLRenderBufferRect cyGLRenderBufferRect;	//!< OpenGL render buffer with a rectangle texture
+typedef cy::GLRenderTexture2D   cyGLRenderTexture2D;	//!< OpenGL render color buffer with a 2D texture
+typedef cy::GLRenderTextureRect cyGLRenderTextureRect;	//!< OpenGL render color buffer with a rectangle texture
+typedef cy::GLRenderDepth2D     cyGLRenderDepth2D;		//!< OpenGL render depth buffer with a 2D texture
+typedef cy::GLRenderDepthRect   cyGLRenderDepthRect;	//!< OpenGL render depth buffer with a rectangle texture
 
 typedef cy::GLSLShader         cyGLSLShader;			//!< GLSL shader class
 typedef cy::GLSLProgram        cyGLSLProgram;			//!< GLSL program class
