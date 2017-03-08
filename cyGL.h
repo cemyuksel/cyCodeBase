@@ -931,19 +931,19 @@ public:
 #endif
 
 #ifdef _CY_IPOINT_H_INCLUDED_
-	void SetUniform(int index, const IPoint2<int>    &p)              { glUniform2iv (params[index],1,    &p.x );
-	void SetUniform(int index, const IPoint3<int>    &p)              { glUniform3iv (params[index],1,    &p.x );
-	void SetUniform(int index, const IPoint4<int>    &p)              { glUniform4iv (params[index],1,    &p.x );
-	void SetUniform(int index, const IPoint2<int>    *p, int count=1) { glUniform2iv (params[index],count,&p->x);
-	void SetUniform(int index, const IPoint3<int>    *p, int count=1) { glUniform3iv (params[index],count,&p->x);
-	void SetUniform(int index, const IPoint4<int>    *p, int count=1) { glUniform4iv (params[index],count,&p->x);
+	void SetUniform(int index, const IPoint2<int>    &p)              { glUniform2iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, const IPoint3<int>    &p)              { glUniform3iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, const IPoint4<int>    &p)              { glUniform4iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, const IPoint2<int>    *p, int count=1) { glUniform2iv (params[index],count,&p->x); }
+	void SetUniform(int index, const IPoint3<int>    *p, int count=1) { glUniform3iv (params[index],count,&p->x); }
+	void SetUniform(int index, const IPoint4<int>    *p, int count=1) { glUniform4iv (params[index],count,&p->x); }
 # ifdef GL_VERSION_3_0
-	void SetUniform(int index, const IPoint2<GLuint> &p)              { glUniform2uiv(params[index],1,    &p.x );
-	void SetUniform(int index, const IPoint3<GLuint> &p)              { glUniform3uiv(params[index],1,    &p.x );
-	void SetUniform(int index, const IPoint4<GLuint> &p)              { glUniform4uiv(params[index],1,    &p.x );
-	void SetUniform(int index, const IPoint2<GLuint> *p, int count=1) { glUniform2uiv(params[index],count,&p->x);
-	void SetUniform(int index, const IPoint3<GLuint> *p, int count=1) { glUniform3uiv(params[index],count,&p->x);
-	void SetUniform(int index, const IPoint4<GLuint> *p, int count=1) { glUniform4uiv(params[index],count,&p->x);
+	void SetUniform(int index, const IPoint2<GLuint> &p)              { glUniform2uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, const IPoint3<GLuint> &p)              { glUniform3uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, const IPoint4<GLuint> &p)              { glUniform4uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, const IPoint2<GLuint> *p, int count=1) { glUniform2uiv(params[index],count,&p->x); }
+	void SetUniform(int index, const IPoint3<GLuint> *p, int count=1) { glUniform3uiv(params[index],count,&p->x); }
+	void SetUniform(int index, const IPoint4<GLuint> *p, int count=1) { glUniform4uiv(params[index],count,&p->x); }
 # endif
 #endif
 
@@ -1068,19 +1068,19 @@ public:
 #endif
 
 #ifdef _CY_IPOINT_H_INCLUDED_
-	void SetUniform(const char *name, const IPoint2<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,1,    &p.x );
-	void SetUniform(const char *name, const IPoint3<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,1,    &p.x );
-	void SetUniform(const char *name, const IPoint4<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,1,    &p.x );
-	void SetUniform(const char *name, const IPoint2<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,&p->x);
-	void SetUniform(const char *name, const IPoint3<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,&p->x);
-	void SetUniform(const char *name, const IPoint4<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,&p->x);
+	void SetUniform(const char *name, const IPoint2<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,1,    &p.x ); }
+	void SetUniform(const char *name, const IPoint3<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,1,    &p.x ); }
+	void SetUniform(const char *name, const IPoint4<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,1,    &p.x ); }
+	void SetUniform(const char *name, const IPoint2<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,&p->x); }
+	void SetUniform(const char *name, const IPoint3<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,&p->x); }
+	void SetUniform(const char *name, const IPoint4<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,&p->x); }
 # ifdef GL_VERSION_3_0
-	void SetUniform(const char *name, const IPoint2<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,1,    &p.x );
-	void SetUniform(const char *name, const IPoint3<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,1,    &p.x );
-	void SetUniform(const char *name, const IPoint4<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,1,    &p.x );
-	void SetUniform(const char *name, const IPoint2<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,&p->x);
-	void SetUniform(const char *name, const IPoint3<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,&p->x);
-	void SetUniform(const char *name, const IPoint4<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,&p->x);
+	void SetUniform(const char *name, const IPoint2<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,1,    &p.x ); }
+	void SetUniform(const char *name, const IPoint3<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,1,    &p.x ); }
+	void SetUniform(const char *name, const IPoint4<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,1,    &p.x ); }
+	void SetUniform(const char *name, const IPoint2<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,&p->x); }
+	void SetUniform(const char *name, const IPoint3<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,&p->x); }
+	void SetUniform(const char *name, const IPoint4<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,&p->x); }
 # endif
 #endif
 
@@ -1313,6 +1313,7 @@ inline void GLRenderBuffer<TEXTURE_TYPE>::GenerateBuffer()
 {
 	GLRenderBuffer<TEXTURE_TYPE>::Delete();
 	glGenFramebuffers(1, &framebufferID);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	texture.Initialize();
 	texture.SetFilteringMode(GL_NEAREST,GL_NEAREST);
 	texture.SetWrappingMode(GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE);
@@ -1324,13 +1325,12 @@ inline bool GLRenderTexture<TEXTURE_TYPE>::Initialize( bool useDepthBuffer )
 	GLint prevBuffer;
 	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevBuffer );
 	GLRenderBuffer<TEXTURE_TYPE>::GenerateBuffer();
-	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	if ( useDepthBuffer ) {
-		glGenRenderbuffers(1, &depthbufferID);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthbufferID);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbufferID);
+		glGenRenderbuffers(1, &this->depthbufferID);
+		glBindRenderbuffer(GL_RENDERBUFFER, this->depthbufferID);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->depthbufferID);
 	}
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.GetID(), 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GLRenderBuffer<TEXTURE_TYPE>::GetTextureID(), 0);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	return GLRenderBuffer<TEXTURE_TYPE>::IsReady();
@@ -1339,9 +1339,9 @@ inline bool GLRenderTexture<TEXTURE_TYPE>::Initialize( bool useDepthBuffer )
 template <GLenum TEXTURE_TYPE>
 inline bool GLRenderTexture<TEXTURE_TYPE>::Resize( int numChannels, GLsizei width, GLsizei height, GL::Type type )
 {
-	texture.SetImage(GL::TextureFormat(type,numChannels),GL_RGBA,GL_UNSIGNED_BYTE,nullptr,width,height);
-	if ( depthbufferID != CY_GL_INVALID_ID ) {
-		glBindRenderbuffer(GL_RENDERBUFFER, depthbufferID);
+	this->texture.SetImage(GL::TextureFormat(type,numChannels),GL_RGBA,GL_UNSIGNED_BYTE,nullptr,width,height);
+	if ( this->depthbufferID != CY_GL_INVALID_ID ) {
+		glBindRenderbuffer(GL_RENDERBUFFER, this->depthbufferID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 	}
 	GLRenderBuffer<TEXTURE_TYPE>::SetSize(width,height);
@@ -1354,12 +1354,11 @@ inline bool GLRenderDepth<TEXTURE_TYPE>::Initialize( bool depthComparisonTexture
 	GLint prevBuffer;
 	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevBuffer );
 	GLRenderBuffer<TEXTURE_TYPE>::GenerateBuffer();
-	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	if ( depthComparisonTexture ) {
 		glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	}
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture.GetID(), 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GLRenderBuffer<TEXTURE_TYPE>::GetTextureID(), 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
@@ -1369,7 +1368,7 @@ inline bool GLRenderDepth<TEXTURE_TYPE>::Initialize( bool depthComparisonTexture
 template <GLenum TEXTURE_TYPE>
 inline bool GLRenderDepth<TEXTURE_TYPE>::Resize( GLsizei width, GLsizei height, GLenum depthFormat )
 {
-	texture.SetImage(depthFormat,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr,width,height);
+	this->texture.SetImage(depthFormat,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr,width,height);
 	GLRenderBuffer<TEXTURE_TYPE>::SetSize(width,height);
 	return GLRenderBuffer<TEXTURE_TYPE>::IsComplete();
 }
