@@ -40,6 +40,8 @@
 //-------------------------------------------------------------------------------
 
 #ifdef max
+# define _CY_POP_MACRO_max
+# pragma push_macro("max")
 # undef max
 #endif
 
@@ -67,6 +69,13 @@ public:
 	PointCloud() : points(nullptr), pointCount(0) {}
 	PointCloud( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices=nullptr ) : points(nullptr), pointCount(0) { Build(numPts,pts,customIndices); }
 	~PointCloud() { delete [] points; }
+
+	/////////////////////////////////////////////////////////////////////////////////
+	//!@ Access to internal data
+
+	SIZE_TYPE GetPointCount() const { return pointCount-1; }					//!< Returns the point count
+	const PointType& GetPoint(SIZE_TYPE i) const { return points[i+1].Pos(); }	//!< Returns the point at position i
+	SIZE_TYPE GetPointIndex(SIZE_TYPE i) const { return points[i+1].Index(); }	//!< Returns the index of the point at position i
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//!@ Initialization
@@ -141,7 +150,7 @@ public:
 	};
 
 	//! Returns the closest points to the given position within the given radius.
-	//! The returned value is the number of points found.
+	//! It returns the number of points found.
 	int GetPoints( const PointType &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints )
 	{
 		bool tooManyPoints = false;
@@ -168,7 +177,7 @@ public:
 	}
 
 	//! Returns the closest points to the given position.
-	//! The returned value is the number of points found.
+	//! It returns the number of points found.
 	int GetPoints( const PointType &position, SIZE_TYPE maxCount, PointInfo *closestPoints )
 	{
 		return GetPoints( position, std::numeric_limits<FType>::max(), maxCount, closestPoints );
@@ -178,7 +187,7 @@ public:
 	//!@name Closest point methods
 
 	//! Returns the closest point to the given position within the given radius.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared )
 	{
 		bool found = false;
@@ -187,14 +196,14 @@ public:
 	}
 
 	//! Returns the closest point to the given position.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared )
 	{
 		return GetClosest( position, std::numeric_limits<FType>::max(), closestIndex, closestPosition, closestDistanceSquared );
 	}
 
 	//! Returns the closest point index and position to the given position within the given index.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition )
 	{
 		FType closestDistanceSquared;
@@ -202,7 +211,7 @@ public:
 	}
 
 	//! Returns the closest point index and position to the given position.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition )
 	{
 		FType closestDistanceSquared;
@@ -210,7 +219,7 @@ public:
 	}
 
 	//! Returns the closest point index to the given position within the given radius.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosestIndex( const PointType &position, FType radius, SIZE_TYPE &closestIndex )
 	{
 		FType closestDistanceSquared;
@@ -219,7 +228,7 @@ public:
 	}
 
 	//! Returns the closest point index to the given position.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosestIndex( const PointType &position, SIZE_TYPE &closestIndex )
 	{
 		FType closestDistanceSquared;
@@ -228,7 +237,7 @@ public:
 	}
 
 	//! Returns the closest point position to the given position within the given radius.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosestPosition( const PointType &position, FType radius, PointType &closestPosition )
 	{
 		SIZE_TYPE closestIndex;
@@ -237,7 +246,7 @@ public:
 	}
 
 	//! Returns the closest point position to the given position.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosestPosition( const PointType &position, PointType &closestPosition )
 	{
 		SIZE_TYPE closestIndex;
@@ -246,7 +255,7 @@ public:
 	}
 
 	//! Returns the closest point distance squared to the given position within the given radius.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosestDistanceSquared( const PointType &position, FType radius, FType &closestDistanceSquared )
 	{
 		SIZE_TYPE closestIndex;
@@ -255,7 +264,7 @@ public:
 	}
 
 	//! Returns the closest point distance squared to the given position.
-	//! The returned value is true, if a point is found.
+	//! It returns true, if a point is found.
 	bool GetClosestDistanceSquared( const PointType &position, FType &closestDistanceSquared )
 	{
 		SIZE_TYPE closestIndex;
@@ -395,6 +404,13 @@ typedef cy::PointCloud<cy::Point4d,double,4> cyPointCloud4d;	//!< A 4D point clo
 template <typename TYPE, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudN, (cy::PointCloud<cy::Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
 template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNf , (cyPointCloudN<float,   DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with float  type elements
 template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNd , (cyPointCloudN<double,  DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with double type elements
+#endif
+
+//-------------------------------------------------------------------------------
+
+#ifdef _CY_POP_MACRO_max
+# pragma pop_macro("max")
+# undef _CY_POP_MACRO_max
 #endif
 
 //-------------------------------------------------------------------------------

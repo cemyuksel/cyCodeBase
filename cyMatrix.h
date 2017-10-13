@@ -82,6 +82,14 @@ public:
 	explicit Matrix2( const Matrix34<TYPE> &m );
 	explicit Matrix2( const Matrix4<TYPE>  &m );
 
+	//! Constructor using row-major order for initialization
+	Matrix2( const TYPE &row0col0, const TYPE &row0col1,
+		     const TYPE &row1col0, const TYPE &row1col1 )
+	{
+		data[0] = row0col0;   data[2] = row0col1;
+		data[1] = row1col0;   data[3] = row1col1;
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set & Get Methods
@@ -309,6 +317,16 @@ public:
 	}
 	explicit Matrix3( const Matrix34<TYPE> &m );
 	explicit Matrix3( const Matrix4<TYPE>  &m );
+
+	//! Constructor using row-major order for initialization
+	Matrix3( const TYPE &row0col0, const TYPE &row0col1, const TYPE &row0col2,
+		     const TYPE &row1col0, const TYPE &row1col1, const TYPE &row1col2,
+		     const TYPE &row2col0, const TYPE &row2col1, const TYPE &row2col2 )
+	{
+		data[0] = row0col0;   data[3] = row0col1;   data[6] = row0col2;
+		data[1] = row1col0;   data[4] = row1col1;   data[7] = row1col2;
+		data[2] = row2col0;   data[5] = row2col1;   data[8] = row2col2;
+	}
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -758,6 +776,16 @@ public:
 		CY_MEMCLEAR(TYPE,data+9,3);
 	}
 	explicit Matrix34( const Matrix4<TYPE> &m );
+
+	//! Constructor using row-major order for initialization
+	Matrix34( const TYPE &row0col0, const TYPE &row0col1, const TYPE &row0col2, const TYPE &row0col3,
+		      const TYPE &row1col0, const TYPE &row1col1, const TYPE &row1col2, const TYPE &row1col3,
+		      const TYPE &row2col0, const TYPE &row2col1, const TYPE &row2col2, const TYPE &row2col3 )
+	{
+		data[ 0] = row0col0;   data[ 3] = row0col1;   data[ 6] = row0col2;   data[ 9] = row0col3;
+		data[ 1] = row1col0;   data[ 4] = row1col1;   data[ 7] = row1col2;   data[10] = row1col3;
+		data[ 2] = row2col0;   data[ 5] = row2col1;   data[ 8] = row2col2;   data[11] = row2col3;
+	}
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1301,6 +1329,18 @@ public:
 		data[10]=TYPE(1);
 		CY_MEMCLEAR(TYPE,data+11,4);
 		data[15]=TYPE(1);
+	}
+
+	//! Constructor using row-major order for initialization
+	Matrix4( const TYPE &row0col0, const TYPE &row0col1, const TYPE &row0col2, const TYPE &row0col3,
+		     const TYPE &row1col0, const TYPE &row1col1, const TYPE &row1col2, const TYPE &row1col3,
+		     const TYPE &row2col0, const TYPE &row2col1, const TYPE &row2col2, const TYPE &row2col3,
+		     const TYPE &row3col0, const TYPE &row3col1, const TYPE &row3col2, const TYPE &row3col3 )
+	{
+		data[ 0] = row0col0;   data[ 4] = row0col1;   data[ 8] = row0col2;   data[12] = row0col3;
+		data[ 1] = row1col0;   data[ 5] = row1col1;   data[ 9] = row1col2;   data[13] = row1col3;
+		data[ 2] = row2col0;   data[ 6] = row2col1;   data[10] = row2col2;   data[14] = row2col3;
+		data[ 3] = row3col0;   data[ 7] = row3col1;   data[11] = row3col2;   data[15] = row3col3;
 	}
 
 
