@@ -52,9 +52,9 @@ class Color32;
 
 class Color
 {
-	friend Color operator+( const float v, const Color &c ) { return c+v; }		//!< Addition with a constant
+	friend Color operator+( const float v, const Color &c ) { return   c+v;  }	//!< Addition with a constant
 	friend Color operator-( const float v, const Color &c ) { return -(c-v); }	//!< Subtraction from a constant
-	friend Color operator*( const float v, const Color &c ) { return c*v; }		//!< Multiplication with a constant
+	friend Color operator*( const float v, const Color &c ) { return   c*v;  }	//!< Multiplication with a constant
 
 public:
 
@@ -72,27 +72,26 @@ public:
 	explicit Color( const Color32 &c );
 
 	//!@name Set & Get value functions
-	void SetBlack() { r=0; g=0; b=0; }									//!< Sets r, g and b components as zero
-	void SetWhite() { r=1; g=1; b=1; }									//!< Sets r, g and b components as one
+	void SetBlack() { r=0.0f; g=0.0f; b=0.0f; }							//!< Sets r, g and b components as zero
+	void SetWhite() { r=1.0f; g=1.0f; b=1.0f; }							//!< Sets r, g and b components as one
 	void Set     ( float _r, float _g, float _b ) { r=_r; g=_g; b=_b; }	//!< Sets r, g and b components as given
 	void Set     ( const float *v ) { r=v[0]; g=v[1]; b=v[2]; }			//!< Sets r, g and b components using the values in the given array
 	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; }			//!< Puts r, g and b values into the array
 
 	//!@name Gray-scale functions
-	float Sum() const   { return r + g + b; }
-	float Gray() const  { return Sum() / 3.0f; }
+	float Sum  () const { return r + g + b; }
+	float Gray () const { return Sum() / 3.0f; }
 	float Luma1() const { return 0.299f *r + 0.587f *g + 0.114f *b; }
 	float Luma2() const { return 0.2126f*r + 0.7152f*g + 0.0722f*b; }
 
 	//!@name Limit functions
-	void ClampMinMax( float min=0, float max=1 ) { ClampMin(min); ClampMax(max); }
-	void ClampMin   ( float n=0 ) { if(r<n)r=n; if(g<n)g=n; if(b<n)b=n; }
-	void ClampMax   ( float n=1 ) { if(r>n)r=n; if(g>n)g=n; if(b>n)b=n; }
+	void Clamp   ( float limitMin=0.0f, float limitMax=1.0f ) { ClampMin(limitMin); ClampMax(limitMax); }
+	void ClampMin( float limitMin=0.0f ) { if(r<limitMin)r=limitMin; if(g<limitMin)g=limitMin; if(b<limitMin)b=limitMin; }
+	void ClampMax( float limitMax=1.0f ) { if(r>limitMax)r=limitMax; if(g>limitMax)g=limitMax; if(b>limitMax)b=limitMax; }
 	void Abs() { r = fabsf(r); g = fabsf(g); b = fabsf(b); }
 
 	//!@name Unary operators
 	Color  operator - () const { return Color(-r,-g,-b); } 
-	Color  operator + () const { return *this; }
 
 	//!@name Binary operators
 	Color  operator + ( const Color &c ) const { return Color(r+c.r, g+c.g, b+c.b); }
@@ -115,16 +114,16 @@ public:
 	Color& operator /= ( float n ) { r/=n; g/=n; b/=n; return *this; }
 
 	//!@name Test operators
-	int operator == ( const Color& c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) ); }
-	int operator != ( const Color& c ) const { return ( (c.r!=r) || (c.g!=g) || (c.b!=b) ); }
+	bool operator == ( const Color& c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) ); }
+	bool operator != ( const Color& c ) const { return ( (c.r!=r) || (c.g!=g) || (c.b!=b) ); }
 
 	//!@name Access operators
 	float& operator [] ( int i )       { return (&r)[i]; }
 	float  operator [] ( int i ) const { return (&r)[i]; }
 
 	//!@name Static Methods
-	static Color Black() { Color c; c.SetBlack(); return c; }	//!< Returns a black color
-	static Color White() { Color c; c.SetWhite(); return c; }	//!< Returns a white color
+	static Color Black() { return Color(0.0f,0.0f,0.0f); }	//!< Returns a black color
+	static Color White() { return Color(1.0f,1.0f,1.0f); }	//!< Returns a white color
 };
 
 //-------------------------------------------------------------------------------
@@ -133,9 +132,9 @@ public:
 
 class ColorA
 {
-	friend ColorA operator + ( const float v, const ColorA &c ) { return c+v; }		//!< Addition with a constant
+	friend ColorA operator + ( const float v, const ColorA &c ) { return   c+v;  }	//!< Addition with a constant
 	friend ColorA operator - ( const float v, const ColorA &c ) { return -(c-v); }	//!< Subtraction from a constant
-	friend ColorA operator * ( const float v, const ColorA &c ) { return c*v; }		//!< Multiplication with a constant
+	friend ColorA operator * ( const float v, const ColorA &c ) { return   c*v;  }	//!< Multiplication with a constant
 
 public:
 
@@ -153,8 +152,8 @@ public:
 	explicit ColorA( const Color32 &c );
 
 	//!@name Set & Get value functions
-	void SetBlack( float alpha=1 ) { r=0; g=0; b=0; a=alpha; }								//!< Sets r, g, and b components as zero and a component as given
-	void SetWhite( float alpha=1 ) { r=0; g=0; b=0; a=alpha; }								//!< Sets r, g, and b components as one and a component as given
+	void SetBlack( float alpha=1.0f ) { r=0.0f; g=0.0f; b=0.0f; a=alpha; }					//!< Sets r, g, and b components as zero and a component as given
+	void SetWhite( float alpha=1.0f ) { r=0.0f; g=0.0f; b=0.0f; a=alpha; }					//!< Sets r, g, and b components as one and a component as given
 	void Set     ( float _r, float _g, float _b, float _a=1 ) { r=_r; g=_g; b=_b; a=_a; }	//!< Sets r, g, b and a components as given
 	void Set     ( const float *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; }						//!< Sets r, g, b and a components using the values in the given array
 	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }						//!< Puts r, g, b and a values into the array
@@ -166,14 +165,13 @@ public:
 	float Luma2() const { return 0.2126f*r + 0.7152f*g + 0.0722f*b; }
 
 	//!@name Limit functions
-	void ClampMinMax( float min, float max ) { ClampMin(min); ClampMax(max); }
-	void ClampMin   ( float n ) { if(r<n)r=n; if(g<n)g=n; if(b<n)b=n; if(a<n)a=n; }
-	void ClampMax   ( float n ) { if(r>n)r=n; if(g>n)g=n; if(b>n)b=n; if(a>n)a=n; }
+	void Clamp   ( float limitMin=0.0f, float limitMax=1.0f ) { ClampMin(limitMin); ClampMax(limitMax); }
+	void ClampMin( float limitMin=0.0f ) { if(r<limitMin)r=limitMin; if(g<limitMin)g=limitMin; if(b<limitMin)b=limitMin; if(a<limitMin)a=limitMin; }
+	void ClampMax( float limitMax=1.0f ) { if(r>limitMax)r=limitMax; if(g>limitMax)g=limitMax; if(b>limitMax)b=limitMax; if(a>limitMax)a=limitMax; }
 	void Abs() { r = fabsf(r); g = fabsf(g); b = fabsf(b); a = fabsf(a); }
 
 	//!@name Unary operators
 	ColorA  operator - () const { return ColorA(-r,-g,-b,-a); } 
-	ColorA  operator + () const { return *this; }
 
 	//!@name Binary operators
 	ColorA  operator + ( const ColorA &c ) const { return ColorA(r+c.r, g+c.g, b+c.b, a+c.a); }
@@ -196,16 +194,16 @@ public:
 	ColorA& operator /= ( float n ) { r/=n; g/=n; b/=n; a/=n; return *this; }
 
 	//!@name Test operators
-	int operator == ( const ColorA& c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) && (c.a==a) ); }
-	int operator != ( const ColorA& c ) const { return ( (c.r!=r) || (c.g!=g) || (c.b!=b) || (c.a!=a) ); }
+	bool operator == ( const ColorA& c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) && (c.a==a) ); }
+	bool operator != ( const ColorA& c ) const { return ( (c.r!=r) || (c.g!=g) || (c.b!=b) || (c.a!=a) ); }
 
 	//!@name Access operators
 	float& operator [] ( int i )       { return (&r)[i]; }
 	float  operator [] ( int i ) const { return (&r)[i]; }
 
 	//!@name Static Methods
-	static ColorA Black( float alpha=1 ) { ColorA c; c.SetBlack(alpha); return c; }	//!< Returns a black color
-	static ColorA White( float alpha=1 ) { ColorA c; c.SetWhite(alpha); return c; }	//!< Returns a white color
+	static ColorA Black( float alpha=1.0f ) { return ColorA(0.0f,0.0f,0.0f,alpha); }	//!< Returns a black color
+	static ColorA White( float alpha=1.0f ) { return ColorA(1.0f,1.0f,1.0f,alpha); }	//!< Returns a white color
 };
 
 //-------------------------------------------------------------------------------
@@ -228,22 +226,40 @@ public:
 	explicit Color24( const Color32 &c );
 
 	//!@name Conversion Methods
-	Color ToColor() const { return Color(r/255.0f,g/255.0f,b/255.0f); }
+	Color  ToColor () const { return Color (r/255.0f,g/255.0f,b/255.0f); }
+	ColorA ToColorA() const { return ColorA(r/255.0f,g/255.0f,b/255.0f,1.0f); }
 
 	//!@name Set & Get value functions
-	void SetBlack() { r=0; g=0; b=0; }															//!< Sets r, g, and b components as zero
+	void SetBlack() { r=  0; g=  0; b=  0; }													//!< Sets r, g, and b components as zero
 	void SetWhite() { r=255; g=255; b=255; }													//!< Sets r, g, and b components as 255
 	void Set     ( unsigned char _r, unsigned char _g, unsigned char _b ) { r=_r; g=_g; b=_b; }	//!< Sets r, g, and b components as given
 	void Set     ( const unsigned char *v ) { r=v[0]; g=v[1]; b=v[2]; }							//!< Sets r, g, and b components using the values in the given array
 	void GetValue( unsigned char *v ) const { v[0]=r; v[1]=g; v[2]=b; }							//!< Puts r, g, and b values into the array
 
+	//!@name Gray-scale functions
+	int           Sum () const { return int(r) + int(g) + int(b); }
+	unsigned char Gray() const { return unsigned char( (Sum()+1) / 3 ); }
+
+	//!@name Limit functions
+	void Clamp   ( unsigned char limitMin=  0, unsigned char limitMax=255 ) { ClampMin(limitMin); ClampMax(limitMax); }
+	void ClampMin( unsigned char limitMin=  0 ) { if(r<limitMin)r=limitMin; if(g<limitMin)g=limitMin; if(b<limitMin)b=limitMin; }
+	void ClampMax( unsigned char limitMax=255 ) { if(r>limitMax)r=limitMax; if(g>limitMax)g=limitMax; if(b>limitMax)b=limitMax; }
+
+	//!@name Test operators
+	bool operator == ( const Color24& c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) ); }
+	bool operator != ( const Color24& c ) const { return ( (c.r!=r) || (c.g!=g) || (c.b!=b) ); }
+
+	//!@name Access operators
+	unsigned char& operator [] ( int i )       { return (&r)[i]; }
+	unsigned char  operator [] ( int i ) const { return (&r)[i]; }
+
 	//!@name Static Methods
-	static Color24 Black() { Color24 c; c.SetBlack(); return c; }	//!< Returns a black color
-	static Color24 White() { Color24 c; c.SetWhite(); return c; }	//!< Returns a white color
+	static Color24 Black() { return Color24(  0,  0,  0); }	//!< Returns a black color
+	static Color24 White() { return Color24(255,255,255); }	//!< Returns a white color
 
 protected:
-	static unsigned char FloatToByte(float r) { return Clamp(int(r*255)); }
-	static unsigned char Clamp(int v) { return v<0 ? 0 : (v>255 ? 255 : v); }
+	static unsigned char FloatToByte(float r) { return ClampInt(int(r*255+0.5f)); }
+	static unsigned char ClampInt(int v) { return v<0 ? 0 : (v>255 ? 255 : v); }
 };
 
 //-------------------------------------------------------------------------------
@@ -261,28 +277,45 @@ public:
 	Color32() {}
 	Color32( const Color32 &c ) : r(c.r), g(c.g), b(c.b), a(c.a) {}
 	explicit Color32( unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a=255 ) : r(_r), g(_g), b(_b), a(_a) {}
-	explicit Color32( const Color  &c, float _a=1.0f ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); a=FloatToByte(_a); }
-	explicit Color32( const ColorA &c ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); a=FloatToByte(c.a); }
+	explicit Color32( const Color  &c, float _a=1.0f ) { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); a=FloatToByte( _a); }
+	explicit Color32( const ColorA &c )                { r=FloatToByte(c.r); g=FloatToByte(c.g); b=FloatToByte(c.b); a=FloatToByte(c.a); }
 	explicit Color32( const Color24 &c, unsigned char _a=255 ) : r(c.r), g(c.g), b(c.b), a(_a) {}
 
 	//!@name Conversion Methods
-	Color  ToColor () const { return Color(r/255.0f,g/255.0f,b/255.0f); }
+	Color  ToColor () const { return Color (r/255.0f,g/255.0f,b/255.0f); }
 	ColorA ToColorA() const { return ColorA(r/255.0f,g/255.0f,b/255.0f,a/255.0f); }
 
 	//!@name Set & Get value functions
-	void SetBlack( unsigned char _a=255 ) { r=0; g=0; b=0; a=_a; }														//!< Sets r, g, and b components as zero and a component as given
-	void SetWhite( unsigned char _a=255 ) { r=255; g=255; b=255; a=_a; }												//!< Sets r, g, and b components as one and a component as given
+	void SetBlack( unsigned char _a=255 ) { r=  0; g=  0; b=  0; a=_a; }												//!< Sets r, g, and b components as zero and a component as given
+	void SetWhite( unsigned char _a=255 ) { r=255; g=255; b=255; a=_a; }												//!< Sets r, g, and b components as 255 and a component as given
 	void Set     ( unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a ) { r=_r; g=_g; b=_b; a=_a; }	//!< Sets r, g, b and a components as given
 	void Set     ( const unsigned char *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; }											//!< Sets r, g, b and a components using the values in the given array
 	void GetValue( unsigned char *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }											//!< Puts r, g, b and a values into the array
 
+	//!@name Gray-scale functions
+	int           Sum () const { return int(r) + int(g) + int(b); }
+	unsigned char Gray() const { return unsigned char( (Sum()+1) / 3 ); }
+
+	//!@name Limit functions
+	void Clamp   ( unsigned char limitMin=  0, unsigned char limitMax=255 ) { ClampMin(limitMin); ClampMax(limitMax); }
+	void ClampMin( unsigned char limitMin=  0 ) { if(r<limitMin)r=limitMin; if(g<limitMin)g=limitMin; if(b<limitMin)b=limitMin; if(a<limitMin)a=limitMin; }
+	void ClampMax( unsigned char limitMax=255 ) { if(r>limitMax)r=limitMax; if(g>limitMax)g=limitMax; if(b>limitMax)b=limitMax; if(a>limitMax)a=limitMax; }
+
+	//!@name Test operators
+	bool operator == ( const Color32& c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) && (c.a==a) ); }
+	bool operator != ( const Color32& c ) const { return ( (c.r!=r) || (c.g!=g) || (c.b!=b) || (c.a!=a) ); }
+
+	//!@name Access operators
+	unsigned char& operator [] ( int i )       { return (&r)[i]; }
+	unsigned char  operator [] ( int i ) const { return (&r)[i]; }
+
 	//!@name Static Methods
-	static Color32 Black( unsigned char _a=255 ) { Color32 c; c.SetBlack(_a); return c; }	//!< Returns a black color
-	static Color32 White( unsigned char _a=255 ) { Color32 c; c.SetWhite(_a); return c; }	//!< Returns a white color
+	static Color32 Black( unsigned char alpha=255 ) { return Color32(  0,  0,  0,alpha); }	//!< Returns a black color
+	static Color32 White( unsigned char alpha=255 ) { return Color32(255,255,255,alpha); }	//!< Returns a white color
 
 protected:
-	static unsigned char FloatToByte(float r) { return Clamp(int(r*255)); }
-	static unsigned char Clamp(int v) { return v<0 ? 0 : (v>255 ? 255 : v); }
+	static unsigned char FloatToByte(float r) { return ClampInt(int(r*255+0.5f)); }
+	static unsigned char ClampInt(int v) { return v<0 ? 0 : (v>255 ? 255 : v); }
 };
 
 //-------------------------------------------------------------------------------
@@ -290,7 +323,7 @@ protected:
 inline Color  ::Color  ( const ColorA  &c ) : r(c.r), g(c.g), b(c.b) {}
 inline Color  ::Color  ( const Color24 &c ) { *this = c.ToColor(); }
 inline Color  ::Color  ( const Color32 &c ) { *this = c.ToColor(); }
-inline ColorA ::ColorA ( const Color24 &c, float _a ) { Color rgb = c.ToColor(); r = rgb.r; g = rgb.g; b = rgb.b; a = _a; }
+inline ColorA ::ColorA ( const Color24 &c, float alpha ) { Color rgb = c.ToColor(); r = rgb.r; g = rgb.g; b = rgb.b; a = alpha; }
 inline ColorA ::ColorA ( const Color32 &c ) { *this = c.ToColorA(); }
 inline Color24::Color24( const Color32 &c ) : r(c.r), g(c.g), b(c.b) {}
 
