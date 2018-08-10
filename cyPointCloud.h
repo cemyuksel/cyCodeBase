@@ -81,8 +81,23 @@ public:
 	//!@ Initialization
 
 	//! Builds a k-d tree for the given points.
-	//! The point locations are stored internally, along with the indices to the given array.
-	void Build( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices=nullptr )
+	//! The positions are stored internally.
+	void Build( SIZE_TYPE numPts, const PointType *pts ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; } ); }
+
+	//! Builds a k-d tree for the given points.
+	//! The positions are stored internally, along with the indices to the given array.
+	void Build( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; }, [&customIndices](SIZE_TYPE i){ return customIndices[i]; } ); }
+
+	//! Builds a k-d tree for the given points.
+	//! The positions are stored internally, retrieved from the given function.
+	template <typename PointPosFunc>
+	void BuildWithFunc( SIZE_TYPE numPts, PointPosFunc ptPosFunc ) { BuildWithFunc(numPts, ptPosFunc, [](SIZE_TYPE i){ return i; }); }
+
+	//! Builds a k-d tree for the given points.
+	//! The positions are stored internally, along with the indices to the given array.
+	//! The positions and custom indices are retrieved from the given functions.
+	template <typename PointPosFunc, typename CustomIndexFunc>
+	void BuildWithFunc( SIZE_TYPE numPts, PointPosFunc ptPosFunc, CustomIndexFunc custIndexFunc )
 	{
 		if ( points ) delete [] points;
 		pointCount = numPts;
@@ -90,9 +105,10 @@ public:
 		points = new PointData[pointCount+1];
 		SIZE_TYPE *order = new SIZE_TYPE[pointCount];
 		for ( SIZE_TYPE i=0; i<pointCount; i++ ) order[i] = i;
-		BuildKDTree( pts, customIndices, order, 1, 0, pointCount );
+		BuildKDTree( ptPosFunc, custIndexFunc, order, 1, 0, pointCount );
 		delete [] order;
 	}
+
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//!@ General search methods
@@ -301,27 +317,27 @@ private:
 	SIZE_TYPE  pointCount;	// Keeps the point count.
 
 	// The main method for recursively building the k-d tree.
-	void BuildKDTree( const PointType *pts, const SIZE_TYPE *indices, SIZE_TYPE *order, SIZE_TYPE kdIndex, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
+	template <typename PointPosFunc, typename CustomIndexFunc>
+	void BuildKDTree( PointPosFunc ptPosFunc, CustomIndexFunc indexFunc, SIZE_TYPE *order, SIZE_TYPE kdIndex, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
 	{
 		SIZE_TYPE n = ixEnd - ixStart;
 		if ( n <= 1 ) {
 			if ( n > 0 ) {
 				SIZE_TYPE ix = order[ixStart];
-				if ( indices ) points[kdIndex].Set( pts[ix], indices[ix] );
-				else           
-					points[kdIndex].Set( pts[ix], ix );
+				points[kdIndex].Set( 
+					ptPosFunc(ix), 
+					indexFunc(ix) 
+				);
 			}
 		} else {
-			int axis = SplitAxis( pts, order, ixStart, ixEnd );
+			int axis = SplitAxis( ptPosFunc, order, ixStart, ixEnd );
 			SIZE_TYPE leftSize = LeftSize(n);
 			SIZE_TYPE ixMid = ixStart+leftSize;
-			std::nth_element( order+ixStart, order+ixMid, order+ixEnd, [&pts,axis](const int &a, const int &b){ return pts[a][axis] < pts[b][axis]; } );
+			std::nth_element( order+ixStart, order+ixMid, order+ixEnd, [&ptPosFunc,axis](const int &a, const int &b){ return ptPosFunc(a)[axis] < ptPosFunc(b)[axis]; } );
 			SIZE_TYPE ix = order[ixMid];
-			if ( indices ) points[kdIndex].Set( pts[ix], indices[ix], axis );
-			else           
-				points[kdIndex].Set( pts[ix], ix, axis );
-			BuildKDTree( pts, indices, order, kdIndex*2,   ixStart, ixMid );
-			BuildKDTree( pts, indices, order, kdIndex*2+1, ixMid+1, ixEnd );
+			points[kdIndex].Set( ptPosFunc(ix), indexFunc(ix), axis );
+			BuildKDTree( ptPosFunc, indexFunc, order, kdIndex*2,   ixStart, ixMid );
+			BuildKDTree( ptPosFunc, indexFunc, order, kdIndex*2+1, ixMid+1, ixEnd );
 		}
 	}
 
@@ -336,12 +352,13 @@ private:
 	}
 
 	// Returns axis with the largest span, used as the splitting axis for building the k-d tree
-	int SplitAxis( const PointType *pts, SIZE_TYPE *indices, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
+	template <typename PointPosFunc>
+	int SplitAxis( PointPosFunc ptPosFunc, SIZE_TYPE *indices, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
 	{
-		PointType box_min = pts[ indices[ixStart] ];
+		PointType box_min = ptPosFunc( indices[ixStart] );
 		PointType box_max = box_min;
 		for ( SIZE_TYPE i=ixStart+1; i<ixEnd; i++ ) {
-			PointType p = pts[ indices[i] ];
+			PointType p = ptPosFunc( indices[i] );
 			for ( SIZE_TYPE d=0; d<DIMENSIONS; d++ ) {
 				if ( box_min[d] > p[d] ) box_min[d] = p[d];
 				if ( box_max[d] < p[d] ) box_max[d] = p[d];

@@ -275,6 +275,7 @@ public:
 	bool   IsNull() const { return textureID == CY_GL_INVALID_ID; }								//!< Returns true if the OpenGL texture object is not generated, i.e. the texture id is invalid.
 	void   Bind  () const { glBindTexture(TEXTURE_TYPE, textureID); }							//!< Binds the texture to the current texture unit.
 	void   Bind  (int textureUnit) const { glActiveTexture(GL_TEXTURE0+textureUnit); Bind(); }	//!< Binds the texture to the given texture unit.
+	GLenum Type  () const { return TEXTURE_TYPE; }
 
 	//!@name Texture Creation and Initialization
 
@@ -381,10 +382,10 @@ public:
 	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
 
 	//! Sets the texture image. The texture format uses the matching data pointer type.
-	//! If unsigned char is used, the texture uses 8-bit normalized values.
-	//! If unsigned short is used, the texture uses 16-bit normalized values.
-	//! If float is used, the texture uses non-normalized 32-bit float values.
-	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
+	//! If GLubyte (unsigned char) is used, the texture uses 8-bit normalized values.
+	//! If GLushort (unsigned short) is used, the texture uses 16-bit normalized values.
+	//! If GLfloat (float) is used, the texture uses non-normalized 32-bit float values.
+	//! If GLbyte, GLshort, GLint, or GLuint is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
 	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,level); }
 
 	template <typename T> void SetImageRGBA( GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
@@ -1143,9 +1144,32 @@ inline GLenum GL::TextureFormat( GL::Type type, int numChannels )
 {
 	assert( numChannels > 0 && numChannels <= 4 );
 	const GLenum internalFormats[][4] = {
+#ifdef CY_GL_TEXTURE_LUMINANCE
+		{ GL_LUMINANCE8,   GL_LUMINANCE8_ALPHA8,    GL_RGB8,    GL_RGBA8	},
+		{ GL_LUMINANCE16,  GL_LUMINANCE16_ALPHA16,  GL_RGB16,   GL_RGBA16   },
+# ifdef GL_VERSION_3_0
+		{ GL_LUMINANCE16F_ARB,  GL_LUMINANCE_ALPHA16F_ARB,  GL_RGB16F,  GL_RGBA16F  },
+		{ GL_LUMINANCE32F_ARB,  GL_LUMINANCE_ALPHA32F_ARB,  GL_RGB32F,  GL_RGBA32F  },
+		{ GL_LUMINANCE8I_EXT,   GL_LUMINANCE_ALPHA8I_EXT,   GL_RGB8I,   GL_RGBA8I   },
+		{ GL_LUMINANCE8UI_EXT,  GL_LUMINANCE_ALPHA8UI_EXT,  GL_RGB8UI,  GL_RGBA8UI  },
+		{ GL_LUMINANCE16I_EXT,  GL_LUMINANCE_ALPHA16I_EXT,  GL_RGB16I,  GL_RGBA16I  },
+		{ GL_LUMINANCE16UI_EXT, GL_LUMINANCE_ALPHA16UI_EXT, GL_RGB16UI, GL_RGBA16UI },
+		{ GL_LUMINANCE32I_EXT,  GL_LUMINANCE_ALPHA32I_EXT,  GL_RGB32I,  GL_RGBA32I  },
+		{ GL_LUMINANCE32UI_EXT, GL_LUMINANCE_ALPHA32UI_EXT, GL_RGB32UI, GL_RGBA32UI },
+# else
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+		{ GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA },
+# endif
+#else
 		{ GL_R8,    GL_RG8,    GL_RGB8,    GL_RGBA8	   },
 		{ GL_R16,   GL_RG16,   GL_RGB16,   GL_RGBA16   },
-#ifdef GL_VERSION_3_0
+# ifdef GL_VERSION_3_0
 		{ GL_R16F,  GL_RG16F,  GL_RGB16F,  GL_RGBA16F  },
 		{ GL_R32F,  GL_RG32F,  GL_RGB32F,  GL_RGBA32F  },
 		{ GL_R8I,   GL_RG8I,   GL_RGB8I,   GL_RGBA8I   },
@@ -1154,7 +1178,7 @@ inline GLenum GL::TextureFormat( GL::Type type, int numChannels )
 		{ GL_R16UI, GL_RG16UI, GL_RGB16UI, GL_RGBA16UI },
 		{ GL_R32I,  GL_RG32I,  GL_RGB32I,  GL_RGBA32I  },
 		{ GL_R32UI, GL_RG32UI, GL_RGB32UI, GL_RGBA32UI },
-#else
+# else
 		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
 		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
 		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
@@ -1163,19 +1187,30 @@ inline GLenum GL::TextureFormat( GL::Type type, int numChannels )
 		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
 		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
 		{ GL_RED, GL_RG, GL_RGB, GL_RGBA },
+# endif
 #endif
 	};
+	
 	return internalFormats[type][numChannels-1];
 }
 
 inline GLenum GL::TextureDataFormat( GL::Type type, int numChannels )
 {
 	const GLenum formats[][4] = {
-		{ GL_RED,         GL_RG,         GL_RGB,         GL_RGBA         },
-#ifdef GL_VERSION_3_0
-		{ GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER },
+#ifdef CY_GL_TEXTURE_LUMINANCE
+		{ GL_LUMINANCE,             GL_LUMINANCE_ALPHA,             GL_RGB,         GL_RGBA         },
+# ifdef GL_VERSION_3_0
+		{ GL_LUMINANCE_INTEGER_EXT, GL_LUMINANCE_ALPHA_INTEGER_EXT, GL_RGB_INTEGER, GL_RGBA_INTEGER },
+# else
+		{ GL_LUMINANCE,             GL_LUMINANCE_ALPHA,             GL_RGB,         GL_RGBA         },
+# endif
 #else
 		{ GL_RED,         GL_RG,         GL_RGB,         GL_RGBA         },
+# ifdef GL_VERSION_3_0
+		{ GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER },
+# else
+		{ GL_RED,         GL_RG,         GL_RGB,         GL_RGBA         },
+# endif
 #endif
 	};
 	return formats[type>=GL::TYPE_INT8][numChannels-1];
