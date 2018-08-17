@@ -179,7 +179,7 @@ public:
 	template <typename T> explicit Point2( const Point3<T> &p );
 	template <typename T> explicit Point2( const Point4<T> &p );
 	template <int M> explicit Point2( const Point<TYPE,M> &p ) { p.CopyData<2>(&x); }
-	template <typename T, int M> explicit Point2( const Point<T,M> &p ) { p.template ConvertData<TYPE,2>(&x); }
+	template <typename T, int M> explicit Point2( const Point<T,M> &p ) { p.ConvertData<TYPE,2>(&x); }
 	template <typename P> explicit Point2( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]) {}
 
 	//!@name Set & Get value methods
@@ -277,7 +277,7 @@ public:
 	template <typename T> explicit Point3( const Point2<T> &p, TYPE _z=0 ) : x(TYPE(p.x)), y(TYPE(p.y)), z(      _z  ) {}
 	template <typename T> explicit Point3( const Point4<T> &p );
 	template <int M> explicit Point3( const Point<TYPE,M> &p ) { p.CopyData<3>(&x); }
-	template <typename T, int M> explicit Point3( const Point<T,M> &p ) { p.template ConvertData<TYPE,3>(&x); }
+	template <typename T, int M> explicit Point3( const Point<T,M> &p ) { p.ConvertData<TYPE,3>(&x); }
 	template <typename P> explicit Point3( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]), z((TYPE)p[2]) {}
 
 	//!@name Set & Get value methods
@@ -378,7 +378,7 @@ public:
 	template <typename T> explicit Point4( const Point3<T> &p,            TYPE _w=1 ) : x(TYPE(p.x)), y(TYPE(p.y)), z(TYPE(p.z)), w(      _w ) {}
 	template <typename T> explicit Point4( const Point2<T> &p, TYPE _z=0, TYPE _w=1 ) : x(TYPE(p.x)), y(TYPE(p.y)), z(      _z ), w(      _w ) {}
 	template <int M> explicit Point4( const Point<TYPE,M> &p ) { p.CopyData<4>(&x); }
-	template <typename T, int M> explicit Point4( const Point<T,M> &p ) { p.template ConvertData<TYPE,4>(&x); }
+	template <typename T, int M> explicit Point4( const Point<T,M> &p ) { p.ConvertData<TYPE,4>(&x); }
 	template <typename P> explicit Point4( const P &p ) : x((TYPE)p[0]), y((TYPE)p[1]), z((TYPE)p[2]), w((TYPE)p[3]) {}
 
 	//!@name Set & Get value methods

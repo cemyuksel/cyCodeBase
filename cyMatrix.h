@@ -160,7 +160,7 @@ public:
 	TYPE GetAvrgScale() const 
 	{
 		TYPE det = data[0]*data[3]-data[2]*data[1];
-		TYPE s = Pow( Abs(det), TYPE(1)/TYPE(2) );
+		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(2) );
 		return det >= 0 ? s : -s;
 	}
 
@@ -510,7 +510,7 @@ public:
 		TYPE det = data[0] * ( data[4] * data[8] - data[5] * data[7] ) + 
 		           data[1] * ( data[5] * data[6] - data[3] * data[8] ) + 
 		           data[2] * ( data[3] * data[7] - data[4] * data[6] );
-		TYPE s = Pow( Abs(det), TYPE(1)/TYPE(3) );
+		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(3) );
 		return det >= 0 ? s : -s;
 	}
 
@@ -1003,7 +1003,7 @@ public:
 		TYPE det = data[0] * ( data[4] * data[8] - data[5] * data[7] ) + 
 		           data[1] * ( data[5] * data[6] - data[3] * data[8] ) + 
 		           data[2] * ( data[3] * data[7] - data[4] * data[6] );
-		TYPE s = Pow( Abs(det), TYPE(1)/TYPE(3) );
+		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(3) );
 		return det >= 0 ? s : -s;
 	}
 
@@ -1142,8 +1142,8 @@ public:
 		CY_MEMCLEAR(TYPE,data+9,3);
 	}
 
-	void GetTranspose( TMatrix4<TYPE> &m ) const;	//!< return Transpose of this matrix
-	TMatrix4<TYPE> GetTranspose() const;			//!< return Transpose of this matrix
+	void GetTranspose( Matrix4<TYPE> &m ) const;	//!< return Transpose of this matrix
+	Matrix4<TYPE> GetTranspose() const;			//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
 	Point4<TYPE> TransposeMult( const Point3<TYPE> &p ) const
@@ -1615,7 +1615,7 @@ public:
 		TYPE det = data[0] * ( data[5] * data[10] - data[6] * data[ 9] ) + 
 		           data[1] * ( data[6] * data[ 8] - data[4] * data[10] ) + 
 		           data[2] * ( data[4] * data[ 9] - data[5] * data[ 8] );
-		TYPE s = Pow( Abs(det), TYPE(1)/TYPE(3) );
+		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(3) );
 		return det >= 0 ? s : -s;
 	}
 
@@ -2013,14 +2013,14 @@ template <typename TYPE>  Matrix3 <TYPE>::Matrix3 ( const Matrix34<TYPE> &m ) { 
 template <typename TYPE>  Matrix3 <TYPE>::Matrix3 ( const Matrix4 <TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,3); CY_MEMCOPY(TYPE,data+3,m.data+4,3); CY_MEMCOPY(TYPE,data+6,m.data+8,3); }
 template <typename TYPE>  Matrix34<TYPE>::Matrix34( const Matrix4 <TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,3); CY_MEMCOPY(TYPE,data+3,m.data+4,3); CY_MEMCOPY(TYPE,data+6,m.data+8,3); CY_MEMCOPY(TYPE,data+9,m.data+12,3); }
 
-template <typename TYPE> inline void TMatrix34<TYPE>::GetTranspose( TMatrix4<TYPE> &m ) const
+template <typename TYPE> inline void Matrix34<TYPE>::GetTranspose( Matrix4<TYPE> &m ) const
 {
 	m.data[ 0] = data[0];   m.data[ 1] = data[3];   m.data[ 2] = data[ 6];   m.data[ 3] = data[ 9];
 	m.data[ 4] = data[1];   m.data[ 5] = data[4];   m.data[ 6] = data[ 7];   m.data[ 7] = data[10];
 	m.data[ 8] = data[2];   m.data[ 9] = data[5];   m.data[10] = data[ 8];   m.data[11] = data[11];
 	m.data[12] = TYPE(0);   m.data[13] = TYPE(0);   m.data[14] = TYPE(0);    m.data[15] = TYPE(1);
 }
-template <typename TYPE> inline TMatrix4<TYPE> TMatrix34<TYPE>::GetTranspose() const { TMatrix4<TYPE> t; GetTranspose(t); return t; }
+template <typename TYPE> inline Matrix4<TYPE> Matrix34<TYPE>::GetTranspose() const { Matrix4<TYPE> t; GetTranspose(t); return t; }
 
 //-------------------------------------------------------------------------------
 
