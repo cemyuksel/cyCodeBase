@@ -169,13 +169,9 @@ public:
 	//! It returns the number of points found.
 	int GetPoints( const PointType &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints )
 	{
-		bool tooManyPoints = false;
 		int pointsFound = 0;
 		GetPoints( position, radius, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2) {
 			if ( pointsFound == maxCount ) {
-				if ( !tooManyPoints ) {
-					std::make_heap( closestPoints, closestPoints+maxCount );
-				}
 				std::pop_heap( closestPoints, closestPoints+maxCount );
 				closestPoints[maxCount-1].index = i;
 				closestPoints[maxCount-1].pos = p;
@@ -187,6 +183,10 @@ public:
 				closestPoints[pointsFound].pos = p;
 				closestPoints[pointsFound].distanceSquared = d2;
 				pointsFound++;
+				if ( pointsFound == maxCount ) {
+					std::make_heap( closestPoints, closestPoints+maxCount );
+					r2 = closestPoints[0].distanceSquared;
+				}
 			}
 		} );
 		return pointsFound;
