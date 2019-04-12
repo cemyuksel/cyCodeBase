@@ -508,8 +508,8 @@ public:
 	const IPoint4& operator  ^= ( const TYPE    &v ) { x ^=v;   y ^=v;   z ^=v;   w ^=v;   return *this; }
 
 	//!@name Test operators
-	bool operator == ( const IPoint4& p ) const { return x==p.x && y==p.y && z==p.z; && w==p.w; }
-	bool operator != ( const IPoint4& p ) const { return x!=p.x && y!=p.y && z!=p.z; && w!=p.w; }
+	bool operator == ( const IPoint4& p ) const { return x==p.x && y==p.y && z==p.z && w==p.w; }
+	bool operator != ( const IPoint4& p ) const { return x!=p.x && y!=p.y && z!=p.z && w!=p.w; }
 
 	//!@name Access operators
 	TYPE&       operator [] ( int i )       { return Element(i); }
