@@ -102,11 +102,24 @@ public:
 		if ( points ) delete [] points;
 		pointCount = numPts;
 		if ( pointCount == 0 ) { points = nullptr; return; }
-		points = new PointData[pointCount+1];
-		SIZE_TYPE *order = new SIZE_TYPE[pointCount];
-		for ( SIZE_TYPE i=0; i<pointCount; i++ ) order[i] = i;
-		BuildKDTree( ptPosFunc, custIndexFunc, order, 1, 0, pointCount );
-		delete [] order;
+		points = new PointData[(pointCount|1)+1];
+		PointData *orig = new PointData[pointCount];
+		PointType boundMin( std::numeric_limits<FType>::max() ), boundMax( std::numeric_limits<FType>::min() );
+		for ( SIZE_TYPE i=0; i<pointCount; i++ ) {
+			PointType p = ptPosFunc(i);
+			orig[i].Set( p, custIndexFunc(i) );
+			for ( int j=0; j<DIMENSIONS; j++ ) {
+				if ( boundMin[j] > p[j] ) boundMin[j] = p[j];
+				if ( boundMax[j] < p[j] ) boundMax[j] = p[j];
+			}
+		}
+		BuildKDTree( orig, boundMin, boundMax, 1, 0, pointCount );
+		delete [] orig;
+		if ( (pointCount & 1) == 0 ) {
+			// if the point count is even, we should add a bogus point
+			points[ pointCount+1 ].Set( PointType( std::numeric_limits<FType>::infinity() ), 0, 0 );
+		}
+		numInternal = pointCount / 2;
 	}
 
 
@@ -124,34 +137,8 @@ public:
 	template <typename _CALLBACK>
 	void GetPoints( const PointType &position, FType radius, _CALLBACK pointFound )
 	{
-		SIZE_TYPE internalNodes = (pointCount+1) >> 1;
-		SIZE_TYPE stack[60];	// deep enough for 2^30 points
-		int stackPos = 0;
-		stack[0] = 1;	// root node
-		FType dist2 = radius * radius;
-		while ( stackPos >= 0 ) {
-			SIZE_TYPE ix = stack[ stackPos-- ];
-			const PointData *p = &points[ix];
-			const PointType pos = p->Pos();
-			if ( ix < internalNodes ) {
-				int axis = p->Plane();
-				FType d = position[axis] - pos[axis];
-				if( d > 0 ) {	// if dist1 is positive search right child first
-					stack[++stackPos] = 2*ix + 1;
-					if ( d*d < dist2 ) stack[++stackPos] = 2*ix;
-				} else {	// dist1 is negative, search left child first
-					stack[++stackPos] = 2*ix;
-					if ( d*d < dist2 ) stack[++stackPos] = 2*ix + 1;
-				}
-			}
-			FType d2 = (pos - position).LengthSquared();
-			if ( d2 < dist2 ) pointFound( p->Index(), pos, d2, dist2 );
-		}
-		if ( (pointCount & SIZE_TYPE(1)) == 0 ) {
-			const PointData *p = &points[pointCount];
-			FType d2 = (p->Pos() - position).LengthSquared();
-			if ( d2 < dist2 ) pointFound( p->Index(), p->Pos(), d2, dist2 );
-		}
+		FType r2 = radius*radius;
+		GetPoints( position, r2, pointFound, 1 );
 	}
 
 	//! Used by one of the PointCloud::GetPoints() methods.
@@ -207,7 +194,8 @@ public:
 	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared )
 	{
 		bool found = false;
-		GetPoints( position, radius, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2){ found=true; closestIndex=i; closestPosition=p; closestDistanceSquared=d2; r2=d2; } );
+		float dist2 = radius * radius;
+		GetPoints( position, dist2, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2){ found=true; closestIndex=i; closestPosition=p; closestDistanceSquared=d2; r2=d2; }, 1 );
 		return found;
 	}
 
@@ -302,6 +290,7 @@ private:
 		PointType p;					// point position
 	public:
 		void Set( const PointType &pt, SIZE_TYPE index, uint32_t plane=0 ) { p=pt; indexAndSplitPlane = (index<<NBits()) | (plane&((1<<NBits())-1)); }
+		void SetPlane( uint32_t plane ) { indexAndSplitPlane = (indexAndSplitPlane & (~((SIZE_TYPE(1)<<NBits())-1))) | plane; }
 		int       Plane() const { return indexAndSplitPlane & ((1<<NBits())-1); }
 		SIZE_TYPE Index() const { return indexAndSplitPlane >> NBits(); }
 		const PointType& Pos() const { return p; }
@@ -315,29 +304,28 @@ private:
 
 	PointData *points;		// Keeps the points as a k-d tree.
 	SIZE_TYPE  pointCount;	// Keeps the point count.
+	SIZE_TYPE  numInternal;	// Keeps the number of internal k-d tree nodes.
 
 	// The main method for recursively building the k-d tree.
-	template <typename PointPosFunc, typename CustomIndexFunc>
-	void BuildKDTree( PointPosFunc ptPosFunc, CustomIndexFunc indexFunc, SIZE_TYPE *order, SIZE_TYPE kdIndex, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
+	void BuildKDTree( PointData *orig, PointType boundMin, PointType boundMax, SIZE_TYPE kdIndex, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
 	{
 		SIZE_TYPE n = ixEnd - ixStart;
-		if ( n <= 1 ) {
-			if ( n > 0 ) {
-				SIZE_TYPE ix = order[ixStart];
-				points[kdIndex].Set( 
-					ptPosFunc(ix), 
-					indexFunc(ix) 
-				);
-			}
-		} else {
-			int axis = SplitAxis( ptPosFunc, order, ixStart, ixEnd );
+		if ( n > 1 ) {
+			int axis = SplitAxis( boundMin, boundMax );
 			SIZE_TYPE leftSize = LeftSize(n);
 			SIZE_TYPE ixMid = ixStart+leftSize;
-			std::nth_element( order+ixStart, order+ixMid, order+ixEnd, [&ptPosFunc,axis](const int &a, const int &b){ return ptPosFunc(a)[axis] < ptPosFunc(b)[axis]; } );
-			SIZE_TYPE ix = order[ixMid];
-			points[kdIndex].Set( ptPosFunc(ix), indexFunc(ix), axis );
-			BuildKDTree( ptPosFunc, indexFunc, order, kdIndex*2,   ixStart, ixMid );
-			BuildKDTree( ptPosFunc, indexFunc, order, kdIndex*2+1, ixMid+1, ixEnd );
+			std::nth_element( orig+ixStart, orig+ixMid, orig+ixEnd, [axis](const PointData &a, const PointData &b){ return a.Pos()[axis] < b.Pos()[axis]; } );
+			points[kdIndex] = orig[ixMid];
+			points[kdIndex].SetPlane( axis );
+			PointType bMax = boundMax;
+			assert( ixMid < pointCount );
+			bMax[axis] = orig[ixMid].Pos()[axis];
+			BuildKDTree( orig, boundMin, bMax, kdIndex*2,   ixStart, ixMid );
+			PointType bMin = boundMin;
+			bMin[axis] = orig[ixMid].Pos()[axis];
+			BuildKDTree( orig, bMin, boundMax, kdIndex*2+1, ixMid+1, ixEnd );
+		} else if ( n > 0 ) {
+			points[kdIndex] = orig[ixStart];
 		}
 	}
 
@@ -352,30 +340,47 @@ private:
 	}
 
 	// Returns axis with the largest span, used as the splitting axis for building the k-d tree
-	template <typename PointPosFunc>
-	int SplitAxis( PointPosFunc ptPosFunc, SIZE_TYPE *indices, SIZE_TYPE ixStart, SIZE_TYPE ixEnd )
+	int SplitAxis( const PointType &boundMin, const PointType &boundMax )
 	{
-		PointType box_min = ptPosFunc( indices[ixStart] );
-		PointType box_max = box_min;
-		for ( SIZE_TYPE i=ixStart+1; i<ixEnd; i++ ) {
-			PointType p = ptPosFunc( indices[i] );
-			for ( SIZE_TYPE d=0; d<DIMENSIONS; d++ ) {
-				if ( box_min[d] > p[d] ) box_min[d] = p[d];
-				if ( box_max[d] < p[d] ) box_max[d] = p[d];
-			}
-		}
+		PointType d = boundMax - boundMin;
 		int axis = 0;
-		{
-			FType axisSize = box_max[0] - box_min[0];
-			for ( SIZE_TYPE d=1; d<DIMENSIONS; d++ ) {
-				FType s = box_max[d] - box_min[d];
-				if ( axisSize < s ) {
-					axis = d;
-					axisSize = s;
-				}
+		FType dmax = d[0];
+		for ( int j=1; j<DIMENSIONS; j++ ) {
+			if ( dmax < d[j] ) {
+				axis = j;
+				dmax = d[j];
 			}
 		}
 		return axis;
+	}
+
+	template <typename _CALLBACK>
+	void GetPoints( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE index )
+	{
+		const PointData *p = &points[index];
+		const PointType pos = p->Pos();
+		int axis = p->Plane();
+		FType dist1 = position[axis] - pos[axis];
+
+		if ( index <= numInternal ) {
+			uint32_t child = 2*index;
+			if( dist1 > 0 ) {	// if dist1 is positive search right plane
+				GetPoints( position, dist2, pointFound, child+1 );
+				if ( dist1 * dist1 < dist2 ) {
+					GetPoints( position, dist2, pointFound, child );
+				}
+			} else {			// dist1 is negative search left first
+				GetPoints( position, dist2, pointFound, child );
+				if ( dist1 * dist1 < dist2 ) {
+					GetPoints( position, dist2, pointFound, child+1 );
+				}
+			}
+		}
+
+		if ( dist1*dist1 < dist2 ) {
+			FType d2 = (position - pos).LengthSquared();
+			if ( d2 < dist2 ) pointFound( p->Index(), pos, d2, dist2 );
+		}
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
