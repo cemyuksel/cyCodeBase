@@ -45,6 +45,22 @@
 # undef max
 #endif
 
+#ifdef min
+# define _CY_POP_MACRO_min
+# pragma push_macro("min")
+# undef min
+#endif
+
+//-------------------------------------------------------------------------------
+
+#ifndef _CY_PARALLEL_LIB
+# ifdef __TBB_tbb_H
+#  define _CY_PARALLEL_LIB tbb
+# elif defined(_PPL_H)
+#  define _CY_PARALLEL_LIB concurrency
+# endif
+#endif
+
 //-------------------------------------------------------------------------------
 
 #include <assert.h>
@@ -82,20 +98,28 @@ public:
 
 	//! Builds a k-d tree for the given points.
 	//! The positions are stored internally.
+	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
+	//! if ttb.h or ppl.h is included prior to including cyPointCloud.h.
 	void Build( SIZE_TYPE numPts, const PointType *pts ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; } ); }
 
 	//! Builds a k-d tree for the given points.
 	//! The positions are stored internally, along with the indices to the given array.
+	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
+	//! if ttb.h or ppl.h is included prior to including cyPointCloud.h.
 	void Build( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; }, [&customIndices](SIZE_TYPE i){ return customIndices[i]; } ); }
 
 	//! Builds a k-d tree for the given points.
 	//! The positions are stored internally, retrieved from the given function.
+	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
+	//! if ttb.h or ppl.h is included prior to including cyPointCloud.h.
 	template <typename PointPosFunc>
 	void BuildWithFunc( SIZE_TYPE numPts, PointPosFunc ptPosFunc ) { BuildWithFunc(numPts, ptPosFunc, [](SIZE_TYPE i){ return i; }); }
 
 	//! Builds a k-d tree for the given points.
 	//! The positions are stored internally, along with the indices to the given array.
 	//! The positions and custom indices are retrieved from the given functions.
+	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
+	//! if ttb.h or ppl.h is included prior to including cyPointCloud.h.
 	template <typename PointPosFunc, typename CustomIndexFunc>
 	void BuildWithFunc( SIZE_TYPE numPts, PointPosFunc ptPosFunc, CustomIndexFunc custIndexFunc )
 	{
@@ -104,7 +128,7 @@ public:
 		if ( pointCount == 0 ) { points = nullptr; return; }
 		points = new PointData[(pointCount|1)+1];
 		PointData *orig = new PointData[pointCount];
-		PointType boundMin( std::numeric_limits<FType>::max() ), boundMax( std::numeric_limits<FType>::min() );
+		PointType boundMin( (std::numeric_limits<FType>::max)() ), boundMax( (std::numeric_limits<FType>::min)() );
 		for ( SIZE_TYPE i=0; i<pointCount; i++ ) {
 			PointType p = ptPosFunc(i);
 			orig[i].Set( p, custIndexFunc(i) );
@@ -122,6 +146,17 @@ public:
 		numInternal = pointCount / 2;
 	}
 
+	//! Returns true if the Build or BuildWithFunc methods would perform the build in parallel using multi-threading.
+	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
+	//! if ttb.h or ppl.h are included prior to including cyPointCloud.h.
+	static bool IsBuildParallel()
+	{
+#ifdef _CY_PARALLEL_LIB
+		return true;
+#else
+		return false;
+#endif
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//!@ General search methods
@@ -135,7 +170,7 @@ public:
 	//!
 	//! void _CALLBACK(SIZE_TYPE index, const PointType &p, FType distanceSquared, FType &radiusSquared)
 	template <typename _CALLBACK>
-	void GetPoints( const PointType &position, FType radius, _CALLBACK pointFound )
+	void GetPoints( const PointType &position, FType radius, _CALLBACK pointFound ) const
 	{
 		FType r2 = radius*radius;
 		GetPoints( position, r2, pointFound, 1 );
@@ -154,7 +189,7 @@ public:
 
 	//! Returns the closest points to the given position within the given radius.
 	//! It returns the number of points found.
-	int GetPoints( const PointType &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints )
+	int GetPoints( const PointType &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
 	{
 		int pointsFound = 0;
 		GetPoints( position, radius, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2) {
@@ -181,9 +216,9 @@ public:
 
 	//! Returns the closest points to the given position.
 	//! It returns the number of points found.
-	int GetPoints( const PointType &position, SIZE_TYPE maxCount, PointInfo *closestPoints )
+	int GetPoints( const PointType &position, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
 	{
-		return GetPoints( position, std::numeric_limits<FType>::max(), maxCount, closestPoints );
+		return GetPoints( position, (std::numeric_limits<FType>::max)(), maxCount, closestPoints );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
@@ -191,24 +226,24 @@ public:
 
 	//! Returns the closest point to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared )
+	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared ) const
 	{
 		bool found = false;
-		float dist2 = radius * radius;
+		FType dist2 = radius * radius;
 		GetPoints( position, dist2, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2){ found=true; closestIndex=i; closestPosition=p; closestDistanceSquared=d2; r2=d2; }, 1 );
 		return found;
 	}
 
 	//! Returns the closest point to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared )
+	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared ) const
 	{
-		return GetClosest( position, std::numeric_limits<FType>::max(), closestIndex, closestPosition, closestDistanceSquared );
+		return GetClosest( position, (std::numeric_limits<FType>::max)(), closestIndex, closestPosition, closestDistanceSquared );
 	}
 
 	//! Returns the closest point index and position to the given position within the given index.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition )
+	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition ) const
 	{
 		FType closestDistanceSquared;
 		return GetClosest( position, radius, closestIndex, closestPosition, closestDistanceSquared );
@@ -216,7 +251,7 @@ public:
 
 	//! Returns the closest point index and position to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition )
+	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition ) const
 	{
 		FType closestDistanceSquared;
 		return GetClosest( position, closestIndex, closestPosition, closestDistanceSquared );
@@ -224,7 +259,7 @@ public:
 
 	//! Returns the closest point index to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosestIndex( const PointType &position, FType radius, SIZE_TYPE &closestIndex )
+	bool GetClosestIndex( const PointType &position, FType radius, SIZE_TYPE &closestIndex ) const
 	{
 		FType closestDistanceSquared;
 		PointType closestPosition;
@@ -233,7 +268,7 @@ public:
 
 	//! Returns the closest point index to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosestIndex( const PointType &position, SIZE_TYPE &closestIndex )
+	bool GetClosestIndex( const PointType &position, SIZE_TYPE &closestIndex ) const
 	{
 		FType closestDistanceSquared;
 		PointType closestPosition;
@@ -242,7 +277,7 @@ public:
 
 	//! Returns the closest point position to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosestPosition( const PointType &position, FType radius, PointType &closestPosition )
+	bool GetClosestPosition( const PointType &position, FType radius, PointType &closestPosition ) const
 	{
 		SIZE_TYPE closestIndex;
 		FType closestDistanceSquared;
@@ -251,7 +286,7 @@ public:
 
 	//! Returns the closest point position to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosestPosition( const PointType &position, PointType &closestPosition )
+	bool GetClosestPosition( const PointType &position, PointType &closestPosition ) const
 	{
 		SIZE_TYPE closestIndex;
 		FType closestDistanceSquared;
@@ -260,7 +295,7 @@ public:
 
 	//! Returns the closest point distance squared to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosestDistanceSquared( const PointType &position, FType radius, FType &closestDistanceSquared )
+	bool GetClosestDistanceSquared( const PointType &position, FType radius, FType &closestDistanceSquared ) const
 	{
 		SIZE_TYPE closestIndex;
 		PointType closestPosition;
@@ -269,7 +304,7 @@ public:
 
 	//! Returns the closest point distance squared to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosestDistanceSquared( const PointType &position, FType &closestDistanceSquared )
+	bool GetClosestDistanceSquared( const PointType &position, FType &closestDistanceSquared ) const
 	{
 		SIZE_TYPE closestIndex;
 		PointType closestPosition;
@@ -318,19 +353,29 @@ private:
 			points[kdIndex] = orig[ixMid];
 			points[kdIndex].SetPlane( axis );
 			PointType bMax = boundMax;
-			assert( ixMid < pointCount );
 			bMax[axis] = orig[ixMid].Pos()[axis];
-			BuildKDTree( orig, boundMin, bMax, kdIndex*2,   ixStart, ixMid );
 			PointType bMin = boundMin;
 			bMin[axis] = orig[ixMid].Pos()[axis];
-			BuildKDTree( orig, bMin, boundMax, kdIndex*2+1, ixMid+1, ixEnd );
+#ifdef _CY_PARALLEL_LIB
+			const SIZE_TYPE parallel_invoke_threshold = 256;
+			if ( ixMid-ixStart > parallel_invoke_threshold && ixEnd - ixMid+1 > parallel_invoke_threshold ) {
+				_CY_PARALLEL_LIB::parallel_invoke(
+					[&]{ BuildKDTree( orig, boundMin, bMax, kdIndex*2,   ixStart, ixMid ); },
+					[&]{ BuildKDTree( orig, bMin, boundMax, kdIndex*2+1, ixMid+1, ixEnd ); }
+				);
+			} else 
+#endif
+			{
+				BuildKDTree( orig, boundMin, bMax, kdIndex*2,   ixStart, ixMid );
+				BuildKDTree( orig, bMin, boundMax, kdIndex*2+1, ixMid+1, ixEnd );
+			}
 		} else if ( n > 0 ) {
 			points[kdIndex] = orig[ixStart];
 		}
 	}
 
 	// Returns the total number of nodes on the left sub-tree of a complete k-d tree of size n.
-	SIZE_TYPE LeftSize( SIZE_TYPE n )
+	static SIZE_TYPE LeftSize( SIZE_TYPE n )
 	{
 		SIZE_TYPE f = n; // Size of the full tree
 		for ( SIZE_TYPE s=1; s<8*sizeof(SIZE_TYPE); s*=2 ) f |= f >> s;
@@ -340,7 +385,7 @@ private:
 	}
 
 	// Returns axis with the largest span, used as the splitting axis for building the k-d tree
-	int SplitAxis( const PointType &boundMin, const PointType &boundMax )
+	static int SplitAxis( const PointType &boundMin, const PointType &boundMax )
 	{
 		PointType d = boundMax - boundMin;
 		int axis = 0;
@@ -355,7 +400,7 @@ private:
 	}
 
 	template <typename _CALLBACK>
-	void GetPoints( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE index )
+	void GetPoints( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE index ) const
 	{
 		const PointData *p = &points[index];
 		const PointType pos = p->Pos();
@@ -433,6 +478,11 @@ template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNd , (cyPointClou
 #ifdef _CY_POP_MACRO_max
 # pragma pop_macro("max")
 # undef _CY_POP_MACRO_max
+#endif
+
+#ifdef _CY_POP_MACRO_min
+# pragma pop_macro("min")
+# undef _CY_POP_MACRO_min
 #endif
 
 //-------------------------------------------------------------------------------
