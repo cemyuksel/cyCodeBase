@@ -400,32 +400,51 @@ private:
 	}
 
 	template <typename _CALLBACK>
-	void GetPoints( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE index ) const
+	void GetPoints( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE nodeID ) const
 	{
-		const PointData *p = &points[index];
-		const PointType pos = p->Pos();
-		int axis = p->Plane();
-		FType dist1 = position[axis] - pos[axis];
+		SIZE_TYPE stack[sizeof(SIZE_TYPE)*8];
+		SIZE_TYPE stackPos = 0;
 
-		if ( index <= numInternal ) {
-			uint32_t child = 2*index;
-			if( dist1 > 0 ) {	// if dist1 is positive search right plane
-				GetPoints( position, dist2, pointFound, child+1 );
-				if ( dist1 * dist1 < dist2 ) {
-					GetPoints( position, dist2, pointFound, child );
-				}
-			} else {			// dist1 is negative search left first
-				GetPoints( position, dist2, pointFound, child );
-				if ( dist1 * dist1 < dist2 ) {
-					GetPoints( position, dist2, pointFound, child+1 );
-				}
+		TraverseCloser( position, dist2, pointFound, nodeID, stack, stackPos );
+
+		// empty the stack
+		while ( stackPos > 0 ) {
+			SIZE_TYPE nodeID = stack[ --stackPos ];
+			// check the internal node point
+			const PointData &p = points[nodeID];
+			const PointType pos = p.Pos();
+			int axis = p.Plane();
+			float dist1 = position[axis] - pos[axis];
+			if ( dist1*dist1 < dist2 ) {
+				// check its point
+				FType d2 = (position - pos).LengthSquared();
+				if ( d2 < dist2 ) pointFound( p.Index(), pos, d2, dist2 );
+				// traverse down the other child node
+				SIZE_TYPE child = 2*nodeID;
+				nodeID = dist1 < 0 ? child+1 : child;
+				TraverseCloser( position, dist2, pointFound, nodeID, stack, stackPos );
 			}
 		}
+	}
 
-		if ( dist1*dist1 < dist2 ) {
-			FType d2 = (position - pos).LengthSquared();
-			if ( d2 < dist2 ) pointFound( p->Index(), pos, d2, dist2 );
+	template <typename _CALLBACK>
+	void TraverseCloser( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE nodeID, SIZE_TYPE *stack, SIZE_TYPE &stackPos ) const
+	{
+		// Traverse down to a leaf node along the closer branch
+		while ( nodeID <= numInternal ) {
+			stack[stackPos++] = nodeID;
+			const PointData &p = points[nodeID];
+			const PointType pos = p.Pos();
+			int axis = p.Plane();
+			float dist1 = position[axis] - pos[axis];
+			uint32_t child = 2*nodeID;
+			nodeID = dist1 < 0 ? child : child + 1;
 		}
+		// Now we are at a leaf node, do the test
+		const PointData &p = points[nodeID];
+		const PointType pos = p.Pos();
+		FType d2 = (position - pos).LengthSquared();
+		if ( d2 < dist2 ) pointFound( p.Index(), pos, d2, dist2 );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
