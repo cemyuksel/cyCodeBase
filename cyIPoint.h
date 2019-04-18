@@ -447,7 +447,7 @@ public:
 
 	//!@name Length and Normalize methods
 	TYPE   Sum   () const { return x+y+z+w; }						//!< Returns the sum of its components
-	bool   IsZero() const { return x==TYPE(0) && y==TYPE(0) && z==TYPE(0); && w==TYPE(0); }	//!< Returns true if all components are exactly zero
+	bool   IsZero() const { return x==TYPE(0) && y==TYPE(0) && z==TYPE(0) && w==TYPE(0); }	//!< Returns true if all components are exactly zero
 	TYPE   Min   () const { TYPE mxy = x<y ? x : y; TYPE mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }
 	TYPE   Max   () const { TYPE mxy = x>y ? x : y; TYPE mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }
 	int    MinID () const { int  ixy = x<y ? 0 : 1; int  izw = z<w ? 2 : 3; return (&x)[ixy]<(&x)[izw] ? ixy : izw; }
