@@ -106,8 +106,8 @@ public:
 	bool  IsZero       () const { for ( int i=0; i<N; ++i ) if ( data[i] != TYPE(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
 	TYPE  Min          () const { TYPE m = data[0]; for ( int i=1; i<N; ++i ) if ( m > data[i] ) m = data[i]; return m; }
 	TYPE  Max          () const { TYPE m = data[0]; for ( int i=1; i<N; ++i ) if ( m < data[i] ) m = data[i]; return m; }
-	int   MinID        () const { TYPE m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > data[i] ) { m = data[i]; ix = i; } return m; }
-	int   MaxID        () const { TYPE m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < data[i] ) { m = data[i]; ix = i; } return m; }
+	int   MinID        () const { TYPE m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > data[i] ) { m = data[i]; ix = i; } return ix; }
+	int   MaxID        () const { TYPE m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < data[i] ) { m = data[i]; ix = i; } return ix; }
 
 	//!@name Limit methods
 	void Clamp( TYPE minValue, TYPE maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
