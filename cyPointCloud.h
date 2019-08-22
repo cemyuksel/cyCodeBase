@@ -83,14 +83,14 @@ public:
 	//!@name Constructors and Destructor
 
 	PointCloud() : points(nullptr), pointCount(0) {}
-	PointCloud( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices=nullptr ) : points(nullptr), pointCount(0) { Build(numPts,pts,customIndices); }
+	PointCloud( SIZE_TYPE numPts, PointType const *pts, SIZE_TYPE const *customIndices=nullptr ) : points(nullptr), pointCount(0) { Build(numPts,pts,customIndices); }
 	~PointCloud() { delete [] points; }
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//!@ Access to internal data
 
 	SIZE_TYPE GetPointCount() const { return pointCount-1; }					//!< Returns the point count
-	const PointType& GetPoint(SIZE_TYPE i) const { return points[i+1].Pos(); }	//!< Returns the point at position i
+	PointType const & GetPoint(SIZE_TYPE i) const { return points[i+1].Pos(); }	//!< Returns the point at position i
 	SIZE_TYPE GetPointIndex(SIZE_TYPE i) const { return points[i+1].Index(); }	//!< Returns the index of the point at position i
 
 	/////////////////////////////////////////////////////////////////////////////////
@@ -100,13 +100,13 @@ public:
 	//! The positions are stored internally.
 	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
 	//! if ttb.h or ppl.h is included prior to including cyPointCloud.h.
-	void Build( SIZE_TYPE numPts, const PointType *pts ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; } ); }
+	void Build( SIZE_TYPE numPts, PointType const *pts ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; } ); }
 
 	//! Builds a k-d tree for the given points.
 	//! The positions are stored internally, along with the indices to the given array.
 	//! The build is parallelized using Intel's Thread Building Library (TBB) or Microsoft's Parallel Patterns Library (PPL),
 	//! if ttb.h or ppl.h is included prior to including cyPointCloud.h.
-	void Build( SIZE_TYPE numPts, const PointType *pts, const SIZE_TYPE *customIndices ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; }, [&customIndices](SIZE_TYPE i){ return customIndices[i]; } ); }
+	void Build( SIZE_TYPE numPts, PointType const *pts, SIZE_TYPE const *customIndices ) { BuildWithFunc( numPts, [&pts](SIZE_TYPE i){ return pts[i]; }, [&customIndices](SIZE_TYPE i){ return customIndices[i]; } ); }
 
 	//! Builds a k-d tree for the given points.
 	//! The positions are stored internally, retrieved from the given function.
@@ -168,9 +168,9 @@ public:
 	//! However, increasing the radiusSquared value can have unpredictable results.
 	//! The callback function must be in the following form:
 	//!
-	//! void _CALLBACK(SIZE_TYPE index, const PointType &p, FType distanceSquared, FType &radiusSquared)
+	//! void _CALLBACK(SIZE_TYPE index, PointType const &p, FType distanceSquared, FType &radiusSquared)
 	template <typename _CALLBACK>
-	void GetPoints( const PointType &position, FType radius, _CALLBACK pointFound ) const
+	void GetPoints( PointType const &position, FType radius, _CALLBACK pointFound ) const
 	{
 		FType r2 = radius*radius;
 		GetPoints( position, r2, pointFound, 1 );
@@ -184,15 +184,15 @@ public:
 		SIZE_TYPE index;			//!< The index of the point
 		PointType pos;				//!< The position of the point
 		FType     distanceSquared;	//!< Squared distance from the search position
-		bool operator < (const PointInfo &b) const { return distanceSquared < b.distanceSquared; }	//!< Comparison operator
+		bool operator < ( PointInfo const &b ) const { return distanceSquared < b.distanceSquared; }	//!< Comparison operator
 	};
 
 	//! Returns the closest points to the given position within the given radius.
 	//! It returns the number of points found.
-	int GetPoints( const PointType &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
+	int GetPoints( PointType const &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
 	{
 		int pointsFound = 0;
-		GetPoints( position, radius, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2) {
+		GetPoints( position, radius, [&](SIZE_TYPE i, PointType const &p, FType d2, FType &r2) {
 			if ( pointsFound == maxCount ) {
 				std::pop_heap( closestPoints, closestPoints+maxCount );
 				closestPoints[maxCount-1].index = i;
@@ -216,7 +216,7 @@ public:
 
 	//! Returns the closest points to the given position.
 	//! It returns the number of points found.
-	int GetPoints( const PointType &position, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
+	int GetPoints( PointType const &position, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
 	{
 		return GetPoints( position, (std::numeric_limits<FType>::max)(), maxCount, closestPoints );
 	}
@@ -226,24 +226,24 @@ public:
 
 	//! Returns the closest point to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared ) const
+	bool GetClosest( PointType const &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared ) const
 	{
 		bool found = false;
 		FType dist2 = radius * radius;
-		GetPoints( position, dist2, [&](SIZE_TYPE i, const PointType &p, FType d2, FType &r2){ found=true; closestIndex=i; closestPosition=p; closestDistanceSquared=d2; r2=d2; }, 1 );
+		GetPoints( position, dist2, [&](SIZE_TYPE i, PointType const &p, FType d2, FType &r2){ found=true; closestIndex=i; closestPosition=p; closestDistanceSquared=d2; r2=d2; }, 1 );
 		return found;
 	}
 
 	//! Returns the closest point to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared ) const
+	bool GetClosest( PointType const &position, SIZE_TYPE &closestIndex, PointType &closestPosition, FType &closestDistanceSquared ) const
 	{
 		return GetClosest( position, (std::numeric_limits<FType>::max)(), closestIndex, closestPosition, closestDistanceSquared );
 	}
 
 	//! Returns the closest point index and position to the given position within the given index.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition ) const
+	bool GetClosest( PointType const &position, FType radius, SIZE_TYPE &closestIndex, PointType &closestPosition ) const
 	{
 		FType closestDistanceSquared;
 		return GetClosest( position, radius, closestIndex, closestPosition, closestDistanceSquared );
@@ -251,7 +251,7 @@ public:
 
 	//! Returns the closest point index and position to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosest( const PointType &position, SIZE_TYPE &closestIndex, PointType &closestPosition ) const
+	bool GetClosest( PointType const &position, SIZE_TYPE &closestIndex, PointType &closestPosition ) const
 	{
 		FType closestDistanceSquared;
 		return GetClosest( position, closestIndex, closestPosition, closestDistanceSquared );
@@ -259,7 +259,7 @@ public:
 
 	//! Returns the closest point index to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosestIndex( const PointType &position, FType radius, SIZE_TYPE &closestIndex ) const
+	bool GetClosestIndex( PointType const &position, FType radius, SIZE_TYPE &closestIndex ) const
 	{
 		FType closestDistanceSquared;
 		PointType closestPosition;
@@ -268,7 +268,7 @@ public:
 
 	//! Returns the closest point index to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosestIndex( const PointType &position, SIZE_TYPE &closestIndex ) const
+	bool GetClosestIndex( PointType const &position, SIZE_TYPE &closestIndex ) const
 	{
 		FType closestDistanceSquared;
 		PointType closestPosition;
@@ -277,7 +277,7 @@ public:
 
 	//! Returns the closest point position to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosestPosition( const PointType &position, FType radius, PointType &closestPosition ) const
+	bool GetClosestPosition( PointType const &position, FType radius, PointType &closestPosition ) const
 	{
 		SIZE_TYPE closestIndex;
 		FType closestDistanceSquared;
@@ -286,7 +286,7 @@ public:
 
 	//! Returns the closest point position to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosestPosition( const PointType &position, PointType &closestPosition ) const
+	bool GetClosestPosition( PointType const &position, PointType &closestPosition ) const
 	{
 		SIZE_TYPE closestIndex;
 		FType closestDistanceSquared;
@@ -295,7 +295,7 @@ public:
 
 	//! Returns the closest point distance squared to the given position within the given radius.
 	//! It returns true, if a point is found.
-	bool GetClosestDistanceSquared( const PointType &position, FType radius, FType &closestDistanceSquared ) const
+	bool GetClosestDistanceSquared( PointType const &position, FType radius, FType &closestDistanceSquared ) const
 	{
 		SIZE_TYPE closestIndex;
 		PointType closestPosition;
@@ -304,7 +304,7 @@ public:
 
 	//! Returns the closest point distance squared to the given position.
 	//! It returns true, if a point is found.
-	bool GetClosestDistanceSquared( const PointType &position, FType &closestDistanceSquared ) const
+	bool GetClosestDistanceSquared( PointType const &position, FType &closestDistanceSquared ) const
 	{
 		SIZE_TYPE closestIndex;
 		PointType closestPosition;
@@ -324,11 +324,11 @@ private:
 		SIZE_TYPE indexAndSplitPlane;	// first NBits bits indicates the splitting plane, the rest of the bits store the point index.
 		PointType p;					// point position
 	public:
-		void Set( const PointType &pt, SIZE_TYPE index, uint32_t plane=0 ) { p=pt; indexAndSplitPlane = (index<<NBits()) | (plane&((1<<NBits())-1)); }
+		void Set( PointType const &pt, SIZE_TYPE index, uint32_t plane=0 ) { p=pt; indexAndSplitPlane = (index<<NBits()) | (plane&((1<<NBits())-1)); }
 		void SetPlane( uint32_t plane ) { indexAndSplitPlane = (indexAndSplitPlane & (~((SIZE_TYPE(1)<<NBits())-1))) | plane; }
 		int       Plane() const { return indexAndSplitPlane & ((1<<NBits())-1); }
 		SIZE_TYPE Index() const { return indexAndSplitPlane >> NBits(); }
-		const PointType& Pos() const { return p; }
+		PointType const & Pos() const { return p; }
 	private:
 #if defined(__cpp_constexpr) || (defined(_MSC_VER) && _MSC_VER >= 1900)
 		constexpr int NBits(uint32_t v=DIMENSIONS) const { return v < 2 ? v : 1+NBits(v>>1); }
@@ -349,7 +349,7 @@ private:
 			int axis = SplitAxis( boundMin, boundMax );
 			SIZE_TYPE leftSize = LeftSize(n);
 			SIZE_TYPE ixMid = ixStart+leftSize;
-			std::nth_element( orig+ixStart, orig+ixMid, orig+ixEnd, [axis](const PointData &a, const PointData &b){ return a.Pos()[axis] < b.Pos()[axis]; } );
+			std::nth_element( orig+ixStart, orig+ixMid, orig+ixEnd, [axis](PointData const &a, PointData const &b){ return a.Pos()[axis] < b.Pos()[axis]; } );
 			points[kdIndex] = orig[ixMid];
 			points[kdIndex].SetPlane( axis );
 			PointType bMax = boundMax;
@@ -357,7 +357,7 @@ private:
 			PointType bMin = boundMin;
 			bMin[axis] = orig[ixMid].Pos()[axis];
 #ifdef _CY_PARALLEL_LIB
-			const SIZE_TYPE parallel_invoke_threshold = 256;
+			SIZE_TYPE const parallel_invoke_threshold = 256;
 			if ( ixMid-ixStart > parallel_invoke_threshold && ixEnd - ixMid+1 > parallel_invoke_threshold ) {
 				_CY_PARALLEL_LIB::parallel_invoke(
 					[&]{ BuildKDTree( orig, boundMin, bMax, kdIndex*2,   ixStart, ixMid ); },
@@ -385,7 +385,7 @@ private:
 	}
 
 	// Returns axis with the largest span, used as the splitting axis for building the k-d tree
-	static int SplitAxis( const PointType &boundMin, const PointType &boundMax )
+	static int SplitAxis( PointType const &boundMin, PointType const &boundMax )
 	{
 		PointType d = boundMax - boundMin;
 		int axis = 0;
@@ -400,7 +400,7 @@ private:
 	}
 
 	template <typename _CALLBACK>
-	void GetPoints( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE nodeID ) const
+	void GetPoints( PointType const &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE nodeID ) const
 	{
 		SIZE_TYPE stack[sizeof(SIZE_TYPE)*8];
 		SIZE_TYPE stackPos = 0;
@@ -411,8 +411,8 @@ private:
 		while ( stackPos > 0 ) {
 			SIZE_TYPE nodeID = stack[ --stackPos ];
 			// check the internal node point
-			const PointData &p = points[nodeID];
-			const PointType pos = p.Pos();
+			PointData const &p = points[nodeID];
+			PointType const pos = p.Pos();
 			int axis = p.Plane();
 			float dist1 = position[axis] - pos[axis];
 			if ( dist1*dist1 < dist2 ) {
@@ -428,21 +428,21 @@ private:
 	}
 
 	template <typename _CALLBACK>
-	void TraverseCloser( const PointType &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE nodeID, SIZE_TYPE *stack, SIZE_TYPE &stackPos ) const
+	void TraverseCloser( PointType const &position, FType &dist2, _CALLBACK pointFound, SIZE_TYPE nodeID, SIZE_TYPE *stack, SIZE_TYPE &stackPos ) const
 	{
 		// Traverse down to a leaf node along the closer branch
 		while ( nodeID <= numInternal ) {
 			stack[stackPos++] = nodeID;
-			const PointData &p = points[nodeID];
-			const PointType pos = p.Pos();
+			PointData const &p = points[nodeID];
+			PointType const pos = p.Pos();
 			int axis = p.Plane();
 			float dist1 = position[axis] - pos[axis];
 			uint32_t child = 2*nodeID;
 			nodeID = dist1 < 0 ? child : child + 1;
 		}
 		// Now we are at a leaf node, do the test
-		const PointData &p = points[nodeID];
-		const PointType pos = p.Pos();
+		PointData const &p = points[nodeID];
+		PointType const pos = p.Pos();
 		FType d2 = (position - pos).LengthSquared();
 		if ( d2 < dist2 ) pointFound( p.Index(), pos, d2, dist2 );
 	}
@@ -452,20 +452,20 @@ private:
 
 //-------------------------------------------------------------------------------
 
-#ifdef _CY_POINT_H_INCLUDED_
-template <typename TYPE> _CY_TEMPLATE_ALIAS( PointCloud2, (PointCloud<Point2<TYPE>,TYPE,2>) );	//!< A 2D point cloud using a k-d tree
-template <typename TYPE> _CY_TEMPLATE_ALIAS( PointCloud3, (PointCloud<Point3<TYPE>,TYPE,3>) );	//!< A 3D point cloud using a k-d tree
-template <typename TYPE> _CY_TEMPLATE_ALIAS( PointCloud4, (PointCloud<Point4<TYPE>,TYPE,4>) );	//!< A 4D point cloud using a k-d tree
+#ifdef _CY_VECTOR_H_INCLUDED_
+template <typename T> _CY_TEMPLATE_ALIAS( PointCloud2, (PointCloud<Vec2<T>,T,2>) );	//!< A 2D point cloud using a k-d tree
+template <typename T> _CY_TEMPLATE_ALIAS( PointCloud3, (PointCloud<Vec3<T>,T,3>) );	//!< A 3D point cloud using a k-d tree
+template <typename T> _CY_TEMPLATE_ALIAS( PointCloud4, (PointCloud<Vec4<T>,T,4>) );	//!< A 4D point cloud using a k-d tree
 
-typedef PointCloud<Point2f,float,2>  PointCloud2f;	//!< A 2D point cloud using a k-d tree with float  type elements
-typedef PointCloud<Point3f,float,3>  PointCloud3f;	//!< A 3D point cloud using a k-d tree with float  type elements
-typedef PointCloud<Point4f,float,4>  PointCloud4f;	//!< A 4D point cloud using a k-d tree with float  type elements
+typedef PointCloud<Vec2f,float,2>  PointCloud2f;	//!< A 2D point cloud using a k-d tree with float  type elements
+typedef PointCloud<Vec3f,float,3>  PointCloud3f;	//!< A 3D point cloud using a k-d tree with float  type elements
+typedef PointCloud<Vec4f,float,4>  PointCloud4f;	//!< A 4D point cloud using a k-d tree with float  type elements
 
-typedef PointCloud<Point2d,double,2> PointCloud2d;	//!< A 2D point cloud using a k-d tree with double type elements
-typedef PointCloud<Point3d,double,3> PointCloud3d;	//!< A 3D point cloud using a k-d tree with double type elements
-typedef PointCloud<Point4d,double,4> PointCloud4d;	//!< A 4D point cloud using a k-d tree with double type elements
+typedef PointCloud<Vec2d,double,2> PointCloud2d;	//!< A 2D point cloud using a k-d tree with double type elements
+typedef PointCloud<Vec3d,double,3> PointCloud3d;	//!< A 3D point cloud using a k-d tree with double type elements
+typedef PointCloud<Vec4d,double,4> PointCloud4d;	//!< A 4D point cloud using a k-d tree with double type elements
 
-template <typename TYPE, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudN, (PointCloud<Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
+template <typename T, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudN, (PointCloud<Vec<T,DIMENSIONS>,T,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
 template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNf , (PointCloudN<float,   DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with single precision (float)
 template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNd , (PointCloudN<double,  DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with double precision (double)
 #endif
@@ -474,20 +474,20 @@ template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( PointCloudNd , (PointCloudN<d
 } // namespace cy
 //-------------------------------------------------------------------------------
 
-#ifdef _CY_POINT_H_INCLUDED_
-template <typename TYPE> _CY_TEMPLATE_ALIAS( cyPointCloud2, (cy::PointCloud<cy::Point2<TYPE>,TYPE,2>) );	//!< A 2D point cloud using a k-d tree
-template <typename TYPE> _CY_TEMPLATE_ALIAS( cyPointCloud3, (cy::PointCloud<cy::Point3<TYPE>,TYPE,3>) );	//!< A 3D point cloud using a k-d tree
-template <typename TYPE> _CY_TEMPLATE_ALIAS( cyPointCloud4, (cy::PointCloud<cy::Point4<TYPE>,TYPE,4>) );	//!< A 4D point cloud using a k-d tree
+#ifdef _CY_VECTOR_H_INCLUDED_
+template <typename T> _CY_TEMPLATE_ALIAS( cyPointCloud2, (cy::PointCloud<cy::Vec2<T>,T,2>) );	//!< A 2D point cloud using a k-d tree
+template <typename T> _CY_TEMPLATE_ALIAS( cyPointCloud3, (cy::PointCloud<cy::Vec3<T>,T,3>) );	//!< A 3D point cloud using a k-d tree
+template <typename T> _CY_TEMPLATE_ALIAS( cyPointCloud4, (cy::PointCloud<cy::Vec4<T>,T,4>) );	//!< A 4D point cloud using a k-d tree
 
-typedef cy::PointCloud<cy::Point2f,float,2>  cyPointCloud2f;	//!< A 2D point cloud using a k-d tree with float  type elements
-typedef cy::PointCloud<cy::Point3f,float,3>  cyPointCloud3f;	//!< A 3D point cloud using a k-d tree with float  type elements
-typedef cy::PointCloud<cy::Point4f,float,4>  cyPointCloud4f;	//!< A 4D point cloud using a k-d tree with float  type elements
+typedef cy::PointCloud<cy::Vec2f,float,2>  cyPointCloud2f;	//!< A 2D point cloud using a k-d tree with float  type elements
+typedef cy::PointCloud<cy::Vec3f,float,3>  cyPointCloud3f;	//!< A 3D point cloud using a k-d tree with float  type elements
+typedef cy::PointCloud<cy::Vec4f,float,4>  cyPointCloud4f;	//!< A 4D point cloud using a k-d tree with float  type elements
 
-typedef cy::PointCloud<cy::Point2d,double,2> cyPointCloud2d;	//!< A 2D point cloud using a k-d tree with double type elements
-typedef cy::PointCloud<cy::Point3d,double,3> cyPointCloud3d;	//!< A 3D point cloud using a k-d tree with double type elements
-typedef cy::PointCloud<cy::Point4d,double,4> cyPointCloud4d;	//!< A 4D point cloud using a k-d tree with double type elements
+typedef cy::PointCloud<cy::Vec2d,double,2> cyPointCloud2d;	//!< A 2D point cloud using a k-d tree with double type elements
+typedef cy::PointCloud<cy::Vec3d,double,3> cyPointCloud3d;	//!< A 3D point cloud using a k-d tree with double type elements
+typedef cy::PointCloud<cy::Vec4d,double,4> cyPointCloud4d;	//!< A 4D point cloud using a k-d tree with double type elements
 
-template <typename TYPE, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudN, (cy::PointCloud<cy::Point<TYPE,DIMENSIONS>,TYPE,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
+template <typename T, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudN, (cy::PointCloud<cy::Vec<T,DIMENSIONS>,T,DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree
 template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNf , (cyPointCloudN<float,   DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with float  type elements
 template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyPointCloudNd , (cyPointCloudN<double,  DIMENSIONS>) );	//!< A multi-dimensional point cloud using a k-d tree with double type elements
 #endif

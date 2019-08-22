@@ -36,7 +36,7 @@
 
 //-------------------------------------------------------------------------------
 
-#include "cyPoint.h"
+#include "cyVector.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <string>
@@ -63,11 +63,11 @@ public:
 	{
 		char *data;	//!< String data
 		Str() : data(nullptr) {}							//!< Constructor
-		Str(const Str  &s) : data(nullptr) { *this = s; }	//!< Copy constructor
+		Str( Str const &s ) : data(nullptr) { *this = s; }	//!< Copy constructor
 		~Str() { if ( data ) delete [] data; }				//!< Destructor
-		operator const char* () { return data; }			//!< Implicit conversion to const char
-		void operator = (const Str  &s) { *this = s.data; }	//!< Assignment operator
-		void operator = (const char *s) { if (s) { size_t n=strlen(s); if (data) delete [] data; data=new char[n+1]; strncpy(data,s,n); data[n]='\0'; } else if (data) { delete [] data; data=nullptr; } }	//!< Assignment operator
+		operator char const * () { return data; }			//!< Implicit conversion to const char
+		void operator = ( Str  const &s ) { *this = s.data; }	//!< Assignment operator
+		void operator = ( char const *s ) { if (s) { size_t n=strlen(s); if (data) delete [] data; data=new char[n+1]; strncpy(data,s,n); data[n]='\0'; } else if (data) { delete [] data; data=nullptr; } }	//!< Assignment operator
 	};
 
 	//! Material definition
@@ -103,11 +103,11 @@ public:
 	};
 
 protected:
-	Point3f *v;		//!< vertices
+	Vec3f   *v;		//!< vertices
 	TriFace *f;		//!< faces
-	Point3f *vn;	//!< vertex normal
+	Vec3f   *vn;	//!< vertex normal
 	TriFace *fn;	//!< normal faces
-	Point3f *vt;	//!< texture vertices
+	Vec3f   *vt;	//!< texture vertices
 	TriFace *ft;	//!< texture faces
 	Mtl     *m;		//!< materials
 	int     *mcfc;	//!< material cumulative face count
@@ -118,33 +118,33 @@ protected:
 	unsigned int nvt;	//!< number of texture vertices
 	unsigned int nm;	//!< number of materials
 
-	Point3f boundMin;	//!< Bounding box minimum bound
-	Point3f boundMax;	//!< Bounding box maximum bound
+	Vec3f boundMin;	//!< Bounding box minimum bound
+	Vec3f boundMax;	//!< Bounding box maximum bound
 
 public:
 
 	//!@name Constructors and Destructor
 	TriMesh() : v(nullptr), f(nullptr), vn(nullptr), fn(nullptr), vt(nullptr), ft(nullptr), m(nullptr), mcfc(nullptr)
 				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(1,1,1), boundMax(0,0,0) {}
-	TriMesh(const TriMesh &t) : v(nullptr), f(nullptr), vn(nullptr), fn(nullptr), vt(nullptr), ft(nullptr), m(nullptr), mcfc(nullptr)
+	TriMesh( TriMesh const &t ) : v(nullptr), f(nullptr), vn(nullptr), fn(nullptr), vt(nullptr), ft(nullptr), m(nullptr), mcfc(nullptr)
 				, nv(0), nf(0), nvn(0), nvt(0), nm(0),boundMin(1,1,1), boundMax(0,0,0) { *this = t; }
 	virtual ~TriMesh() { Clear(); }
 
 	//!@name Component Access Methods
-	const Point3f& V (int i) const { return v[i]; }		//!< returns the i^th vertex
-	Point3f&       V (int i)       { return v[i]; }		//!< returns the i^th vertex
-	const TriFace& F (int i) const { return f[i]; }		//!< returns the i^th face
-	TriFace&       F (int i)       { return f[i]; }		//!< returns the i^th face
-	const Point3f& VN(int i) const { return vn[i]; }	//!< returns the i^th vertex normal
-	Point3f&       VN(int i)       { return vn[i]; }	//!< returns the i^th vertex normal
-	const TriFace& FN(int i) const { return fn[i]; }	//!< returns the i^th normal face
-	TriFace&       FN(int i)       { return fn[i]; }	//!< returns the i^th normal face
-	const Point3f& VT(int i) const { return vt[i]; }	//!< returns the i^th vertex texture
-	Point3f&       VT(int i)       { return vt[i]; }	//!< returns the i^th vertex texture
-	const TriFace& FT(int i) const { return ft[i]; }	//!< returns the i^th texture face
-	TriFace&       FT(int i)       { return ft[i]; }	//!< returns the i^th texture face
-	const Mtl&     M (int i) const { return m[i]; }		//!< returns the i^th material
-	Mtl&           M (int i)       { return m[i]; }		//!< returns the i^th material
+	Vec3f const &   V (int i) const { return v[i]; }		//!< returns the i^th vertex
+	Vec3f&          V (int i)       { return v[i]; }		//!< returns the i^th vertex
+	TriFace const & F (int i) const { return f[i]; }		//!< returns the i^th face
+	TriFace&        F (int i)       { return f[i]; }		//!< returns the i^th face
+	Vec3f const &   VN(int i) const { return vn[i]; }	//!< returns the i^th vertex normal
+	Vec3f&          VN(int i)       { return vn[i]; }	//!< returns the i^th vertex normal
+	TriFace const & FN(int i) const { return fn[i]; }	//!< returns the i^th normal face
+	TriFace&        FN(int i)       { return fn[i]; }	//!< returns the i^th normal face
+	Vec3f const &   VT(int i) const { return vt[i]; }	//!< returns the i^th vertex texture
+	Vec3f&          VT(int i)       { return vt[i]; }	//!< returns the i^th vertex texture
+	TriFace const & FT(int i) const { return ft[i]; }	//!< returns the i^th texture face
+	TriFace&        FT(int i)       { return ft[i]; }	//!< returns the i^th texture face
+	Mtl const &     M (int i) const { return m[i]; }		//!< returns the i^th material
+	Mtl&            M (int i)       { return m[i]; }		//!< returns the i^th material
 
 	unsigned int NV () const { return nv; }		//!< returns the number of vertices
 	unsigned int NF () const { return nf; }		//!< returns the number of faces
@@ -157,38 +157,38 @@ public:
 
 	//!@name Set Component Count
 	void Clear() { SetNumVertex(0); SetNumFaces(0); SetNumNormals(0); SetNumTexVerts(0); SetNumMtls(0); boundMin.Set(1,1,1); boundMax.Zero(); }	//!< Deletes all components of the mesh
-	void SetNumVertex  (unsigned int n) { Allocate(n,v,nv); }															//!< Sets the number of vertices and allocates memory for vertex positions
-	void SetNumFaces   (unsigned int n) { Allocate(n,f,nf); if (fn||vn) Allocate(n,fn); if (ft||vt) Allocate(n,ft); }	//!< Sets the number of faces and allocates memory for face data. Normal faces and texture faces are also allocated, if they are used.
-	void SetNumNormals (unsigned int n) { Allocate(n,vn,nvn); Allocate(n==0?0:nf,fn); }									//!< Sets the number of normals and allocates memory for normals and normal faces.
-	void SetNumTexVerts(unsigned int n) { Allocate(n,vt,nvt); Allocate(n==0?0:nf,ft); }									//!< Sets the number of texture coordinates and allocates memory for texture coordinates and texture faces.
-	void SetNumMtls    (unsigned int n) { Allocate(n,m,nm); Allocate(n,mcfc); }											//!< Sets the number of materials and allocates memory for material data.
-	void operator = (const TriMesh &t);																					//!< Copies mesh data from the given mesh.
+	void SetNumVertex  ( unsigned int n ) { Allocate(n,v,nv); }															//!< Sets the number of vertices and allocates memory for vertex positions
+	void SetNumFaces   ( unsigned int n ) { Allocate(n,f,nf); if (fn||vn) Allocate(n,fn); if (ft||vt) Allocate(n,ft); }	//!< Sets the number of faces and allocates memory for face data. Normal faces and texture faces are also allocated, if they are used.
+	void SetNumNormals ( unsigned int n ) { Allocate(n,vn,nvn); Allocate(n==0?0:nf,fn); }									//!< Sets the number of normals and allocates memory for normals and normal faces.
+	void SetNumTexVerts( unsigned int n ) { Allocate(n,vt,nvt); Allocate(n==0?0:nf,ft); }									//!< Sets the number of texture coordinates and allocates memory for texture coordinates and texture faces.
+	void SetNumMtls    ( unsigned int n ) { Allocate(n,m,nm); Allocate(n,mcfc); }											//!< Sets the number of materials and allocates memory for material data.
+	void operator = ( TriMesh const &t );																					//!< Copies mesh data from the given mesh.
 
 	//!@name Get Property Methods
-	bool    IsBoundBoxReady() const { return boundMin.x<=boundMax.x && boundMin.y<=boundMax.y && boundMin.z<=boundMax.z; }	//!< Returns true if the bounding box has been computed.
-	Point3f GetBoundMin() const { return boundMin; }		//!< Returns the minimum values of the bounding box
-	Point3f GetBoundMax() const { return boundMax; }		//!< Returns the maximum values of the bounding box
-	Point3f GetPoint   (int faceID, const Point3f &bc) const { return Interpolate(faceID,v,f,bc); }		//!< Returns the point on the given face with the given barycentric coordinates (bc).
-	Point3f GetNormal  (int faceID, const Point3f &bc) const { return Interpolate(faceID,vn,fn,bc); }	//!< Returns the the surface normal on the given face at the given barycentric coordinates (bc). The returned vector is not normalized.
-	Point3f GetTexCoord(int faceID, const Point3f &bc) const { return Interpolate(faceID,vt,ft,bc); }	//!< Returns the texture coordinate on the given face at the given barycentric coordinates (bc).
-	int     GetMaterialIndex(int faceID) const;				//!< Returns the material index of the face. This method goes through material counts of all materials to find the material index of the face. Returns a negative number if the face as no material
-	int     GetMaterialFaceCount(int mtlID) const { return mtlID>0 ? mcfc[mtlID]-mcfc[mtlID-1] : mcfc[0]; }	//!< Returns the number of faces associated with the given material ID.
-	int     GetMaterialFirstFace(int mtlID) const { return mtlID>0 ? mcfc[mtlID-1] : 0; }	//!< Returns the first face index associated with the given material ID. Other faces associated with the same material are placed are placed consecutively.
+	bool  IsBoundBoxReady() const { return boundMin.x<=boundMax.x && boundMin.y<=boundMax.y && boundMin.z<=boundMax.z; }	//!< Returns true if the bounding box has been computed.
+	Vec3f GetBoundMin() const { return boundMin; }		//!< Returns the minimum values of the bounding box
+	Vec3f GetBoundMax() const { return boundMax; }		//!< Returns the maximum values of the bounding box
+	Vec3f GetVec     (int faceID, Vec3f const &bc) const { return Interpolate(faceID,v,f,bc); }		//!< Returns the point on the given face with the given barycentric coordinates (bc).
+	Vec3f GetNormal  (int faceID, Vec3f const &bc) const { return Interpolate(faceID,vn,fn,bc); }	//!< Returns the the surface normal on the given face at the given barycentric coordinates (bc). The returned vector is not normalized.
+	Vec3f GetTexCoord(int faceID, Vec3f const &bc) const { return Interpolate(faceID,vt,ft,bc); }	//!< Returns the texture coordinate on the given face at the given barycentric coordinates (bc).
+	int   GetMaterialIndex(int faceID) const;				//!< Returns the material index of the face. This method goes through material counts of all materials to find the material index of the face. Returns a negative number if the face as no material
+	int   GetMaterialFaceCount(int mtlID) const { return mtlID>0 ? mcfc[mtlID]-mcfc[mtlID-1] : mcfc[0]; }	//!< Returns the number of faces associated with the given material ID.
+	int   GetMaterialFirstFace(int mtlID) const { return mtlID>0 ? mcfc[mtlID-1] : 0; }	//!< Returns the first face index associated with the given material ID. Other faces associated with the same material are placed are placed consecutively.
 
 	//!@name Compute Methods
 	void ComputeBoundingBox();						//!< Computes the bounding box
 	void ComputeNormals(bool clockwise=false);		//!< Computes and stores vertex normals
 
 	//!@name Load and Save methods
-	bool LoadFromFileObj( const char *filename, bool loadMtl=true, std::ostream *outStream=&std::cout );	//!< Loads the mesh from an OBJ file. Automatically converts all faces to triangles.
-	bool SaveToFileObj( const char *filename, std::ostream *outStream );									//!< Saves the mesh to an OBJ file with the given name.
+	bool LoadFromFileObj( char const *filename, bool loadMtl=true, std::ostream *outStream=&std::cout );	//!< Loads the mesh from an OBJ file. Automatically converts all faces to triangles.
+	bool SaveToFileObj( char const *filename, std::ostream *outStream );									//!< Saves the mesh to an OBJ file with the given name.
 
 private:
-	template <class T> void Allocate(unsigned int n, T* &t) { if (t) delete [] t; if (n>0) t = new T[n]; else t=nullptr; }
-	template <class T> bool Allocate(unsigned int n, T* &t, unsigned int &nt) { if (n==nt) return false; nt=n; Allocate(n,t); return true; }
-	template <class T> void Copy(const T* from, unsigned int n, T* &t, unsigned int &nt) { if (!from) n=0; Allocate(n,t,nt); if (t) memcpy(t,from,sizeof(T)*n); }
-	template <class T> void Copy(const T* from, unsigned int n, T* &t) { if (!from) n=0; Allocate(n,t); if (t) memcpy(t,from,sizeof(T)*n); }
-	static Point3f Interpolate( int i, const Point3f *v, const TriFace *f, const Point3f &bc ) { return v[f[i].v[0]]*bc.x + v[f[i].v[1]]*bc.y + v[f[i].v[2]]*bc.z; }
+	template <class T> void Allocate( unsigned int n, T* &t ) { if (t) delete [] t; if (n>0) t = new T[n]; else t=nullptr; }
+	template <class T> bool Allocate( unsigned int n, T* &t, unsigned int &nt ) { if (n==nt) return false; nt=n; Allocate(n,t); return true; }
+	template <class T> void Copy( T const *from, unsigned int n, T* &t, unsigned int &nt) { if (!from) n=0; Allocate(n,t,nt); if (t) memcpy(t,from,sizeof(T)*n); }
+	template <class T> void Copy( T const *from, unsigned int n, T* &t) { if (!from) n=0; Allocate(n,t); if (t) memcpy(t,from,sizeof(T)*n); }
+	static Vec3f Interpolate( int i, Vec3f const *v, TriFace const *f, Vec3f const &bc ) { return v[f[i].v[0]]*bc.x + v[f[i].v[1]]*bc.y + v[f[i].v[2]]*bc.z; }
 
 	// Temporary structures
 	struct MtlData
@@ -203,7 +203,7 @@ private:
 
 //-------------------------------------------------------------------------------
 
-inline void TriMesh::operator = (const TriMesh &t)
+inline void TriMesh::operator = ( TriMesh const &t )
 {
 	Copy( t.v,  t.nv,  v,  nv  );
 	Copy( t.f,  t.nf,  f,  nf  );
@@ -250,7 +250,7 @@ inline void TriMesh::ComputeNormals(bool clockwise)
 	SetNumNormals(nv);
 	for ( unsigned int i=0; i<nvn; i++ ) vn[i].Set(0,0,0);	// initialize all normals to zero
 	for ( unsigned int i=0; i<nf; i++ ) {
-		Point3f N = (v[f[i].v[1]]-v[f[i].v[0]]) ^ (v[f[i].v[2]]-v[f[i].v[0]]);	// face normal (not normalized)
+		Vec3f N = (v[f[i].v[1]]-v[f[i].v[0]]) ^ (v[f[i].v[2]]-v[f[i].v[0]]);	// face normal (not normalized)
 		if ( clockwise ) N = -N;
 		vn[f[i].v[0]] += N;
 		vn[f[i].v[1]] += N;
@@ -260,7 +260,7 @@ inline void TriMesh::ComputeNormals(bool clockwise)
 	for ( unsigned int i=0; i<nvn; i++ ) vn[i].Normalize();
 }
 
-inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::ostream *outStream )
+inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::ostream *outStream )
 {
 	FILE *fp = fopen(filename,"r");
 	if ( !fp ) {
@@ -301,11 +301,11 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 			return i;
 		}
 		char& operator[](int i) { return data[i]; }
-		void ReadVertex( Point3f &v ) const { v.Zero(); sscanf( data+2, "%f %f %f", &v.x, &v.y, &v.z ); }
+		void ReadVertex( Vec3f &v ) const { v.Zero(); sscanf( data+2, "%f %f %f", &v.x, &v.y, &v.z ); }
 		void ReadFloat3( float f[3] ) const { f[2]=f[1]=f[0]=0; int n = sscanf( data+2, "%f %f %f", &f[0], &f[1], &f[2] ); if ( n==1 ) f[2]=f[1]=f[0]; }
 		void ReadFloat( float *f ) const { sscanf( data+2, "%f", f ); }
 		void ReadInt( int *i, int start ) const { sscanf( data+start, "%d", i ); }
-		bool IsCommand( const char *cmd ) const {
+		bool IsCommand( char const *cmd ) const {
 			int i=0;
 			while ( cmd[i]!='\0' ) {
 				if ( cmd[i] != data[i] ) return false;
@@ -313,7 +313,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 			}
 			return (data[i]=='\0' || data[i]==' ');
 		}
-		const char* Data(int start=0) { return data+start; }
+		char const * Data(int start=0) { return data+start; }
 		void Copy( Str &str, int start=0 )
 		{
 			while ( data[start] != '\0' && data[start] <= ' ' ) start++;
@@ -325,14 +325,14 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 
 	struct MtlList {
 		std::vector<MtlData> mtlData;
-		int GetMtlIndex(const char *mtlName)
+		int GetMtlIndex( char const *mtlName )
 		{
 			for ( unsigned int i=0; i<mtlData.size(); i++ ) {
 				if ( mtlData[i].mtlName == mtlName ) return (int)i;
 			}
 			return -1;
 		}
-		int CreateMtl(const char *mtlName, unsigned int firstFace)
+		int CreateMtl( char const *mtlName, unsigned int firstFace )
 		{
 			if ( mtlName[0] == '\0' ) return 0;
 			int i = GetMtlIndex(mtlName);
@@ -346,11 +346,11 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 	};
 	MtlList mtlList;
 
-	std::vector<Point3f>	_v;		// vertices
+	std::vector<Vec3f>	_v;		// vertices
 	std::vector<TriFace>	_f;		// faces
-	std::vector<Point3f>	_vn;	// vertex normal
+	std::vector<Vec3f>	_vn;	// vertex normal
 	std::vector<TriFace>	_fn;	// normal faces
-	std::vector<Point3f>	_vt;	// texture vertices
+	std::vector<Vec3f>	_vt;	// texture vertices
 	std::vector<TriFace>	_ft;	// texture faces
 	std::vector<MtlLibName> mtlFiles;
 	std::vector<int> faceMtlIndex;
@@ -360,18 +360,18 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 
 	while ( int rb = buffer.ReadLine(fp) ) {
 		if ( buffer.IsCommand("v") ) {
-			Point3f vertex;
+			Vec3f vertex;
 			buffer.ReadVertex(vertex);
 			_v.push_back(vertex);
 		}
 		else if ( buffer.IsCommand("vt") ) {
-			Point3f texVert;
+			Vec3f texVert;
 			buffer.ReadVertex(texVert);
 			_vt.push_back(texVert);
 			hasTextures = true;
 		}
 		else if ( buffer.IsCommand("vn") ) {
-			Point3f normal;
+			Vec3f normal;
 			buffer.ReadVertex(normal);
 			_vn.push_back(normal);
 			hasNormals = true;
@@ -460,9 +460,9 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 	if ( loadMtl ) SetNumMtls((unsigned int)mtlList.mtlData.size());
 
 	// Copy data
-	memcpy(v, _v.data(), sizeof(Point3f)*_v.size());
-	if ( _vt.size() > 0 ) memcpy(vt, _vt.data(), sizeof(Point3f)*_vt.size());
-	if ( _vn.size() > 0 ) memcpy(vn, _vn.data(), sizeof(Point3f)*_vn.size());
+	memcpy(v, _v.data(), sizeof(Vec3f)*_v.size());
+	if ( _vt.size() > 0 ) memcpy(vt, _vt.data(), sizeof(Vec3f)*_vt.size());
+	if ( _vn.size() > 0 ) memcpy(vn, _vn.data(), sizeof(Vec3f)*_vn.size());
 
 	if ( mtlList.mtlData.size() > 0 ) {
 		unsigned int fid = 0;
@@ -499,7 +499,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 	if ( loadMtl ) {
 		// get the path from filename
 		char *mtlPathName = nullptr;
-		const char* pathEnd = strrchr(filename,'\\');
+		char const *pathEnd = strrchr(filename,'\\');
 		if ( !pathEnd ) pathEnd = strrchr(filename,'/');
 		if ( pathEnd ) {
 			int n = int(pathEnd-filename) + 1;
@@ -548,7 +548,7 @@ inline bool TriMesh::LoadFromFileObj( const char *filename, bool loadMtl, std::o
 
 //-------------------------------------------------------------------------------
 
-inline bool TriMesh::SaveToFileObj( const char *filename, std::ostream *outStream )
+inline bool TriMesh::SaveToFileObj( char const *filename, std::ostream *outStream )
 {
 	FILE *fp = fopen(filename,"w");
 	if ( !fp ) {

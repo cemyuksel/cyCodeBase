@@ -155,7 +155,7 @@ public:
 	unsigned char GetRecordCount() const { return ( pos & 0x80 ) ? 128 : pos; }
 
 	//! Returns the array of time records.
-	const double* GetRecords() const { return times; }
+	double const * GetRecords() const { return times; }
 
 
 protected:

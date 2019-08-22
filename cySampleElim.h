@@ -117,22 +117,22 @@ public:
 	//! Returns the minimum bounds of the sampling domain.
 	//! The sampling domain boundaries are used for tiling and computing the maximum possible
 	//! Poisson disk radius for the sampling domain. The default boundaries are between 0 and 1.
-	const PointType& GetBoundsMin() const { return boundsMin; }
+	PointType const & GetBoundsMin() const { return boundsMin; }
 
 	//! Returns the maximum bounds of the sampling domain.
 	//! The sampling domain boundaries are used for tiling and computing the maximum possible
 	//! Poisson disk radius for the sampling domain. The default boundaries are between 0 and 1.
-	const PointType& GetBoundsMax() const { return boundsMax; }
+	PointType const & GetBoundsMax() const { return boundsMax; }
 
 	//! Sets the minimum bounds of the sampling domain.
 	//! The sampling domain boundaries are used for tiling and computing the maximum possible
 	//! Poisson disk radius for the sampling domain. The default boundaries are between 0 and 1.
-	void SetBoundsMin( const PointType &bmin ) { boundsMin = bmin; }
+	void SetBoundsMin( PointType const &bmin ) { boundsMin = bmin; }
 
 	//! Sets the maximum bounds of the sampling domain.
 	//! The sampling domain boundaries are used for tiling and computing the maximum possible
 	//! Poisson disk radius for the sampling domain. The default boundaries are between 0 and 1.
-	void SetBoundsMax( const PointType &bmax ) { boundsMax = bmax; }
+	void SetBoundsMax( PointType const &bmax ) { boundsMax = bmax; }
 
 	//! Sets the alpha parameter that is used by the default weight function. 
 	void  SetParamAlpha( FType a ) { alpha = a; }
@@ -176,7 +176,7 @@ public:
 	//! of a sample point based on the placement of its neighbors within d_max radius. The weight function
 	//! must have the following form:
 	//!
-	//! FType weightFunction( const PointType &p0, const PointType &p1, FType dist2, FType d_max )
+	//! FType weightFunction( PointType const &p0, PointType const &p1, FType dist2, FType d_max )
 	//!
 	//! The arguments p0 and p1 are the two neighboring points, dist2 is the square of the Euclidean distance 
 	//! between these two points, and d_max is the current radius for the weight function.
@@ -184,7 +184,7 @@ public:
 	//! different than the d_max value passed to this method.
 	template <typename WeightFunction>
 	void Eliminate ( 
-		const PointType *inputPoints, 
+		PointType const *inputPoints, 
 		SIZE_TYPE        inputSize, 
 		PointType       *outputPoints, 
 		SIZE_TYPE        outputSize, 
@@ -208,11 +208,11 @@ public:
 				outSize = inSize / 2;
 				d_max *= ProgressiveRadiusMultiplier( dimensions );
 				DoEliminate( inPts, inSize, outPts, outSize, d_max, weightFunction, true );
-				if ( outPts != outputPoints ) CY_MEMCOPY( PointType, outputPoints+outSize, outPts+outSize, inSize-outSize );
+				if ( outPts != outputPoints ) MemCopy( outputPoints+outSize, outPts+outSize, inSize-outSize );
 				PointType *tmpPts = inPts; inPts = outPts; outPts = tmpPts;
 				inSize = outSize;
 			}
-			if ( inPts != outputPoints ) CY_MEMCOPY( PointType, outputPoints, inPts, outSize );
+			if ( inPts != outputPoints ) MemCopy( outputPoints, inPts, outSize );
 		}
 	}
 
@@ -234,7 +234,7 @@ public:
 	//! However, smaller values can be used when sampling a low-dimensional manifold in a high-dimensional
 	//! space, such as a surface in 3D.
 	void Eliminate ( 
-		const PointType *inputPoints, 
+		PointType const *inputPoints, 
 		SIZE_TYPE        inputSize, 
 		PointType       *outputPoints, 
 		SIZE_TYPE        outputSize, 
@@ -248,7 +248,7 @@ public:
 		if ( weightLimiting ) {
 			FType d_min = d_max * GetWeightLimitFraction( inputSize, outputSize );
 			Eliminate( inputPoints, inputSize, outputPoints, outputSize, progressive, d_max, dimensions,
-				[d_min, alpha] (const PointType &, const PointType &, FType d2, FType d_max)
+				[d_min, alpha] (PointType const &, PointType const &, FType d2, FType d_max)
 				{
 					FType d = cySqrt(d2);
 					if ( d < d_min ) d = d_min;
@@ -257,7 +257,7 @@ public:
 			);
 		} else {
 			Eliminate( inputPoints, inputSize, outputPoints, outputSize, progressive, d_max, dimensions,
-				[alpha] (const PointType &, const PointType &, FType d2, FType d_max)
+				[alpha] (PointType const &, PointType const &, FType d2, FType d_max)
 				{
 					FType d = cySqrt(d2);
 					return cyPow( FType(1) - d/d_max, alpha );
@@ -304,7 +304,7 @@ private:
 
 	// Reflects a point near the bounds of the sampling domain off of all domain bounds for tiling.
 	template <typename OPERATION>
-	void TilePoint( SIZE_TYPE index, const PointType &point, FType d_max, OPERATION operation, int dim=0 ) const
+	void TilePoint( SIZE_TYPE index, PointType const &point, FType d_max, OPERATION operation, int dim=0 ) const
 	{
 		for ( int d=dim; d<DIMENSIONS; d++ ) {
 			if ( boundsMax[d] - point[d] < d_max ) {
@@ -325,7 +325,7 @@ private:
 	// This is the method that performs weighted sample elimination.
 	template <typename WeightFunction>
 	void DoEliminate( 
-		const PointType *inputPoints, 
+		PointType const *inputPoints, 
 		SIZE_TYPE        inputSize, 
 		PointType       *outputPoints, 
 		SIZE_TYPE        outputSize, 
@@ -340,7 +340,7 @@ private:
 			std::vector<PointType> point(inputPoints, inputPoints + inputSize);
 			std::vector<SIZE_TYPE> index(inputSize);
 			for ( SIZE_TYPE i=0; i<inputSize; i++ ) index[i] = i;
-			auto AppendPoint = [&]( SIZE_TYPE ix, const PointType &pt ) {
+			auto AppendPoint = [&]( SIZE_TYPE ix, PointType const &pt ) {
 				point.push_back(pt);
 				index.push_back(ix);
 			};
@@ -352,8 +352,8 @@ private:
 
 		// Assign weights to each sample
 		std::vector<FType> w( inputSize, FType(0) );
-		auto AddWeights = [&]( SIZE_TYPE index, const PointType &point ) {
-			kdtree.GetPoints( point, d_max, [&weightFunction,d_max,&w,index,&point,&inputSize]( SIZE_TYPE i, const PointType &p, FType d2, FType & ){
+		auto AddWeights = [&]( SIZE_TYPE index, PointType const &point ) {
+			kdtree.GetPoints( point, d_max, [&weightFunction,d_max,&w,index,&point,&inputSize]( SIZE_TYPE i, PointType const &p, FType d2, FType & ){
 				if ( i >= inputSize ) return;
 				if ( i != index ) w[index] += weightFunction(point,p,d2,d_max);
 			} );
@@ -366,8 +366,8 @@ private:
 		heap.Build();
 
 		// While the number of samples is greater than desired
-		auto RemoveWeights = [&]( SIZE_TYPE index, const PointType &point ) {
-			kdtree.GetPoints( point, d_max, [&weightFunction,d_max,&w,index,&point,&heap,&inputSize]( SIZE_TYPE i, const PointType &p, FType d2, FType & ){
+		auto RemoveWeights = [&]( SIZE_TYPE index, PointType const &point ) {
+			kdtree.GetPoints( point, d_max, [&weightFunction,d_max,&w,index,&point,&heap,&inputSize]( SIZE_TYPE i, PointType const &p, FType d2, FType & ){
 				if ( i >= inputSize ) return;
 				if ( i != index ) {
 					w[i] -= weightFunction(point,p,d2,d_max);

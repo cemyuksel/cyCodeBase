@@ -91,22 +91,22 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constant Data Access Methods
 	
-	const Header& GetHeader() const { return header; }		//!< Use this method to access header data.
-	const unsigned short* GetSegmentsArray() const { return segments; }	//!< Returns segments array (segment count for each hair strand).
-	const float* GetPointsArray() const { return points; }				//!< Returns points array (xyz coordinates of each hair point).
-	const float* GetThicknessArray() const { return thickness; }		//!< Returns thickness array (thickness at each hair point}.
-	const float* GetTransparencyArray() const { return transparency; }	//!< Returns transparency array (transparency at each hair point).
-	const float* GetColorsArray() const { return colors; }				//!< Returns colors array (rgb color at each hair point).
+	Header         const & GetHeader           () const { return header; }			//!< Use this method to access header data.
+	unsigned short const * GetSegmentsArray    () const { return segments; }		//!< Returns segments array (segment count for each hair strand).
+	float          const * GetPointsArray      () const { return points; }			//!< Returns points array (xyz coordinates of each hair point).
+	float          const * GetThicknessArray   () const { return thickness; }		//!< Returns thickness array (thickness at each hair point}.
+	float          const * GetTransparencyArray() const { return transparency; }	//!< Returns transparency array (transparency at each hair point).
+	float          const * GetColorsArray      () const { return colors; }			//!< Returns colors array (rgb color at each hair point).
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Data Access Methods
 
-	unsigned short* GetSegmentsArray() { return segments; }	//!< Returns segments array (segment count for each hair strand).
-	float* GetPointsArray() { return points; }				//!< Returns points array (xyz coordinates of each hair point).
-	float* GetThicknessArray() { return thickness; }		//!< Returns thickness array (thickness at each hair point}.
-	float* GetTransparencyArray() { return transparency; }	//!< Returns transparency array (transparency at each hair point).
-	float* GetColorsArray() { return colors; }				//!< Returns colors array (rgb color at each hair point).
+	unsigned short* GetSegmentsArray    () { return segments; }		//!< Returns segments array (segment count for each hair strand).
+	float*          GetPointsArray      () { return points; }		//!< Returns points array (xyz coordinates of each hair point).
+	float*          GetThicknessArray   () { return thickness; }	//!< Returns thickness array (thickness at each hair point}.
+	float*          GetTransparencyArray() { return transparency; }	//!< Returns transparency array (transparency at each hair point).
+	float*          GetColorsArray      () { return colors; }		//!< Returns colors array (rgb color at each hair point).
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ public:
 	//!@name Load and Save Methods
 
 	//! Loads hair data from the given HAIR file.
-	int LoadFromFile( const char *filename )
+	int LoadFromFile( char const *filename )
 	{
 		Initialize();
 
@@ -264,7 +264,7 @@ public:
 	}
 
 	//! Saves hair data to the given HAIR file.
-	int SaveToFile( const char *filename ) const
+	int SaveToFile( char const *filename ) const
 	{
 		FILE *fp;
 		fp = fopen( filename, "wb" );
@@ -369,7 +369,7 @@ private:
 	float			*colors;
 
 	// Given point before (p0) and after (p2), computes the direction (d) at p1.
-	float ComputeDirection( float *d, float &d0len, float &d1len, const float *p0, const float *p1, const float *p2 )
+	float ComputeDirection( float *d, float &d0len, float &d1len, float const *p0, float const *p1, float const *p2 )
 	{
 		// line from p0 to p1
 		float d0[3];

@@ -133,21 +133,21 @@ public:
 		TYPE_UINT32,
 	};
 
-	static GLenum GetGLType( const GLubyte  * ) { return GL_UNSIGNED_BYTE ; }	//!< Returns the OpenGL type identifier that corresponds to unsigned byte.
-	static GLenum GetGLType( const GLushort * ) { return GL_UNSIGNED_SHORT; }	//!< Returns the OpenGL type identifier that corresponds to unsigned short.
-	static GLenum GetGLType( const GLfloat  * ) { return GL_FLOAT         ; }	//!< Returns the OpenGL type identifier that corresponds to float.
-	static GLenum GetGLType( const GLbyte   * ) { return GL_BYTE          ; }	//!< Returns the OpenGL type identifier that corresponds to byte.
-	static GLenum GetGLType( const GLshort  * ) { return GL_SHORT         ; }	//!< Returns the OpenGL type identifier that corresponds to short.
-	static GLenum GetGLType( const GLint    * ) { return GL_INT           ; }	//!< Returns the OpenGL type identifier that corresponds to int.
-	static GLenum GetGLType( const GLuint   * ) { return GL_UNSIGNED_INT  ; }	//!< Returns the OpenGL type identifier that corresponds to unsigned int.
+	static GLenum GetGLType( GLubyte  const * ) { return GL_UNSIGNED_BYTE ; }	//!< Returns the OpenGL type identifier that corresponds to unsigned byte.
+	static GLenum GetGLType( GLushort const * ) { return GL_UNSIGNED_SHORT; }	//!< Returns the OpenGL type identifier that corresponds to unsigned short.
+	static GLenum GetGLType( GLfloat  const * ) { return GL_FLOAT         ; }	//!< Returns the OpenGL type identifier that corresponds to float.
+	static GLenum GetGLType( GLbyte   const * ) { return GL_BYTE          ; }	//!< Returns the OpenGL type identifier that corresponds to byte.
+	static GLenum GetGLType( GLshort  const * ) { return GL_SHORT         ; }	//!< Returns the OpenGL type identifier that corresponds to short.
+	static GLenum GetGLType( GLint    const * ) { return GL_INT           ; }	//!< Returns the OpenGL type identifier that corresponds to int.
+	static GLenum GetGLType( GLuint   const * ) { return GL_UNSIGNED_INT  ; }	//!< Returns the OpenGL type identifier that corresponds to unsigned int.
 
-	static Type GetType( const GLubyte  * ) { return TYPE_UBYTE ; }				//!< Returns the Type that corresponds to unsigned byte.
-	static Type GetType( const GLushort * ) { return TYPE_USHORT; }				//!< Returns the Type that corresponds to unsigned short.
-	static Type GetType( const GLfloat  * ) { return TYPE_FLOAT ; }				//!< Returns the Type that corresponds to float.
-	static Type GetType( const GLbyte   * ) { return TYPE_INT8  ; }				//!< Returns the Type that corresponds to byte.
-	static Type GetType( const GLshort  * ) { return TYPE_INT16 ; }				//!< Returns the Type that corresponds to short.
-	static Type GetType( const GLint    * ) { return TYPE_INT32 ; }				//!< Returns the Type that corresponds to int.
-	static Type GetType( const GLuint   * ) { return TYPE_UINT32; }				//!< Returns the Type that corresponds to unsigned int.
+	static Type GetType( GLubyte  const * ) { return TYPE_UBYTE ; }				//!< Returns the Type that corresponds to unsigned byte.
+	static Type GetType( GLushort const * ) { return TYPE_USHORT; }				//!< Returns the Type that corresponds to unsigned short.
+	static Type GetType( GLfloat  const * ) { return TYPE_FLOAT ; }				//!< Returns the Type that corresponds to float.
+	static Type GetType( GLbyte   const * ) { return TYPE_INT8  ; }				//!< Returns the Type that corresponds to byte.
+	static Type GetType( GLshort  const * ) { return TYPE_INT16 ; }				//!< Returns the Type that corresponds to short.
+	static Type GetType( GLint    const * ) { return TYPE_INT32 ; }				//!< Returns the Type that corresponds to int.
+	static Type GetType( GLuint   const * ) { return TYPE_UINT32; }				//!< Returns the Type that corresponds to unsigned int.
 
 	static GLenum TextureFormat    ( Type type, int numChannels );				//!< Returns the internal OpenGL texture type identifier for the given Type and the number of channels.
 	static GLenum TextureDataFormat( Type type, int numChannels );				//!< Returns the OpenGL texture data format identifier for the given Type and the number of channels.
@@ -156,7 +156,7 @@ public:
 	static void PrintVersion(std::ostream *outStream=&std::cout);
 
 	//! Checks all previously triggered OpenGL errors and prints them to the given output stream.
-	static void CheckError(const char *sourcefile, int line, const char *call=nullptr, std::ostream *outStream=&std::cout);
+	static void CheckError( char const *sourcefile, int line, char const *call=nullptr, std::ostream *outStream=&std::cout );
 
 	//! Checks if an OpenGL context exists. Returns false if a valid OpenGL context cannot be retrieved.
 	//! This is mostly useful for safely deleting previously allocated OpenGL objects.
@@ -233,7 +233,7 @@ protected:
 	//! See the OpenGL documentation for glDebugMessageCallback for details.
 	//! Placing the break point in this function allows easily identifying the
 	//! OpenGL call that triggered the debug message (using the call stack).
-	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam );
+	static void _CY_APIENTRY Callback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const *message, void const *userParam );
 };
 
 //! Registers the OpenGL callback by ignoring notifications.
@@ -324,31 +324,31 @@ class GLTexture1 : public GLTexture<TEXTURE_TYPE>
 {
 public:
 	//! Sets the texture image using the given texture format, data format, and data type.
-	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexImage1D(TEXTURE_TYPE,level,textureFormat,width,0,dataFormat,dataType,data); }
+	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, void const *data, GLsizei width, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexImage1D(TEXTURE_TYPE,level,textureFormat,width,0,dataFormat,dataType,data); }
 
 	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
-	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,level); }
+	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, T const *data, GLsizei width, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,level); }
 
 	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
 	//! The texture format is determined by the texture type and the number of channels.
-	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,level); }
+	template <typename T> void SetImage( GL::Type textureType, T const *data, int numChannels, GLsizei width, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,level); }
 
 	//! Sets the texture image. The texture format uses the matching data pointer type.
 	//! If unsigned char is used, the texture uses 8-bit normalized values.
 	//! If unsigned short is used, the texture uses 16-bit normalized values.
 	//! If float is used, the texture uses non-normalized 32-bit float values.
 	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
-	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,level); }
+	template <typename T> void SetImage( T const *data, int numChannels, GLsizei width, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,level); }
 
-	template <typename T> void SetImageRGBA( GL::Type textureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,4,width,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( GL::Type textureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,3,width,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( GL::Type textureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,2,width,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( GL::Type textureType, const T *data, GLsizei width, int level=0 ) { SetImage(textureType,data,1,width,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( GL::Type textureType, T const *data, GLsizei width, int level=0 ) { SetImage(textureType,data,4,width,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( GL::Type textureType, T const *data, GLsizei width, int level=0 ) { SetImage(textureType,data,3,width,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( GL::Type textureType, T const *data, GLsizei width, int level=0 ) { SetImage(textureType,data,2,width,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( GL::Type textureType, T const *data, GLsizei width, int level=0 ) { SetImage(textureType,data,1,width,level); }	//!< Sets the texture image with 1 channel.
 
-	template <typename T> void SetImageRGBA( const T *data, GLsizei width, int level=0 ) { SetImage(data,4,width,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( const T *data, GLsizei width, int level=0 ) { SetImage(data,3,width,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( const T *data, GLsizei width, int level=0 ) { SetImage(data,2,width,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( const T *data, GLsizei width, int level=0 ) { SetImage(data,1,width,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( T const *data, GLsizei width, int level=0 ) { SetImage(data,4,width,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( T const *data, GLsizei width, int level=0 ) { SetImage(data,3,width,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( T const *data, GLsizei width, int level=0 ) { SetImage(data,2,width,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( T const *data, GLsizei width, int level=0 ) { SetImage(data,1,width,level); }	//!< Sets the texture image with 1 channel.
 
 	//! Sets the texture wrapping parameter.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
@@ -372,31 +372,31 @@ class GLTexture2 : public GLTexture<TEXTURE_TYPE>
 {
 public:
 	//! Sets the texture image using the given texture format, data format, and data type.
-	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, GLsizei height, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexImage2D(TEXTURE_TYPE,level,textureFormat,width,height,0,dataFormat,dataType,data); }
+	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, void const *data, GLsizei width, GLsizei height, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexImage2D(TEXTURE_TYPE,level,textureFormat,width,height,0,dataFormat,dataType,data); }
 
 	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
-	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,height,level); }
+	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,height,level); }
 
 	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
 	//! The texture format is determined by the texture type and the number of channels.
-	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
+	template <typename T> void SetImage( GL::Type textureType, T const *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
 
 	//! Sets the texture image. The texture format uses the matching data pointer type.
 	//! If GLubyte (unsigned char) is used, the texture uses 8-bit normalized values.
 	//! If GLushort (unsigned short) is used, the texture uses 16-bit normalized values.
 	//! If GLfloat (float) is used, the texture uses non-normalized 32-bit float values.
 	//! If GLbyte, GLshort, GLint, or GLuint is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
-	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,level); }
+	template <typename T> void SetImage( T const *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,level); }
 
-	template <typename T> void SetImageRGBA( GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(textureType,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
 
-	template <typename T> void SetImageRGBA( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
 
 	//! Sets the texture wrapping parameter.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
@@ -426,31 +426,31 @@ class GLTexture3 : public GLTexture<TEXTURE_TYPE>
 {
 public:
 	//! Sets the texture image using the given texture format, data format, and data type.
-	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexImage3D(TEXTURE_TYPE,level,textureFormat,width,height,depth,0,dataFormat,dataType,data); }
+	void SetImage( GLenum textureFormat, GLenum dataFormat, GLenum dataType, void const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexImage3D(TEXTURE_TYPE,level,textureFormat,width,height,depth,0,dataFormat,dataType,data); }
 
 	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
-	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,height,depth,level); }
+	template <typename T> void SetImage( GLenum textureFormat, GLenum dataFormat, T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureFormat,dataFormat,GL::GetGLType(data),data,width,height,depth,level); }
 
 	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
 	//! The texture format is determined by the texture type and the number of channels.
-	template <typename T> void SetImage( GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,depth,level); }
+	template <typename T> void SetImage( GL::Type textureType, T const *data, int numChannels, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,depth,level); }
 
 	//! Sets the texture image. The texture format uses the matching data pointer type.
 	//! If unsigned char is used, the texture uses 8-bit normalized values.
 	//! If unsigned short is used, the texture uses 16-bit normalized values.
 	//! If float is used, the texture uses non-normalized 32-bit float values.
 	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
-	template <typename T> void SetImage( const T *data, int numChannels, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,depth,level); }
+	template <typename T> void SetImage( T const *data, int numChannels, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(GL::GetType(data),data,numChannels,width,height,depth,level); }
 
-	template <typename T> void SetImageRGBA( GL::Type textureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,4,width,height,depth,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( GL::Type textureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( GL::Type textureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( GL::Type textureType, const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( GL::Type textureType, T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,4,width,height,depth,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( GL::Type textureType, T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( GL::Type textureType, T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( GL::Type textureType, T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(textureType,data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
 
-	template <typename T> void SetImageRGBA( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,4,width,height,depth,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( const T *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,4,width,height,depth,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
 
 	//! Sets the texture wrapping parameter.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
@@ -488,31 +488,31 @@ public:
 	};
 
 	//! Sets the texture image using the given texture format, data format, and data type.
-	void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, GLenum dataType, const void *data, GLsizei width, GLsizei height, int level=0 ) { GLTexture<GL_TEXTURE_CUBE_MAP>::Bind(); glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+side,level,textureFormat,width,height,0,dataFormat,dataType,data); }
+	void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, GLenum dataType, void const *data, GLsizei width, GLsizei height, int level=0 ) { GLTexture<GL_TEXTURE_CUBE_MAP>::Bind(); glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+side,level,textureFormat,width,height,0,dataFormat,dataType,data); }
 
 	//! Sets the texture image using the given texture format and data format. The data type is determined by the data pointer type.
-	template <typename T> void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureFormat,dataFormat,GL::GetGLType(data),data,width,height,level); }
+	template <typename T> void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureFormat,dataFormat,GL::GetGLType(data),data,width,height,level); }
 
 	//! Sets the texture image using the given texture type. The data format and type are determined by the data pointer type and the number of channels.
 	//! The texture format is determined by the texture type and the number of channels.
-	template <typename T> void SetImage( Side side, GL::Type textureType, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
+	template <typename T> void SetImage( Side side, GL::Type textureType, T const *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,GL::TextureFormat(textureType,numChannels),GL::TextureDataFormat(GL::GetType(data),numChannels),data,width,height,level); }
 
 	//! Sets the texture image. The texture format uses the matching data pointer type.
 	//! If unsigned char is used, the texture uses 8-bit normalized values.
 	//! If unsigned short is used, the texture uses 16-bit normalized values.
 	//! If float is used, the texture uses non-normalized 32-bit float values.
 	//! If char, short, or int is used, the texture uses non-normalized 8-bit, 16-bit, or 32-bit integer values.
-	template <typename T> void SetImage( Side side, const T *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,GL::GetType(data),data,numChannels,width,height,level); }
+	template <typename T> void SetImage( Side side, T const *data, int numChannels, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,GL::GetType(data),data,numChannels,width,height,level); }
 
-	template <typename T> void SetImageRGBA( Side side, GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( Side side, GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( Side side, GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( Side side, GL::Type textureType, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( Side side, GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( Side side, GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( Side side, GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( Side side, GL::Type textureType, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,textureType,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
 
-	template <typename T> void SetImageRGBA( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
-	template <typename T> void SetImageRGB ( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
-	template <typename T> void SetImageRG  ( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
-	template <typename T> void SetImageR   ( Side side, const T *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+	template <typename T> void SetImageRGBA( Side side, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,4,width,height,level); }	//!< Sets the texture image with 4 channels.
+	template <typename T> void SetImageRGB ( Side side, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
+	template <typename T> void SetImageRG  ( Side side, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
+	template <typename T> void SetImageR   ( Side side, T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(side,data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
 
 #ifdef GL_TEXTURE_CUBE_MAP_SEAMLESS
 	//! Sets the global seamless cube mapping flag, if supported by the hardware.
@@ -668,31 +668,31 @@ public:
 
 	//! Compiles the shader using the given file.
 	//! If the shader was previously compiled, it is deleted.
-	bool CompileFile( const char *filename, GLenum shaderType, std::ostream *outStream=&std::cout ) { return CompileFile(filename,shaderType,0,nullptr,outStream); }
+	bool CompileFile( char const *filename, GLenum shaderType, std::ostream *outStream=&std::cout ) { return CompileFile(filename,shaderType,0,nullptr,outStream); }
 
 	//! Compiles the shader using the given file.
 	//! If the shader was previously compiled, it is deleted.
 	//! The prependSource string is added to the beginning of the shader code, so it must begin with the "#version" statement.
-	bool CompileFile( const char *filename, GLenum shaderType, const char *prependSource, std::ostream *outStream=&std::cout ) { return CompileFile(filename,shaderType,1,&prependSource,outStream); }
+	bool CompileFile( char const *filename, GLenum shaderType, char const *prependSource, std::ostream *outStream=&std::cout ) { return CompileFile(filename,shaderType,1,&prependSource,outStream); }
 
 	//! Compiles the shader using the given file.
 	//! If the shader was previously compiled, it is deleted.
 	//! The prependSources strings are added to the beginning of the shader code, so the first string must begin with "#version" statement.
-	bool CompileFile( const char *filename, GLenum shaderType, int prependSourceCount, const char **prependSources, std::ostream *outStream=&std::cout );
+	bool CompileFile( char const *filename, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout );
 
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
-	bool Compile( const char *shaderSourceCode, GLenum shaderType, std::ostream *outStream=&std::cout ) { return Compile(shaderSourceCode,shaderType,0,nullptr,outStream); }
+	bool Compile( char const *shaderSourceCode, GLenum shaderType, std::ostream *outStream=&std::cout ) { return Compile(shaderSourceCode,shaderType,0,nullptr,outStream); }
 
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
 	//! The prependSource string is added to the beginning of the shader code, so it must begin with the "#version" statement.
-	bool Compile( const char *shaderSourceCode, GLenum shaderType, const char *prependSource, std::ostream *outStream=&std::cout ) { return Compile(shaderSourceCode,shaderType,1,&prependSource,outStream); }
+	bool Compile( char const *shaderSourceCode, GLenum shaderType, char const *prependSource, std::ostream *outStream=&std::cout ) { return Compile(shaderSourceCode,shaderType,1,&prependSource,outStream); }
 
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
 	//! The prependSources strings are added to the beginning of the shader code, so the first string must begin with "#version" statement.
-	bool Compile( const char *shaderSourceCode, GLenum shaderType, int prependSourceCount, const char **prependSources, std::ostream *outStream=&std::cout );
+	bool Compile( char const *shaderSourceCode, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout );
 };
 
 //-------------------------------------------------------------------------------
@@ -727,7 +727,7 @@ public:
 
 	//! Attaches the given shader to the program.
 	//! This function must be called before calling Link.
-	void AttachShader( const GLSLShader &shader ) { AttachShader(shader.GetID()); }
+	void AttachShader( GLSLShader const &shader ) { AttachShader(shader.GetID()); }
 
 	//! Attaches the given shader to the program.
 	//! This function must be called before calling Link.
@@ -744,21 +744,21 @@ public:
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
-	bool Build( const GLSLShader *vertexShader, 
-                const GLSLShader *fragmentShader,
-	            const GLSLShader *geometryShader=nullptr,
-	            const GLSLShader *tessControlShader=nullptr,
-	            const GLSLShader *tessEvaluationShader=nullptr,
+	bool Build( GLSLShader const *vertexShader, 
+                GLSLShader const *fragmentShader,
+	            GLSLShader const *geometryShader=nullptr,
+	            GLSLShader const *tessControlShader=nullptr,
+	            GLSLShader const *tessEvaluationShader=nullptr,
 	            std::ostream *outStream=&std::cout );
 
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
-	bool BuildFiles( const char *vertexShaderFile, 
-                     const char *fragmentShaderFile,
-	                 const char *geometryShaderFile=nullptr,
-	                 const char *tessControlShaderFile=nullptr,
-	                 const char *tessEvaluationShaderFile=nullptr,
+	bool BuildFiles( char const *vertexShaderFile, 
+                     char const *fragmentShaderFile,
+	                 char const *geometryShaderFile=nullptr,
+	                 char const *tessControlShaderFile=nullptr,
+	                 char const *tessEvaluationShaderFile=nullptr,
 	                 std::ostream *outStream=&std::cout )
 	{ return BuildFiles(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,0,nullptr,outStream); }
 
@@ -766,12 +766,12 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	//! The prependSource string is added to the beginning of each shader code, so it must begin with the "#version" statement.
-	bool BuildFiles( const char *vertexShaderFile, 
-                     const char *fragmentShaderFile,
-	                 const char *geometryShaderFile,
-	                 const char *tessControlShaderFile,
-	                 const char *tessEvaluationShaderFile,
-	                 const char *prependSource,
+	bool BuildFiles( char const *vertexShaderFile, 
+                     char const *fragmentShaderFile,
+	                 char const *geometryShaderFile,
+	                 char const *tessControlShaderFile,
+	                 char const *tessEvaluationShaderFile,
+	                 char const *prependSource,
 	                 std::ostream *outStream=&std::cout )
 	{ return BuildFiles(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,1,&prependSource,outStream); }
 
@@ -779,23 +779,23 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	//! The prependSources strings are added to the beginning of each shader code, so the first string must begin with "#version" statement.
-	bool BuildFiles( const char *vertexShaderFile, 
-                     const char *fragmentShaderFile,
-	                 const char *geometryShaderFile,
-	                 const char *tessControlShaderFile,
-	                 const char *tessEvaluationShaderFile,
+	bool BuildFiles( char const *vertexShaderFile, 
+                     char const *fragmentShaderFile,
+	                 char const *geometryShaderFile,
+	                 char const *tessControlShaderFile,
+	                 char const *tessEvaluationShaderFile,
 	                 int         prependSourceCount,
-	                 const char **prependSource,
+	                 char const **prependSource,
 	                 std::ostream *outStream=&std::cout );
 
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
-	bool BuildSources( const char *vertexShaderSourceCode, 
-                       const char *fragmentShaderSourceCode,
-	                   const char *geometryShaderSourceCode=nullptr,
-	                   const char *tessControlShaderSourceCode=nullptr,
-	                   const char *tessEvaluationShaderSourceCode=nullptr,
+	bool BuildSources( char const *vertexShaderSourceCode, 
+                       char const *fragmentShaderSourceCode,
+	                   char const *geometryShaderSourceCode=nullptr,
+	                   char const *tessControlShaderSourceCode=nullptr,
+	                   char const *tessEvaluationShaderSourceCode=nullptr,
 	                   std::ostream *outStream=&std::cout )
 	{ return BuildSources(vertexShaderSourceCode,fragmentShaderSourceCode,geometryShaderSourceCode,tessControlShaderSourceCode,tessEvaluationShaderSourceCode,0,nullptr,outStream); }
 
@@ -803,12 +803,12 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	//! The prependSource string is added to the beginning of each shader code, so it must begin with the "#version" statement.
-	bool BuildSources( const char *vertexShaderSourceCode, 
-                       const char *fragmentShaderSourceCode,
-	                   const char *geometryShaderSourceCode,
-	                   const char *tessControlShaderSourceCode,
-	                   const char *tessEvaluationShaderSourceCode,
-	                   const char *prependSource,
+	bool BuildSources( char const *vertexShaderSourceCode, 
+                       char const *fragmentShaderSourceCode,
+	                   char const *geometryShaderSourceCode,
+	                   char const *tessControlShaderSourceCode,
+	                   char const *tessEvaluationShaderSourceCode,
+	                   char const *prependSource,
 	                   std::ostream *outStream=&std::cout )
 	{ return BuildSources(vertexShaderSourceCode,fragmentShaderSourceCode,geometryShaderSourceCode,tessControlShaderSourceCode,tessEvaluationShaderSourceCode,1,&prependSource,outStream); }
 
@@ -816,13 +816,13 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	//! The prependSources strings are added to the beginning of each shader code, so the first string must begin with "#version" statement.
-	bool BuildSources( const char *vertexShaderSourceCode, 
-                       const char *fragmentShaderSourceCode,
-	                   const char *geometryShaderSourceCode,
-	                   const char *tessControlShaderSourceCode,
-	                   const char *tessEvaluationShaderSourceCode,
+	bool BuildSources( char const *vertexShaderSourceCode, 
+                       char const *fragmentShaderSourceCode,
+	                   char const *geometryShaderSourceCode,
+	                   char const *tessControlShaderSourceCode,
+	                   char const *tessEvaluationShaderSourceCode,
 	                   int         prependSourceCount,
-	                   const char **prependSource,
+	                   char const **prependSource,
 	                   std::ostream *outStream=&std::cout );
 
 	//!@name Uniform Parameter Methods
@@ -830,11 +830,11 @@ public:
 	//! Registers a single uniform parameter.
 	//! The index must be unique and the name should match a uniform parameter name in one of the shaders.
 	//! The index values for different parameters don't have to be consecutive, but unused index values waste memory.
-	void RegisterUniform( unsigned int index, const char *name, std::ostream *outStream=&std::cout );
+	void RegisterUniform( unsigned int index, char const *name, std::ostream *outStream=&std::cout );
 
 	//! Registers multiple parameters.
 	//! The names should be separated by a space character.
-	void RegisterUniforms( const char *names, unsigned int startingIndex=0, std::ostream *outStream=&std::cout );
+	void RegisterUniforms( char const *names, unsigned int startingIndex=0, std::ostream *outStream=&std::cout );
 
 	//!@{
 	//! Sets the value of the uniform parameter with the given index. 
@@ -844,130 +844,130 @@ public:
 	void SetUniform (int index, float x, float y)                       { glUniform2f  (params[index],x,y); }
 	void SetUniform (int index, float x, float y, float z)              { glUniform3f  (params[index],x,y,z); }
 	void SetUniform (int index, float x, float y, float z, float w)     { glUniform4f  (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, const float  *data)          { glUniform1fv (params[index],count,data); }
-	void SetUniform2(int index, int count, const float  *data)          { glUniform2fv (params[index],count,data); }
-	void SetUniform3(int index, int count, const float  *data)          { glUniform3fv (params[index],count,data); }
-	void SetUniform4(int index, int count, const float  *data)          { glUniform4fv (params[index],count,data); }
+	void SetUniform1(int index, int count, float  const *data)          { glUniform1fv (params[index],count,data); }
+	void SetUniform2(int index, int count, float  const *data)          { glUniform2fv (params[index],count,data); }
+	void SetUniform3(int index, int count, float  const *data)          { glUniform3fv (params[index],count,data); }
+	void SetUniform4(int index, int count, float  const *data)          { glUniform4fv (params[index],count,data); }
 	void SetUniform (int index, int x)                                  { glUniform1i  (params[index],x); }
 	void SetUniform (int index, int x, int y)                           { glUniform2i  (params[index],x,y); }
 	void SetUniform (int index, int x, int y, int z)                    { glUniform3i  (params[index],x,y,z); }
 	void SetUniform (int index, int x, int y, int z, int w)             { glUniform4i  (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, const int    *data)          { glUniform1iv (params[index],count,data); }
-	void SetUniform2(int index, int count, const int    *data)          { glUniform2iv (params[index],count,data); }
-	void SetUniform3(int index, int count, const int    *data)          { glUniform3iv (params[index],count,data); }
-	void SetUniform4(int index, int count, const int    *data)          { glUniform4iv (params[index],count,data); }
+	void SetUniform1(int index, int count, int    const *data)          { glUniform1iv (params[index],count,data); }
+	void SetUniform2(int index, int count, int    const *data)          { glUniform2iv (params[index],count,data); }
+	void SetUniform3(int index, int count, int    const *data)          { glUniform3iv (params[index],count,data); }
+	void SetUniform4(int index, int count, int    const *data)          { glUniform4iv (params[index],count,data); }
 #ifdef GL_VERSION_3_0
 	void SetUniform (int index, GLuint x)                               { glUniform1ui (params[index],x); }
 	void SetUniform (int index, GLuint x, GLuint y)                     { glUniform2ui (params[index],x,y); }
 	void SetUniform (int index, GLuint x, GLuint y, GLuint z)           { glUniform3ui (params[index],x,y,z); }
 	void SetUniform (int index, GLuint x, GLuint y, GLuint z, GLuint w) { glUniform4ui (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, const GLuint *data)          { glUniform1uiv(params[index],count,data); }
-	void SetUniform2(int index, int count, const GLuint *data)          { glUniform2uiv(params[index],count,data); }
-	void SetUniform3(int index, int count, const GLuint *data)          { glUniform3uiv(params[index],count,data); }
-	void SetUniform4(int index, int count, const GLuint *data)          { glUniform4uiv(params[index],count,data); }
+	void SetUniform1(int index, int count, GLuint const *data)          { glUniform1uiv(params[index],count,data); }
+	void SetUniform2(int index, int count, GLuint const *data)          { glUniform2uiv(params[index],count,data); }
+	void SetUniform3(int index, int count, GLuint const *data)          { glUniform3uiv(params[index],count,data); }
+	void SetUniform4(int index, int count, GLuint const *data)          { glUniform4uiv(params[index],count,data); }
 #endif
 #ifdef GL_VERSION_4_0
 	void SetUniform (int index, double x)                               { glUniform1d  (params[index],x); }
 	void SetUniform (int index, double x, double y)                     { glUniform2d  (params[index],x,y); }
 	void SetUniform (int index, double x, double y, double z)           { glUniform3d  (params[index],x,y,z); }
 	void SetUniform (int index, double x, double y, double z, double w) { glUniform4d  (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, const double *data)          { glUniform1dv (params[index],count,data); }
-	void SetUniform2(int index, int count, const double *data)          { glUniform2dv (params[index],count,data); }
-	void SetUniform3(int index, int count, const double *data)          { glUniform3dv (params[index],count,data); }
-	void SetUniform4(int index, int count, const double *data)          { glUniform4dv (params[index],count,data); }
+	void SetUniform1(int index, int count, double const *data)          { glUniform1dv (params[index],count,data); }
+	void SetUniform2(int index, int count, double const *data)          { glUniform2dv (params[index],count,data); }
+	void SetUniform3(int index, int count, double const *data)          { glUniform3dv (params[index],count,data); }
+	void SetUniform4(int index, int count, double const *data)          { glUniform4dv (params[index],count,data); }
 #endif
 
-	void SetUniformMatrix2  (int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix2fv  (params[index],count,transpose,m); }
-	void SetUniformMatrix3  (int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix3fv  (params[index],count,transpose,m); }
-	void SetUniformMatrix4  (int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix4fv  (params[index],count,transpose,m); }
+	void SetUniformMatrix2  (int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix2fv  (params[index],count,transpose,m); }
+	void SetUniformMatrix3  (int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix3fv  (params[index],count,transpose,m); }
+	void SetUniformMatrix4  (int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix4fv  (params[index],count,transpose,m); }
 #ifdef GL_VERSION_2_1
-	void SetUniformMatrix2x3(int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix2x3fv(params[index],count,transpose,m); }
-	void SetUniformMatrix2x4(int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix2x4fv(params[index],count,transpose,m); }
-	void SetUniformMatrix3x2(int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix3x2fv(params[index],count,transpose,m); }
-	void SetUniformMatrix3x4(int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix3x4fv(params[index],count,transpose,m); }
-	void SetUniformMatrix4x2(int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix4x2fv(params[index],count,transpose,m); }
-	void SetUniformMatrix4x3(int index, const float  *m, int count=1, bool transpose=false) { glUniformMatrix4x3fv(params[index],count,transpose,m); }
+	void SetUniformMatrix2x3(int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix2x3fv(params[index],count,transpose,m); }
+	void SetUniformMatrix2x4(int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix2x4fv(params[index],count,transpose,m); }
+	void SetUniformMatrix3x2(int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix3x2fv(params[index],count,transpose,m); }
+	void SetUniformMatrix3x4(int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix3x4fv(params[index],count,transpose,m); }
+	void SetUniformMatrix4x2(int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix4x2fv(params[index],count,transpose,m); }
+	void SetUniformMatrix4x3(int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix4x3fv(params[index],count,transpose,m); }
 #endif
 #ifdef GL_VERSION_4_0
-	void SetUniformMatrix2  (int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix2dv  (params[index],count,transpose,m); }
-	void SetUniformMatrix3  (int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix3dv  (params[index],count,transpose,m); }
-	void SetUniformMatrix4  (int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix4dv  (params[index],count,transpose,m); }
-	void SetUniformMatrix2x3(int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix2x3dv(params[index],count,transpose,m); }
-	void SetUniformMatrix2x4(int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix2x4dv(params[index],count,transpose,m); }
-	void SetUniformMatrix3x2(int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix3x2dv(params[index],count,transpose,m); }	
-	void SetUniformMatrix3x4(int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix3x4dv(params[index],count,transpose,m); }	
-	void SetUniformMatrix4x2(int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix4x2dv(params[index],count,transpose,m); }	
-	void SetUniformMatrix4x3(int index, const double *m, int count=1, bool transpose=false) { glUniformMatrix4x3dv(params[index],count,transpose,m); }	
+	void SetUniformMatrix2  (int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix2dv  (params[index],count,transpose,m); }
+	void SetUniformMatrix3  (int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix3dv  (params[index],count,transpose,m); }
+	void SetUniformMatrix4  (int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix4dv  (params[index],count,transpose,m); }
+	void SetUniformMatrix2x3(int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix2x3dv(params[index],count,transpose,m); }
+	void SetUniformMatrix2x4(int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix2x4dv(params[index],count,transpose,m); }
+	void SetUniformMatrix3x2(int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix3x2dv(params[index],count,transpose,m); }	
+	void SetUniformMatrix3x4(int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix3x4dv(params[index],count,transpose,m); }	
+	void SetUniformMatrix4x2(int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix4x2dv(params[index],count,transpose,m); }	
+	void SetUniformMatrix4x3(int index, double const *m, int count=1, bool transpose=false) { glUniformMatrix4x3dv(params[index],count,transpose,m); }	
 #endif
 
-#ifdef _CY_POINT_H_INCLUDED_
-	void SetUniform(int index, const Point2<float>  &p)              { glUniform2fv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point3<float>  &p)              { glUniform3fv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point4<float>  &p)              { glUniform4fv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point2<int>    &p)              { glUniform2iv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point3<int>    &p)              { glUniform3iv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point4<int>    &p)              { glUniform4iv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point2<float>  *p, int count=1) { glUniform2fv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point3<float>  *p, int count=1) { glUniform3fv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point4<float>  *p, int count=1) { glUniform4fv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point2<int>    *p, int count=1) { glUniform2iv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point3<int>    *p, int count=1) { glUniform3iv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point4<int>    *p, int count=1) { glUniform4iv (params[index],count,&p->x); }
+#ifdef _CY_VECTOR_H_INCLUDED_
+	void SetUniform(int index, Vec2<float>  const &p)              { glUniform2fv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec3<float>  const &p)              { glUniform3fv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec4<float>  const &p)              { glUniform4fv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec2<int>    const &p)              { glUniform2iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec3<int>    const &p)              { glUniform3iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec4<int>    const &p)              { glUniform4iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec2<float>  const *p, int count=1) { glUniform2fv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec3<float>  const *p, int count=1) { glUniform3fv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec4<float>  const *p, int count=1) { glUniform4fv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec2<int>    const *p, int count=1) { glUniform2iv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec3<int>    const *p, int count=1) { glUniform3iv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec4<int>    const *p, int count=1) { glUniform4iv (params[index],count,&p->x); }
 # ifdef GL_VERSION_3_0
-	void SetUniform(int index, const Point2<GLuint> &p)              { glUniform2uiv(params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point3<GLuint> &p)              { glUniform3uiv(params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point4<GLuint> &p)              { glUniform4uiv(params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point2<GLuint> *p, int count=1) { glUniform2uiv(params[index],count,&p->x); }
-	void SetUniform(int index, const Point3<GLuint> *p, int count=1) { glUniform3uiv(params[index],count,&p->x); }
-	void SetUniform(int index, const Point4<GLuint> *p, int count=1) { glUniform4uiv(params[index],count,&p->x); }
+	void SetUniform(int index, Vec2<GLuint> const &p)              { glUniform2uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec3<GLuint> const &p)              { glUniform3uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec4<GLuint> const &p)              { glUniform4uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec2<GLuint> const *p, int count=1) { glUniform2uiv(params[index],count,&p->x); }
+	void SetUniform(int index, Vec3<GLuint> const *p, int count=1) { glUniform3uiv(params[index],count,&p->x); }
+	void SetUniform(int index, Vec4<GLuint> const *p, int count=1) { glUniform4uiv(params[index],count,&p->x); }
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(int index, const Point2<double> &p)              { glUniform2dv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point3<double> &p)              { glUniform3dv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point4<double> &p)              { glUniform4dv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const Point2<double> *p, int count=1) { glUniform2dv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point3<double> *p, int count=1) { glUniform3dv (params[index],count,&p->x); }
-	void SetUniform(int index, const Point4<double> *p, int count=1) { glUniform4dv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec2<double> const &p)              { glUniform2dv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec3<double> const &p)              { glUniform3dv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec4<double> const &p)              { glUniform4dv (params[index],1,    &p.x ); }
+	void SetUniform(int index, Vec2<double> const *p, int count=1) { glUniform2dv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec3<double> const *p, int count=1) { glUniform3dv (params[index],count,&p->x); }
+	void SetUniform(int index, Vec4<double> const *p, int count=1) { glUniform4dv (params[index],count,&p->x); }
 # endif
 #endif
 
-#ifdef _CY_IPOINT_H_INCLUDED_
-	void SetUniform(int index, const IPoint2<int>    &p)              { glUniform2iv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const IPoint3<int>    &p)              { glUniform3iv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const IPoint4<int>    &p)              { glUniform4iv (params[index],1,    &p.x ); }
-	void SetUniform(int index, const IPoint2<int>    *p, int count=1) { glUniform2iv (params[index],count,&p->x); }
-	void SetUniform(int index, const IPoint3<int>    *p, int count=1) { glUniform3iv (params[index],count,&p->x); }
-	void SetUniform(int index, const IPoint4<int>    *p, int count=1) { glUniform4iv (params[index],count,&p->x); }
+#ifdef _CY_IVECTOR_H_INCLUDED_
+	void SetUniform(int index, IVec2<int>    const &p)              { glUniform2iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, IVec3<int>    const &p)              { glUniform3iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, IVec4<int>    const &p)              { glUniform4iv (params[index],1,    &p.x ); }
+	void SetUniform(int index, IVec2<int>    const *p, int count=1) { glUniform2iv (params[index],count,&p->x); }
+	void SetUniform(int index, IVec3<int>    const *p, int count=1) { glUniform3iv (params[index],count,&p->x); }
+	void SetUniform(int index, IVec4<int>    const *p, int count=1) { glUniform4iv (params[index],count,&p->x); }
 # ifdef GL_VERSION_3_0
-	void SetUniform(int index, const IPoint2<GLuint> &p)              { glUniform2uiv(params[index],1,    &p.x ); }
-	void SetUniform(int index, const IPoint3<GLuint> &p)              { glUniform3uiv(params[index],1,    &p.x ); }
-	void SetUniform(int index, const IPoint4<GLuint> &p)              { glUniform4uiv(params[index],1,    &p.x ); }
-	void SetUniform(int index, const IPoint2<GLuint> *p, int count=1) { glUniform2uiv(params[index],count,&p->x); }
-	void SetUniform(int index, const IPoint3<GLuint> *p, int count=1) { glUniform3uiv(params[index],count,&p->x); }
-	void SetUniform(int index, const IPoint4<GLuint> *p, int count=1) { glUniform4uiv(params[index],count,&p->x); }
+	void SetUniform(int index, IVec2<GLuint> const &p)              { glUniform2uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, IVec3<GLuint> const &p)              { glUniform3uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, IVec4<GLuint> const &p)              { glUniform4uiv(params[index],1,    &p.x ); }
+	void SetUniform(int index, IVec2<GLuint> const *p, int count=1) { glUniform2uiv(params[index],count,&p->x); }
+	void SetUniform(int index, IVec3<GLuint> const *p, int count=1) { glUniform3uiv(params[index],count,&p->x); }
+	void SetUniform(int index, IVec4<GLuint> const *p, int count=1) { glUniform4uiv(params[index],count,&p->x); }
 # endif
 #endif
 
 #ifdef _CY_MATRIX_H_INCLUDED_
-	void SetUniform(int index, const Matrix2 <float>  &m)              { glUniformMatrix2fv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix3 <float>  &m)              { glUniformMatrix3fv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix4 <float>  &m)              { glUniformMatrix4fv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix2 <float>  *m, int count=1) { glUniformMatrix2fv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, const Matrix3 <float>  *m, int count=1) { glUniformMatrix3fv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, const Matrix4 <float>  *m, int count=1) { glUniformMatrix4fv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix2 <float>  const &m)              { glUniformMatrix2fv  (params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix3 <float>  const &m)              { glUniformMatrix3fv  (params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix4 <float>  const &m)              { glUniformMatrix4fv  (params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix2 <float>  const *m, int count=1) { glUniformMatrix2fv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix3 <float>  const *m, int count=1) { glUniformMatrix3fv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix4 <float>  const *m, int count=1) { glUniformMatrix4fv  (params[index],count,GL_FALSE,m->data); }
 # ifdef GL_VERSION_2_1
-	void SetUniform(int index, const Matrix34<float>  &m)              { glUniformMatrix3x4fv(params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix34<float>  *m, int count=1) { glUniformMatrix3x4fv(params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix34<float>  const &m)              { glUniformMatrix3x4fv(params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix34<float>  const *m, int count=1) { glUniformMatrix3x4fv(params[index],count,GL_FALSE,m->data); }
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(int index, const Matrix2 <double> &m)              { glUniformMatrix2dv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix3 <double> &m)              { glUniformMatrix3dv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix4 <double> &m)              { glUniformMatrix4dv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix34<double> &m)              { glUniformMatrix3x4dv(params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, const Matrix2 <double> *m, int count=1) { glUniformMatrix2dv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, const Matrix3 <double> *m, int count=1) { glUniformMatrix3dv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, const Matrix4 <double> *m, int count=1) { glUniformMatrix4dv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, const Matrix34<double> *m, int count=1) { glUniformMatrix3x4dv(params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix2 <double> const &m)              { glUniformMatrix2dv  (params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix3 <double> const &m)              { glUniformMatrix3dv  (params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix4 <double> const &m)              { glUniformMatrix4dv  (params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix34<double> const &m)              { glUniformMatrix3x4dv(params[index],1,    GL_FALSE,m.data ); }
+	void SetUniform(int index, Matrix2 <double> const *m, int count=1) { glUniformMatrix2dv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix3 <double> const *m, int count=1) { glUniformMatrix3dv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix4 <double> const *m, int count=1) { glUniformMatrix4dv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix34<double> const *m, int count=1) { glUniformMatrix3x4dv(params[index],count,GL_FALSE,m->data); }
 # endif
 #endif
 	//!@}
@@ -977,137 +977,150 @@ public:
 	//! Sets the value of the uniform parameter with the given name, if the uniform parameter is found. 
 	//! Since it searches for the uniform parameter first, it is not as efficient as setting the uniform parameter using
 	//! a previously registered id. There is no need to bind the program before calling this method.
-	void SetUniform (const char *name, float x)                                { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1f  (id,x); }
-	void SetUniform (const char *name, float x, float y)                       { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2f  (id,x,y); }
-	void SetUniform (const char *name, float x, float y, float z)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3f  (id,x,y,z); }
-	void SetUniform (const char *name, float x, float y, float z, float w)     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4f  (id,x,y,z,w); }
-	void SetUniform1(const char *name, int count, const float  *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1fv (id,count,data); }
-	void SetUniform2(const char *name, int count, const float  *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,count,data); }
-	void SetUniform3(const char *name, int count, const float  *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,count,data); }
-	void SetUniform4(const char *name, int count, const float  *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,count,data); }
-	void SetUniform (const char *name, int x)                                  { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1i  (id,x); }
-	void SetUniform (const char *name, int x, int y)                           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2i  (id,x,y); }
-	void SetUniform (const char *name, int x, int y, int z)                    { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3i  (id,x,y,z); }
-	void SetUniform (const char *name, int x, int y, int z, int w)             { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4i  (id,x,y,z,w); }
-	void SetUniform1(const char *name, int count, const int    *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1iv (id,count,data); }
-	void SetUniform2(const char *name, int count, const int    *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,data); }
-	void SetUniform3(const char *name, int count, const int    *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,data); }
-	void SetUniform4(const char *name, int count, const int    *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,data); }
+	void SetUniform (char const *name, float x)                                { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1f  (id,x); }
+	void SetUniform (char const *name, float x, float y)                       { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2f  (id,x,y); }
+	void SetUniform (char const *name, float x, float y, float z)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3f  (id,x,y,z); }
+	void SetUniform (char const *name, float x, float y, float z, float w)     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4f  (id,x,y,z,w); }
+	void SetUniform1(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1fv (id,count,data); }
+	void SetUniform2(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,count,data); }
+	void SetUniform3(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,count,data); }
+	void SetUniform4(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,count,data); }
+	void SetUniform (char const *name, int x)                                  { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1i  (id,x); }
+	void SetUniform (char const *name, int x, int y)                           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2i  (id,x,y); }
+	void SetUniform (char const *name, int x, int y, int z)                    { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3i  (id,x,y,z); }
+	void SetUniform (char const *name, int x, int y, int z, int w)             { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4i  (id,x,y,z,w); }
+	void SetUniform1(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1iv (id,count,data); }
+	void SetUniform2(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,data); }
+	void SetUniform3(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,data); }
+	void SetUniform4(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,data); }
 #ifdef GL_VERSION_3_0
-	void SetUniform (const char *name, GLuint x)                               { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1ui (id,x); }
-	void SetUniform (const char *name, GLuint x, GLuint y)                     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2ui (id,x,y); }
-	void SetUniform (const char *name, GLuint x, GLuint y, GLuint z)           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3ui (id,x,y,z); }
-	void SetUniform (const char *name, GLuint x, GLuint y, GLuint z, GLuint w) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4ui (id,x,y,z,w); }
-	void SetUniform1(const char *name, int count, const GLuint *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1uiv(id,count,data); }
-	void SetUniform2(const char *name, int count, const GLuint *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,data); }
-	void SetUniform3(const char *name, int count, const GLuint *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,data); }
-	void SetUniform4(const char *name, int count, const GLuint *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,data); }
+	void SetUniform (char const *name, GLuint x)                               { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1ui (id,x); }
+	void SetUniform (char const *name, GLuint x, GLuint y)                     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2ui (id,x,y); }
+	void SetUniform (char const *name, GLuint x, GLuint y, GLuint z)           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3ui (id,x,y,z); }
+	void SetUniform (char const *name, GLuint x, GLuint y, GLuint z, GLuint w) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4ui (id,x,y,z,w); }
+	void SetUniform1(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1uiv(id,count,data); }
+	void SetUniform2(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,data); }
+	void SetUniform3(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,data); }
+	void SetUniform4(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,data); }
 #endif
 #ifdef GL_VERSION_4_0
-	void SetUniform (const char *name, double x)                               { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1d  (id,x); }
-	void SetUniform (const char *name, double x, double y)                     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2d  (id,x,y); }
-	void SetUniform (const char *name, double x, double y, double z)           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3d  (id,x,y,z); }
-	void SetUniform (const char *name, double x, double y, double z, double w) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4d  (id,x,y,z,w); }
-	void SetUniform1(const char *name, int count, const double *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1dv (id,count,data); }
-	void SetUniform2(const char *name, int count, const double *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,count,data); }
-	void SetUniform3(const char *name, int count, const double *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,count,data); }
-	void SetUniform4(const char *name, int count, const double *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,count,data); }
+	void SetUniform (char const *name, double x)                               { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1d  (id,x); }
+	void SetUniform (char const *name, double x, double y)                     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2d  (id,x,y); }
+	void SetUniform (char const *name, double x, double y, double z)           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3d  (id,x,y,z); }
+	void SetUniform (char const *name, double x, double y, double z, double w) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4d  (id,x,y,z,w); }
+	void SetUniform1(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1dv (id,count,data); }
+	void SetUniform2(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,count,data); }
+	void SetUniform3(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,count,data); }
+	void SetUniform4(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,count,data); }
 #endif
 
-	void SetUniformMatrix2  (const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,transpose,m); }
-	void SetUniformMatrix3  (const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,count,transpose,m); }
-	void SetUniformMatrix4  (const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,count,transpose,m); }
+	void SetUniformMatrix2  (char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,transpose,m); }
+	void SetUniformMatrix3  (char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,count,transpose,m); }
+	void SetUniformMatrix4  (char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,count,transpose,m); }
 #ifdef GL_VERSION_2_1
-	void SetUniformMatrix2x3(const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x3fv(id,count,transpose,m); }
-	void SetUniformMatrix2x4(const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x4fv(id,count,transpose,m); }
-	void SetUniformMatrix3x2(const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x2fv(id,count,transpose,m); }
-	void SetUniformMatrix3x4(const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,count,transpose,m); }
-	void SetUniformMatrix4x2(const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x2fv(id,count,transpose,m); }
-	void SetUniformMatrix4x3(const char *name, const float  *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x3fv(id,count,transpose,m); }
+	void SetUniformMatrix2x3(char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x3fv(id,count,transpose,m); }
+	void SetUniformMatrix2x4(char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x4fv(id,count,transpose,m); }
+	void SetUniformMatrix3x2(char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x2fv(id,count,transpose,m); }
+	void SetUniformMatrix3x4(char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,count,transpose,m); }
+	void SetUniformMatrix4x2(char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x2fv(id,count,transpose,m); }
+	void SetUniformMatrix4x3(char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x3fv(id,count,transpose,m); }
 #endif
 #ifdef GL_VERSION_4_0
-	void SetUniformMatrix2  (const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,count,transpose,m); }
-	void SetUniformMatrix3  (const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,count,transpose,m); }
-	void SetUniformMatrix4  (const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,count,transpose,m); }
-	void SetUniformMatrix2x3(const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x3dv(id,count,transpose,m); }
-	void SetUniformMatrix2x4(const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x4dv(id,count,transpose,m); }
-	void SetUniformMatrix3x2(const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x2dv(id,count,transpose,m); }	
-	void SetUniformMatrix3x4(const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,count,transpose,m); }	
-	void SetUniformMatrix4x2(const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x2dv(id,count,transpose,m); }	
-	void SetUniformMatrix4x3(const char *name, const double *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x3dv(id,count,transpose,m); }	
+	void SetUniformMatrix2  (char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,count,transpose,m); }
+	void SetUniformMatrix3  (char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,count,transpose,m); }
+	void SetUniformMatrix4  (char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,count,transpose,m); }
+	void SetUniformMatrix2x3(char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x3dv(id,count,transpose,m); }
+	void SetUniformMatrix2x4(char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2x4dv(id,count,transpose,m); }
+	void SetUniformMatrix3x2(char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x2dv(id,count,transpose,m); }	
+	void SetUniformMatrix3x4(char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,count,transpose,m); }	
+	void SetUniformMatrix4x2(char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x2dv(id,count,transpose,m); }	
+	void SetUniformMatrix4x3(char const *name, double const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4x3dv(id,count,transpose,m); }	
 #endif
 
-#ifdef _CY_POINT_H_INCLUDED_
-	void SetUniform(const char *name, const Point2<float>  &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point3<float>  &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point4<float>  &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point2<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point3<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point4<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point2<float>  *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point3<float>  *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point4<float>  *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point2<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point3<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point4<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,&p->x); }
+#ifdef _CY_VECTOR_H_INCLUDED_
+	void SetUniform(char const *name, Vec2<float>  const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec3<float>  const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec4<float>  const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec2<int>    const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec3<int>    const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec4<int>    const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec2<float>  const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec3<float>  const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec4<float>  const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec2<int>    const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec3<int>    const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec4<int>    const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,&p->x); }
 # ifdef GL_VERSION_3_0
-	void SetUniform(const char *name, const Point2<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point3<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point4<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point2<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,&p->x); }
-	void SetUniform(const char *name, const Point3<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,&p->x); }
-	void SetUniform(const char *name, const Point4<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,&p->x); }
+	void SetUniform(char const *name, Vec2<GLuint> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec3<GLuint> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec4<GLuint> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec2<GLuint> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,&p->x); }
+	void SetUniform(char const *name, Vec3<GLuint> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,&p->x); }
+	void SetUniform(char const *name, Vec4<GLuint> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,&p->x); }
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(const char *name, const Point2<double> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point3<double> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point4<double> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const Point2<double> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point3<double> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,count,&p->x); }
-	void SetUniform(const char *name, const Point4<double> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec2<double> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec3<double> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec4<double> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,1,    &p.x ); }
+	void SetUniform(char const *name, Vec2<double> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec3<double> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,count,&p->x); }
+	void SetUniform(char const *name, Vec4<double> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,count,&p->x); }
 # endif
 #endif
 
-#ifdef _CY_IPOINT_H_INCLUDED_
-	void SetUniform(const char *name, const IPoint2<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const IPoint3<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const IPoint4<int>    &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,1,    &p.x ); }
-	void SetUniform(const char *name, const IPoint2<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,&p->x); }
-	void SetUniform(const char *name, const IPoint3<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,&p->x); }
-	void SetUniform(const char *name, const IPoint4<int>    *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,&p->x); }
+#ifdef _CY_IVECTOR_H_INCLUDED_
+	void SetUniform(char const *name, IVec2<int>    const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,1,    &p.x ); }
+	void SetUniform(char const *name, IVec3<int>    const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,1,    &p.x ); }
+	void SetUniform(char const *name, IVec4<int>    const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,1,    &p.x ); }
+	void SetUniform(char const *name, IVec2<int>    const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,&p->x); }
+	void SetUniform(char const *name, IVec3<int>    const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,&p->x); }
+	void SetUniform(char const *name, IVec4<int>    const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,&p->x); }
 # ifdef GL_VERSION_3_0
-	void SetUniform(const char *name, const IPoint2<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,1,    &p.x ); }
-	void SetUniform(const char *name, const IPoint3<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,1,    &p.x ); }
-	void SetUniform(const char *name, const IPoint4<GLuint> &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,1,    &p.x ); }
-	void SetUniform(const char *name, const IPoint2<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,&p->x); }
-	void SetUniform(const char *name, const IPoint3<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,&p->x); }
-	void SetUniform(const char *name, const IPoint4<GLuint> *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,&p->x); }
+	void SetUniform(char const *name, IVec2<GLuint> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,1,    &p.x ); }
+	void SetUniform(char const *name, IVec3<GLuint> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,1,    &p.x ); }
+	void SetUniform(char const *name, IVec4<GLuint> const &p)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,1,    &p.x ); }
+	void SetUniform(char const *name, IVec2<GLuint> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,&p->x); }
+	void SetUniform(char const *name, IVec3<GLuint> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,&p->x); }
+	void SetUniform(char const *name, IVec4<GLuint> const *p, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,&p->x); }
 # endif
 #endif
 
 #ifdef _CY_MATRIX_H_INCLUDED_
-	void SetUniform(const char *name, const Matrix2 <float>  &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix3 <float>  &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix4 <float>  &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix2 <float>  *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(const char *name, const Matrix3 <float>  *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(const char *name, const Matrix4 <float>  *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix2 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix3 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix4 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix2 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix3 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix4 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,count,GL_FALSE,m->data); }
 # ifdef GL_VERSION_2_1
-	void SetUniform(const char *name, const Matrix34<float>  &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix34<float>  *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix34<float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix34<float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,count,GL_FALSE,m->data); }
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(const char *name, const Matrix2 <double> &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix3 <double> &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix4 <double> &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix34<double> &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,1,    GL_FALSE,m.data ); }
-	void SetUniform(const char *name, const Matrix2 <double> *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(const char *name, const Matrix3 <double> *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(const char *name, const Matrix4 <double> *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(const char *name, const Matrix34<double> *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix2 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix3 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix4 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix34<double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,1,    GL_FALSE,m.data ); }
+	void SetUniform(char const *name, Matrix2 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix3 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix4 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix34<double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,count,GL_FALSE,m->data); }
 # endif
 #endif
 	//!@}
+
+	class Param
+	{
+		friend GLSLProgram;
+		GLSLProgram &prog;
+		char const *name;
+		Param(GLSLProgram &p, char const *n) : prog(p), name(n) {}
+	public:
+		template <typename T> void operator = ( T const &v ) { prog.SetUniform( name, v ); }
+		template <typename T> void Set( T const *v, int count=1 ) { prog.SetUniform( name, v, count ); }
+	};
+
+	Param operator [] ( char const *name ) { return Param(*this,name); }
 };
 
 //-------------------------------------------------------------------------------
@@ -1130,7 +1143,7 @@ inline void GL::PrintVersion(std::ostream *outStream)
 	}
 }
 
-inline void GL::CheckError(const char *sourcefile, int line, const char *call, std::ostream *outStream)
+inline void GL::CheckError( char const *sourcefile, int line, char const *call, std::ostream *outStream )
 {
 	GLenum error;
 	while ( (error = glGetError()) != GL_NO_ERROR) {
@@ -1143,7 +1156,7 @@ inline void GL::CheckError(const char *sourcefile, int line, const char *call, s
 inline GLenum GL::TextureFormat( GL::Type type, int numChannels )
 {
 	assert( numChannels > 0 && numChannels <= 4 );
-	const GLenum internalFormats[][4] = {
+	GLenum const internalFormats[][4] = {
 #ifdef CY_GL_TEXTURE_LUMINANCE
 		{ GL_LUMINANCE8,   GL_LUMINANCE8_ALPHA8,    GL_RGB8,    GL_RGBA8	},
 		{ GL_LUMINANCE16,  GL_LUMINANCE16_ALPHA16,  GL_RGB16,   GL_RGBA16   },
@@ -1196,7 +1209,7 @@ inline GLenum GL::TextureFormat( GL::Type type, int numChannels )
 
 inline GLenum GL::TextureDataFormat( GL::Type type, int numChannels )
 {
-	const GLenum formats[][4] = {
+	GLenum const formats[][4] = {
 #ifdef CY_GL_TEXTURE_LUMINANCE
 		{ GL_LUMINANCE,             GL_LUMINANCE_ALPHA,             GL_RGB,         GL_RGBA         },
 # ifdef GL_VERSION_3_0
@@ -1226,8 +1239,8 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
                                                     GLuint id,
                                                     GLenum severity,
                                                     GLsizei length,
-                                                    const GLchar* message,
-                                                    const void* userParam )
+                                                    GLchar const* message,
+                                                    void const* userParam )
 {
 	std::ostream *outStream = (std::ostream*) userParam;
 
@@ -1413,7 +1426,7 @@ inline bool GLRenderDepth<TEXTURE_TYPE>::Resize( GLsizei width, GLsizei height, 
 // GLSLShader Implementation
 //-------------------------------------------------------------------------------
 
-inline bool GLSLShader::CompileFile( const char *filename, GLenum shaderType, int prependSourceCount, const char **prependSources, std::ostream *outStream )
+inline bool GLSLShader::CompileFile( char const *filename, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream )
 {
 	std::ifstream shaderStream(filename, std::ios::in);
 	if(! shaderStream.is_open()) {
@@ -1427,13 +1440,13 @@ inline bool GLSLShader::CompileFile( const char *filename, GLenum shaderType, in
 	return Compile( shaderSourceCode.data(), shaderType, prependSourceCount, prependSources, outStream );
 }
 
-inline bool GLSLShader::Compile( const char *shaderSourceCode, GLenum shaderType, int prependSourceCount, const char **prependSources, std::ostream *outStream )
+inline bool GLSLShader::Compile( char const *shaderSourceCode, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream )
 {
 	Delete();
 
 	shaderID = glCreateShader( shaderType );
 	if ( prependSourceCount > 0 ) {
-		std::vector<const char*> sources(prependSourceCount+1);
+		std::vector<char const*> sources(prependSourceCount+1);
 		for ( int i=0; i<prependSourceCount; i++ ) sources[i] = prependSources[i];
 		sources[prependSourceCount] = shaderSourceCode;
 		glShaderSource(shaderID, prependSourceCount+1, sources.data(), nullptr);
@@ -1493,11 +1506,11 @@ inline bool GLSLProgram::Link( std::ostream *outStream )
 	return result == GL_TRUE;
 }
 
-inline bool GLSLProgram::Build( const GLSLShader *vertexShader, 
-                                const GLSLShader *fragmentShader,
-	                            const GLSLShader *geometryShader,
-	                            const GLSLShader *tessControlShader,
-	                            const GLSLShader *tessEvaluationShader,
+inline bool GLSLProgram::Build( GLSLShader const *vertexShader, 
+                                GLSLShader const *fragmentShader,
+	                            GLSLShader const *geometryShader,
+	                            GLSLShader const *tessControlShader,
+	                            GLSLShader const *tessEvaluationShader,
 	                            std::ostream *outStream )
 {
 	CreateProgram();
@@ -1510,13 +1523,13 @@ inline bool GLSLProgram::Build( const GLSLShader *vertexShader,
 	return Link(outStream);
 }
 
-inline bool GLSLProgram::BuildFiles( const char *vertexShaderFile, 
-                                     const char *fragmentShaderFile,
-	                                 const char *geometryShaderFile,
-	                                 const char *tessControlShaderFile,
-	                                 const char *tessEvaluationShaderFile,
+inline bool GLSLProgram::BuildFiles( char const *vertexShaderFile, 
+                                     char const *fragmentShaderFile,
+	                                 char const *geometryShaderFile,
+	                                 char const *tessControlShaderFile,
+	                                 char const *tessEvaluationShaderFile,
 	                                 int         prependSourceCount,
-	                                 const char **prependSource,
+	                                 char const **prependSource,
 	                                 std::ostream *outStream )
 {
 	CreateProgram();
@@ -1557,13 +1570,13 @@ inline bool GLSLProgram::BuildFiles( const char *vertexShaderFile,
 }
 
 
-inline bool GLSLProgram::BuildSources( const char *vertexShaderSourceCode, 
-                                       const char *fragmentShaderSourceCode,
-	                                   const char *geometryShaderSourceCode,
-	                                   const char *tessControlShaderSourceCode,
-	                                   const char *tessEvaluationShaderSourceCode,
+inline bool GLSLProgram::BuildSources( char const *vertexShaderSourceCode, 
+                                       char const *fragmentShaderSourceCode,
+	                                   char const *geometryShaderSourceCode,
+	                                   char const *tessControlShaderSourceCode,
+	                                   char const *tessEvaluationShaderSourceCode,
 	                                   int         prependSourceCount,
-	                                   const char **prependSource,
+	                                   char const **prependSource,
 	                                   std::ostream *outStream )
 {
 	CreateProgram();
@@ -1603,7 +1616,7 @@ inline bool GLSLProgram::BuildSources( const char *vertexShaderSourceCode,
 	return Link(outStream);
 }
 
-inline void GLSLProgram::RegisterUniform( unsigned int index, const char *name, std::ostream *outStream )
+inline void GLSLProgram::RegisterUniform( unsigned int index, char const *name, std::ostream *outStream )
 {
 	if ( params.size() <= index ) params.resize( index+1, -1 );
 	params[index] = glGetUniformLocation( programID, name );
@@ -1622,7 +1635,7 @@ inline void GLSLProgram::RegisterUniform( unsigned int index, const char *name, 
 	}
 }
 
-inline void GLSLProgram::RegisterUniforms( const char *names, unsigned int startingIndex, std::ostream *outStream )
+inline void GLSLProgram::RegisterUniforms( char const *names, unsigned int startingIndex, std::ostream *outStream )
 {
 	std::stringstream ss(names);
 	unsigned int index = startingIndex;

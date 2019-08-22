@@ -45,11 +45,14 @@
 //-------------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdint.h>
 #include <type_traits>
+#include <assert.h>
 
+//-------------------------------------------------------------------------------
+namespace cy {
 //-------------------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////////
 // Compiler compatibility
@@ -111,6 +114,41 @@ static _cy_nullptr_t nullptr;
 # define _cy_std_is_trivially_copyable 1
 #endif
 
+// restrict
+#if defined(__INTEL_COMPILER)
+# define CY_RESTRICT restrict
+#elif defined(__clang__)
+# define CY_RESTRICT __restrict__
+#elif defined(_MSC_VER)
+# define CY_RESTRICT __restrict
+#elif __GNUC__
+# define CY_RESTRICT __restrict__
+#else
+# define CY_RESTRICT
+#endif
+
+// alignment
+#if _CY_COMPILER_VER_MEETS(1900,40800,30000,1500)
+# define CY_ALIGNAS(alignment_size) alignas(alignment_size)
+#else
+# define CY_ALIGNAS(alignment_size)
+#endif
+
+// final, override
+#if _CY_COMPILER_VER_BELOW(1700,40700,20900,1210)
+# define override
+# if defined(_MSC_VER)
+#  define final sealed
+# else
+#  define final
+# endif
+#endif
+
+// static_assert
+#if _CY_COMPILER_VER_BELOW(1900,60000,20500,1800)
+# define static_assert(condition,message) assert(condition && message)
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 // Auto Vectorization
 //////////////////////////////////////////////////////////////////////////
@@ -139,51 +177,73 @@ static _cy_nullptr_t nullptr;
 #define _CY_IVDEP_FOR _CY_IVDEP for
 
 //////////////////////////////////////////////////////////////////////////
-//-------------------------------------------------------------------------------
-namespace cy {
-//-------------------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////////
 // Math functions
 //////////////////////////////////////////////////////////////////////////
 
 //!@name Common math function templates
 
-template<typename TYPE> inline TYPE cySin ( TYPE a ) { return (TYPE) ::sin (a); }
-template<typename TYPE> inline TYPE cyCos ( TYPE a ) { return (TYPE) ::cos (a); }
-template<typename TYPE> inline TYPE cyTan ( TYPE a ) { return (TYPE) ::tan (a); }
-template<typename TYPE> inline TYPE cyAbs ( TYPE a ) { return (TYPE) ::abs (a); }
-template<typename TYPE> inline TYPE cySqrt( TYPE a ) { return (TYPE) ::sqrt((double)a); }
-template<typename TYPE> inline TYPE cyPow ( TYPE a, TYPE e ) { return (TYPE) ::pow(a,e); }
-template<typename TYPE> inline TYPE cyPi  () { return TYPE(3.141592653589793238462643383279502884197169); }
+template <typename T> inline T Max      ( T const &v1, T const &v2 ) { return v1 >= v2 ? v1 : v2; }
+template <typename T> inline T Min      ( T const &v1, T const &v2 ) { return v1 <= v2 ? v1 : v2; }
+template <typename T> inline T Max      ( T const &v1, T const &v2, T const &v3 ) { return (v1>=v2) ? (v1>=v3?v1:v3) : (v2>=v3?v2:v3); }
+template <typename T> inline T Min      ( T const &v1, T const &v2, T const &v3 ) { return (v1<=v2) ? (v1<=v3?v1:v3) : (v2<=v3?v2:v3); }
+template <typename T> inline T Clamp    ( T const &v, T minVal=T(0), T maxVal=T(1) ) { return Min(maxVal,Max(minVal,v)); }
 
-template<> inline float cySin <float>( float a ) { return ::sinf (a); }
-template<> inline float cyCos <float>( float a ) { return ::cosf (a); }
-template<> inline float cyTan <float>( float a ) { return ::tanf (a); }
-template<> inline float cyAbs <float>( float a ) { return ::fabsf(a); }
-template<> inline float cySqrt<float>( float a ) { return ::sqrtf(a); }
-template<> inline float cyPow <float>( float a, float e ) { return ::powf(a,e); }
+template <typename T> inline T ACosSafe ( T const &v ) { return (T) std::acos(Clamp(v,T(-1),T(1))); }
+template <typename T> inline T ASinSafe ( T const &v ) { return (T) std::asin(Clamp(v,T(-1),T(1))); }
+template <typename T> inline T Sqrt     ( T const &v ) { return (T) std::sqrt(v); }
+template <typename T> inline T SqrtSafe ( T const &v ) { return (T) std::sqrt(Max(v,T(0))); }
 
-template<> inline double cyAbs ( double a ) { return ::fabs(a); }
+//template<> inline float  Sqrt<float> ( float  const &v ) { return std::sqrtf(v); }
+template<> inline float  Sqrt    <float> ( float  const &v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(v))); }
+template<> inline float  SqrtSafe<float> ( float  const &v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(Max(v,0.0f)))); }
+template<> inline double Sqrt    <double>( double const &v ) { __m128d t=_mm_set1_pd(v);          return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+template<> inline double SqrtSafe<double>( double const &v ) { __m128d t=_mm_set1_pd(Max(v,0.0)); return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+
+template<typename T> inline T Pi  () { return T(3.141592653589793238462643383279502884197169); }
+
+template <typename T> bool IsFinite( T const &v ) { return std::numeric_limits<T>::is_integer || std::isfinite(v); }
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Operations
 //////////////////////////////////////////////////////////////////////////
 
+template <typename T>
+void MemCopy( T * CY_RESTRICT dest, T const * CY_RESTRICT src, size_t count )
+{
 #ifdef _cy_std_is_trivially_copyable
-# define CY_MEMCOPY(type,dest,source,n) \
-	{ if ( !std::is_trivially_copyable<type>() || (n)*sizeof(type) < _CY_CORE_MEMCPY_LIMIT ) { \
-		for ( int i=0; i<(n); i++ ) (dest)[i] = (source)[i]; \
-	} else { \
-		memcpy( dest, source, (n)*sizeof(type) ); \
-	} }
-#else
-# define CY_MEMCOPY(type,dest,source,n) \
-	{ for ( int i=0; i<(n); i++ ) (dest)[i] = (source)[i]; }
+	if ( std::is_trivially_copyable<T>() ) {
+		memcpy( dest, src, (count)*sizeof(T) );
+	} else 
 #endif
+		for ( size_t i=0; i<count; ++i ) dest[i] = src[i];
+}
 
-#define CY_MEMCONVERT(type,dest,source,n) { for ( int i=0; i<(n); i++ ) (dest)[i] = type((source)[i]); }
+template <typename T, typename S>
+void MemConvert( T * CY_RESTRICT dest, S const * CY_RESTRICT src, size_t count )
+{
+	for ( size_t i=0; i<count; ++i ) dest[i] = reinterpret_cast<T>(src[i]);
+}
 
-#define CY_MEMCLEAR(type,dest,n) memset(dest,0,(n)*sizeof(type))
+template <typename T>
+void MemClear( T * dest, size_t count )
+{
+	memset( dest, 0, count*sizeof(T) );
+}
+
+template <typename T> inline void Swap     ( T &v1, T &v2 ) { if ( std::is_trivially_copyable<T>::value ) { T t=v1; v1=v2; v2=t; } else SwapBytes(v1,v2); }
+template <typename T> inline void SwapBytes( T &v1, T &v2 ) { char t[sizeof(T)]; memcpy(&t,&v1,sizeof(T)); memcpy(&v1,&v2,sizeof(T)); memcpy(&v2,&t,sizeof(T)); }
+
+/////////////////////////////////////////////////////////////////////////////////
+// Defaulted and Deleted Functions
+/////////////////////////////////////////////////////////////////////////////////
+
+#if _CY_COMPILER_VER_MEETS(1800,40400,30000,1200)
+# define CY_CLASS_FUNCTION_DEFAULT = default;
+# define CY_CLASS_FUNCTION_DELETE  = delete;
+#else
+# define CY_CLASS_FUNCTION_DEFAULT {}
+# define CY_CLASS_FUNCTION_DELETE  { static_assert(false,"Calling deleted method."); }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 

@@ -58,7 +58,7 @@ class String
 
 #ifdef _OSTREAM_
 	//! Overloaded stream operator. It only works if you include iostream before this file.
-	friend std::ostream& operator << ( std::ostream &os, const String &str )
+	friend std::ostream& operator << ( std::ostream &os, String const &str )
 	{
 		os<<str.GetString();
 		return os;
@@ -74,10 +74,10 @@ public:
 	String() : string(nullptr), length(0) { EmptyString(); }
 
 	//! Copy constructor
-	String( const String &src ) : string(nullptr), length(0) { Set(src); }
+	String( String const &src ) : string(nullptr), length(0) { Set(src); }
 
 	//! Sets the string using the given array.
-	String( const char *src ) : string(nullptr), length(0) { Set(src); }
+	String( char const *src ) : string(nullptr), length(0) { Set(src); }
 
 	//! Sets the string using the given number.
 	String( char   src ) : string(nullptr), length(0) { Set(src); }
@@ -87,14 +87,14 @@ public:
 	String( double src ) : string(nullptr), length(0) { Set(src); }
 
 	//! Sets the string using the first 'count' characters of the given array.
-	String( const char *src, unsigned int count ) : string(nullptr), length(0) { Set(src,count); }
+	String( char const *src, unsigned int count ) : string(nullptr), length(0) { Set(src,count); }
 
 	//! Sets the string as the given double number 'src' using given number of digits and precision.
 	String( double src, int digits, int precisition ) : string(nullptr), length(0) { Set(src,digits,precisition); }
 
 	//! Sets the string using the given format and predicted string size.
 	//! The predicted size should be greater than or equal to the final size.
-	String( int size, const char *format, ... ) : string(nullptr), length(0)
+	String( int size, char const *format, ... ) : string(nullptr), length(0)
 	{
 		va_list args;
 		va_start(args,format);
@@ -112,7 +112,7 @@ public:
 	//!@name Set methods (Assign value)
 
 	//! Sets the string using the given string. Returns the string.
-	String& Set( const String &str )
+	String& Set( String const &str )
 	{
 		SetStrLen( str.length );
 		strncpy( string, str.string, length );
@@ -120,7 +120,7 @@ public:
 	}
 
 	//! Sets the string using the given array. Returns the string.
-	String& Set( const char *src )
+	String& Set( char const *src )
 	{
 		int n = (int) strlen(src);
 		SetStrLen( n );
@@ -173,7 +173,7 @@ public:
 	}
 
 	//! Sets the string using the first 'count' characters of the given array. Return this string.
-	String& Set( const char *src, unsigned int count )
+	String& Set( char const *src, unsigned int count )
 	{
 		SetStrLen(count);
 		strncpy( string, src, length );
@@ -195,7 +195,7 @@ public:
 	//! Sets the string using the given format and predicted string size.
 	//! The predicted size should be greater than or equal to the final size.
 	//! Returns this string.
-	String& Set( int size, const char *format, ... )
+	String& Set( int size, char const *format, ... )
 	{
 		va_list args;
 		va_start( args, format );
@@ -207,13 +207,13 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment operators
 
-	String& operator = ( const String &src ){ return Set(src); }
-	String& operator = ( const char *src )	{ return Set(src); }
-	String& operator = ( char src )			{ return Set(src); }
-	String& operator = ( int src )			{ return Set(src); }
-	String& operator = ( long src )			{ return Set(src); }
-	String& operator = ( float src )			{ return Set(src); }
-	String& operator = ( double src )			{ return Set(src); }
+	String& operator = ( String const &src ) { return Set(src); }
+	String& operator = ( char   const *src ) { return Set(src); }
+	String& operator = ( char   src )        { return Set(src); }
+	String& operator = ( int    src )        { return Set(src); }
+	String& operator = ( long   src )        { return Set(src); }
+	String& operator = ( float  src )        { return Set(src); }
+	String& operator = ( double src )        { return Set(src); }
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ public:
 	}
 
 	//! Inserts the given string to the given index.
-	void Insert( const String &str, int index )
+	void Insert( String const &str, int index )
 	{
 		int count = length - index;
 		if ( count < 0 ) { index = length; count = 0; }
@@ -324,7 +324,7 @@ public:
 
 	//! Deletes all the characters in the string that exits in the given set.
 	//! Returns the number of characters deleted.
-	int DeleteChars( const String &set )
+	int DeleteChars( String const &set )
 	{
 		int n = 0;
 		char *str = strpbrk( string, set.string );
@@ -358,7 +358,7 @@ public:
 	//! Sets the string using the given format and predicted string size.
 	//! The predicted size should be greater than or equal to the final size.
 	//! Returns this string.
-	String& Format( int size, const char *format, ... )
+	String& Format( int size, char const *format, ... )
 	{
 		va_list args;
 		va_start( args, format );
@@ -367,7 +367,7 @@ public:
 	}
 
 	//! Returns the character of the string at the specified index.
-	char& operator [] ( const int index ) { return string[index]; }
+	char& operator [] ( int index ) { return string[index]; }
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -377,7 +377,7 @@ public:
 	int Length() const { return length; }
 
 	//! Returns the char array that keep the string data.
-	const char* GetString() const { return string; }
+	char const * GetString() const { return string; }
 
 	//! Checks if the string is empty (length is zero).
 	int IsEmpty() const { return (length==0); }
@@ -394,7 +394,7 @@ public:
 	//! If the character at the given index exists in the given set,
 	//! returns the index of the character.
 	//! If the character is not found in the set, returns -1.
-	int SearchCharInSet( int index, const String &set ) const
+	int SearchCharInSet( int index, String const &set ) const
 	{
 		return set.GetPosition( string[index] );
 	}
@@ -402,7 +402,7 @@ public:
 	//! Searches the string starting from the beginning for a character that exists in the given set.
 	//! Returns the first position of a character from the set.
 	//! If not found, returns -1.
-	int SearchSet( const String &set ) const
+	int SearchSet( String const &set ) const
 	{
 		int pos = (int) strcspn( string, set.string );
 		if ( pos < length ) return pos;
@@ -412,7 +412,7 @@ public:
 	//! Searches the string starting from the end for a character that exists in the given set.
 	//! Returns the last position of a character from the set.
 	//! If not found, returns -1.
-	int ReverseSearchSet( const String &set ) const
+	int ReverseSearchSet( String const &set ) const
 	{
 		for ( int i=length-1; i >= 0; i-- ) {
 			int pos = set.GetPosition( string[i] );
@@ -424,7 +424,7 @@ public:
 	//! Searches the string starting from the beginning for a character that exists in the given set.
 	//! Returns the first position of a character from the set.
 	//! If not found, returns -1.
-	int SearchNextSet( int start, const String &set ) const
+	int SearchNextSet( int start, String const &set ) const
 	{
 		if ( start > length ) return -1;
 		int pos = (int) strcspn( string + start, set.string );
@@ -443,7 +443,7 @@ public:
 
 	//! Returns the first position of the given string.
 	//! If the string is not found, returns -1.
-	int GetPosition( const String &str ) const
+	int GetPosition( String const &str ) const
 	{
 		char *sub = strstr( string, str.GetString() );
 		if ( sub != nullptr ) return int(sub - string);
@@ -461,7 +461,7 @@ public:
 
 	//! Returns the last position of the given string.
 	//! If the string is not found, returns -1.
-	int GetLastPosition( const String &str ) const
+	int GetLastPosition( String const &str ) const
 	{
 		String s(*this);
 		String str2(str);
@@ -484,7 +484,7 @@ public:
 
 	//! Returns the next position of the given string.
 	//! If the string is not found, returns -1.
-	int GetNextPosition( int start, const String &str ) const
+	int GetNextPosition( int start, String const &str ) const
 	{
 		if ( start > length ) return -1;
 		char *sub = strstr( string+start, str.GetString() );
@@ -530,41 +530,41 @@ public:
 	}
 
 	//! Returns the number of characters in the string that exists in the given character set.
-	int CountChars( const String &set ) const
+	int CountChars( String const &set ) const
 	{
 		return (int) strspn( string, set.string );
 	}
 
 	//! Returns the character of the string at the specified index.
-	char operator [] ( const int index ) const { return string[index]; }
+	char operator [] ( int index ) const { return string[index]; }
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Comparison methods
 
 	//! Checks if this string is the same as 'str'.
-	int operator == ( const String &str ) const { return ( Compare(str) == 0 ); }
+	int operator == ( String const &str ) const { return ( Compare(str) == 0 ); }
 
 	//! Checks if this string is not the same as 'str'.
-	int operator != ( const String &str ) const { return ( Compare(str) != 0 ); }
+	int operator != ( String const &str ) const { return ( Compare(str) != 0 ); }
 
 	//! Checks if this string is smaller than 'str'.
-	int operator <  ( const String &str ) const { return ( Compare(str) <  0 ); }
+	int operator <  ( String const &str ) const { return ( Compare(str) <  0 ); }
 
 	//! Checks if this string is smaller than or equal to 'str'.
-	int operator <= ( const String &str ) const { return ( Compare(str) <= 0 ); }
+	int operator <= ( String const &str ) const { return ( Compare(str) <= 0 ); }
 
 	//! Checks if this string is greater than 'str'.
-	int operator >  ( const String &str ) const { return ( Compare(str) >  0 ); }
+	int operator >  ( String const &str ) const { return ( Compare(str) >  0 ); }
 
 	//! Checks if this string is greater than or equal to 'str'.
-	int operator >= ( const String &str ) const { return ( Compare(str) >= 0 ); }
+	int operator >= ( String const &str ) const { return ( Compare(str) >= 0 ); }
 
 	//! Compares this string to 'str' (case sensitive).
 	//! Returns zero if the strings are the same,
 	//! smaller than zero if this string is smaller than 'str',
 	//! greater than zero if this string is greater than 'str'.
-	int Compare( const String &str ) const
+	int Compare( String const &str ) const
 	{
 		if ( length == str.length ) {
 			if ( length > 0 ) return strcmp( string, str.string );
@@ -577,7 +577,7 @@ public:
 	//! Returns zero if the strings are the same,
 	//! smaller than zero if this string is smaller than 'str',
 	//! greater than zero if this string is greater than 'str'.
-	int Compare( const String &str, int count ) const
+	int Compare( String const &str, int count ) const
 	{
 		return strncmp( string, str.string, count );
 	}
@@ -586,7 +586,7 @@ public:
 	//! Returns zero if the strings are the same,
 	//! smaller than zero if this string is smaller than 'str',
 	//! greater than zero if this string is greater than 'str'.
-	int CompareIC( const String &str ) const
+	int CompareIC( String const &str ) const
 	{
 		String str1(*this);
 		String str2(str);
@@ -599,7 +599,7 @@ public:
 	//! Returns zero if the strings are the same,
 	//! smaller than zero if this string is smaller than 'str',
 	//! greater than zero if this string is greater than 'str'.
-	int CompareIC( const String &str, int count ) const
+	int CompareIC( String const &str, int count ) const
 	{
 		String str1(*this);
 		String str2(str);
@@ -681,7 +681,7 @@ public:
 	//!@name Append and substring
 
 	//! Appends to the end of the string.
-	void Append( const String &str )
+	void Append( String const &str )
 	{
 		int length2 = length + str.length;
 		char *string2 = NewString(length2);
@@ -691,10 +691,10 @@ public:
 	}
 
 	//! Appends to the end of the string and returns this string.
-	String& operator += ( const String &str ) { Append(str); return *this; }
+	String& operator += ( String const &str ) { Append(str); return *this; }
 
 	//! Appends two strings and returns the result
-	String operator + ( const String &right ) {
+	String operator + ( String const &right ) {
 		String r;
 		r.SetStrLen( length + right.length );
 		strncpy( r.string, string, length );
@@ -952,7 +952,7 @@ public:
 	}
 
 	//! Loads the string from the file. Returns final length of the string.
-	int LoadFromFile( const String &filename )
+	int LoadFromFile( String const &filename )
 	{
 		FILE *fp = fopen( filename.GetString(), "r" );
 		if ( fp != nullptr ) {
@@ -976,7 +976,7 @@ public:
 	}
 
 	//! Saves the string to the text file. Returns the number of bytes written.
-	int SaveToFile( const String &filename ) const
+	int SaveToFile( String const &filename ) const
 	{
 		FILE *fp = fopen( filename.GetString(), "w" );
 		if ( fp != nullptr ) {
@@ -1037,7 +1037,7 @@ private:
 
 	// Given a predicted size (should be greater than or equal to the final size)
 	// format and arguments list (args), formats the string.
-	void FormatString( int size, const char *format, va_list args )
+	void FormatString( int size, char const *format, va_list args )
 	{
 		SetStrLen(size);
 		vsprintf( string, format, args );

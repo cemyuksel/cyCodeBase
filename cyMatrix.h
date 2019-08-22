@@ -36,7 +36,7 @@
 
 //-------------------------------------------------------------------------------
 
-#include "cyPoint.h"
+#include "cyVector.h"
 
 //-------------------------------------------------------------------------------
 namespace cy {
@@ -44,75 +44,74 @@ namespace cy {
 
 // Forward declarations
 //!	\cond HIDDEN_SYMBOLS
-template <typename TYPE> class Matrix3;
-template <typename TYPE> class Matrix34;
-template <typename TYPE> class Matrix4;
+template <typename T> class Matrix3;
+template <typename T> class Matrix34;
+template <typename T> class Matrix4;
 //! \endcond
+
+//-------------------------------------------------------------------------------
+
+#define _CY_VEC_DEFAULT_ERROR_TOLERANCE 0.0001
 
 //-------------------------------------------------------------------------------
 
 //! 2x2 matrix class.
 //!
 //! Its data stores 4-value array of column-major matrix elements.
-//! You can use Matrix2 with Point2<TYPE> to transform 2D points.
+//! You can use Matrix2 with Vec2<T> to transform 2D points.
 
-template <typename TYPE>
+template <typename T>
 class Matrix2
 {
-	friend Matrix2 operator * ( const TYPE value, const Matrix2 &right ) { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = value * right.data[i]; return r; }	//!< multiply matrix by a value
-	friend Matrix2 Inverse( const Matrix2 &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
+	friend Matrix2 operator * ( T const value, Matrix2 const &right ) { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = value * right.cell[i]; return r; }	//!< multiply matrix by a value
+	friend Matrix2 Inverse( Matrix2 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 public:
 
 	//! Elements of the matrix are column-major: \n
 	//! | 0  2 | \n
 	//! | 1  3 | \n
-	TYPE data[4];
+	union {
+		T       cell[4];
+		Vec2<T> column[2];	// column vectors
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
 
-	Matrix2() {}																//!< Default constructor
-	Matrix2( const Matrix2 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,4); }	//!< Copy constructor
-	template <typename T> explicit Matrix2<TYPE>( const Matrix2<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,4); }	//!< Copy constructor for different types
-	explicit Matrix2( const TYPE *values ) { Set(values); }									//!< Initialize the matrix using an array of 4 values
-	explicit Matrix2( const TYPE  v )      { SetScaledIdentity(v); }						//!< Initialize the matrix as identity scaled by v
-	explicit Matrix2( const Point2<TYPE> &x, const Point2<TYPE> &y ) { Set(x,y); }			//!< Initialize the matrix using two vectors as columns
-	explicit Matrix2( const Matrix3<TYPE>  &m );
-	explicit Matrix2( const Matrix34<TYPE> &m );
-	explicit Matrix2( const Matrix4<TYPE>  &m );
+	Matrix2() CY_CLASS_FUNCTION_DEFAULT										//!< Default constructor
+	template <typename TT> explicit Matrix2<T>( const Matrix2<TT> &matrix ) { MemConvert(cell,matrix.cell,4); }	//!< Copy constructor for different types
+	explicit Matrix2( T const *values ) { Set(values); }					//!< Initialize the matrix using an array of 4 values
+	explicit Matrix2( T const  v )      { SetIdentity(v); }					//!< Initialize the matrix as identity scaled by v
+	explicit Matrix2( Vec2<T> const &x, Vec2<T> const &y ) { Set(x,y); }	//!< Initialize the matrix using two vectors as columns
+	explicit Matrix2( Matrix3 <T> const &m );
+	explicit Matrix2( Matrix34<T> const &m );
+	explicit Matrix2( Matrix4 <T> const &m );
 
 	//! Constructor using row-major order for initialization
-	Matrix2( TYPE row0col0, TYPE row0col1,
-		     TYPE row1col0, TYPE row1col1 )
+	Matrix2( T c00, T c01,
+		      T c10, T c11 )
 	{
-		data[0] = row0col0;   data[2] = row0col1;
-		data[1] = row1col0;   data[3] = row1col1;
+		cell[0] = c00;   cell[2] = c01;
+		cell[1] = c10;   cell[3] = c11;
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set & Get Methods
 
-	//! Set all the values as zero
-	void Zero() { CY_MEMCLEAR(TYPE,data,4); }
-	//! Returns true if the matrix is exactly zero
-	bool IsZero() const { for ( int i=0; i<4; i++ ) if ( data[i] != 0 ) return false; return true; }
-	//! Copies the matrix data to the given values array of size 4
-	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,4); } 
-	//! Set Matrix using an array of 4 values
-	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,4); } 
-	//! Set Matrix using two vectors as columns
-	void Set( const Point2<TYPE> &x, const Point2<TYPE> &y ) { x.Get(data); y.Get(data+2); }
-	//! Converts the matrix to an identity matrix
-	void SetIdentity() { SetScaledIdentity(TYPE(1)); }
-	//! Converts the matrix to an identity matrix scaled by a scalar
-	void SetScaledIdentity(TYPE v) { SetScale(v); }
-	//! Sets the matrix as the tensor product (outer product) of two vectors
-	void SetTensorProduct( const Point2<TYPE> &v0, const Point2<TYPE> &v1 )
+	void Zero    ()       { MemClear(cell,4); }										//!< Set all the values as zero
+	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  (); }	//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite(); }	//!< Returns true if all components are finite real numbers.
+	void Get( T       *values ) { MemCopy(values,cell,4); }							//!< Copies the matrix cell to the given values array of size 4
+	void Set( T const *values ) { MemCopy(cell,values,4); }							//!< Set Matrix using an array of 4 values
+	void Set( Vec2<T> const &x, Vec2<T> const &y ) { x.Get(cell); y.Get(cell+2); }	//!< Set Matrix using two vectors as columns
+	void SetIdentity()      { *this = Identity(); }									//!< Converts the matrix to an identity matrix
+	void SetIdentity( T v ) { SetScale(v); }										//!< Converts the matrix to an identity matrix scaled by a scalar
+	void SetTensorProduct( Vec2<T> const &v0, Vec2<T> const &v1 )					//!< Sets the matrix as the tensor product (outer product) of two vectors
 	{
-		for ( int i=0; i<2; i++ ) data[  i] = v0[i] * v1.x;
-		for ( int i=0; i<2; i++ ) data[2+i] = v0[i] * v1.y;
+		for ( int i=0; i<2; ++i ) cell[  i] = v0[i] * v1.x;
+		for ( int i=0; i<2; ++i ) cell[2+i] = v0[i] * v1.y;
 	}
 
 
@@ -120,166 +119,260 @@ public:
 	//!@name Affine transformations
 
 	//! Sets a uniform scale matrix
-	void SetScale( const TYPE &uniformScale ) { SetScale(uniformScale,uniformScale); }
+	void SetScale( T uniformScale ) { SetScale(uniformScale,uniformScale); }
 	//! Sets a scale matrix
-	void SetScale( const TYPE scaleX, const TYPE scaleY ) { data[0]=scaleX; data[1]=0; data[2]=0; data[3]=scaleY;}
+	void SetScale( T scaleX, T scaleY ) { cell[0]=scaleX; cell[1]=0; cell[2]=0; cell[3]=scaleY;}
 	//! Sets a scale matrix
-	void SetScale( const Point2<TYPE> &scale ) { SetScale(scale.x,scale.y); }
-	//! Removes the scale component of the matrix
-	void SetNoScale() { Point2<TYPE> *p = (Point2<TYPE>*)data; p[0].Normalize(); p[1].Normalize(); }
+	void SetScale( Vec2<T> const &scale ) { SetScale(scale.x,scale.y); }
 	//! Set a rotation matrix by angle
-	void SetRotation( TYPE angle ) { SetRotation( cySin(angle), cyCos(angle) ); }
+	void SetRotation( T angle ) { SetRotation( std::sin(angle), std::cos(angle) ); }
 	//! Set a rotation matrix by cos and sin of angle
-	void SetRotation( TYPE sinAngle, TYPE cosAngle ) { data[0]=cosAngle; data[1]=-sinAngle; data[2]=sinAngle; data[3]=cosAngle; }
+	void SetRotation( T sinAngle, T cosAngle ) { cell[0]=cosAngle; cell[1]=-sinAngle; cell[2]=sinAngle; cell[3]=cosAngle; }
+	//! Sets a Cartesian coordinate frame using the given x direction. x must be a unit vector.
+	void SetCartesianFrameX( Vec2<T> const &x ) { Set( x, x.GetPerpendicular() ); }
+	//! Sets a Cartesian coordinate frame using the given y direction. y must be a unit vector.
+	void SetCartesianFrameY( Vec2<T> const &y ) { Set( -y.GetPerpendicular(), y ); }
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, TYPE x, TYPE y )    { data[row]=x; data[row+2]=y; }				//!< Sets a row of the matrix
-	void SetColumn  ( int column, TYPE x, TYPE y ) { data[2*column]=x; data[2*column+1]=y; }	//!< Sets a column of the matrix
-	void SetDiagonal( TYPE xx, TYPE yy )           { data[0]=xx; data[3]=yy; }					//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const Point2<TYPE> &p )      { SetDiagonal( p.x, p.y ); }					//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const TYPE *values )         { SetDiagonal(values[0],values[1]); }		//!< Sets the diagonal values of the matrix
+	void SetRow     ( int row, T x, T y )         { cell[row]=x; cell[row+2]=y; }		//!< Sets a row of the matrix
+	void SetRow     ( int row, Vec2<T> const &v ) { SetRow(row,v.x,v.y); }				//!< Sets a row of the matrix
+	void SetColumn  ( int col, T x, T y )         { column[col].Set(x,y); }				//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec2<T> const &v ) { column[col]=v; }					//!< Sets a column of the matrix
+	void SetDiagonal( T const &xx, T const &yy )  { cell[0]=xx; cell[3]=yy; }			//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec2<T> const &p )          { SetDiagonal( p.x, p.y ); }			//!< Sets the diagonal values of the matrix
+	void SetDiagonal( T const *values )           { SetDiagonal(values[0],values[1]); }	//!< Sets the diagonal values of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-	Point2<TYPE>  GetRow   ( int row )                  const { return Point2<TYPE>( data[row], data[row+2] ); }	//!< Returns a row of the matrix
-	void          GetRow   ( int row, Point2<TYPE> &p ) const { p.Set( data[row], data[row+1] ); }					//!< Returns a row of the matrix
-	void          GetRow   ( int row, TYPE *values )    const { values[0]=data[row]; values[1]=data[row+2]; }		//!< Returns a row of the matrix
-	Point2<TYPE>  GetColumn( int col )                  const { return Point2<TYPE>( &data[col*2] ); }				//!< Returns a column of the matrix
-	void          GetColumn( int col, Point2<TYPE> &p ) const { p.Set( &data[col*2] ); }							//!< Returns a column of the matrix
-	void          GetColumn( int col, TYPE *values )    const { values[0]=data[col*2]; values[1]=data[col*2+1]; }	//!< Returns a column of the matrix
-	Point2<TYPE>  GetDiagonal()                         const { return Point2<TYPE>( data[0], data[3] ); }			//!< Returns the diagonal of the matrix
-	void          GetDiagonal( Point2<TYPE> &p )        const { p.Set( data[0], data[3] ); }						//!< Returns the diagonal of the matrix
-	void	      GetDiagonal( TYPE *values )           const { values[0]=data[0]; values[1]=data[3]; }				//!< Returns the diagonal of the matrix
+	Vec2<T>  GetRow     ( int row ) const { return Vec2<T>( cell[row], cell[row+2] ); }		//!< Returns a row of the matrix
+	Vec2<T>  GetColumn  ( int col ) const { return column[col]; }							//!< Returns a column of the matrix
+	Vec2<T>  GetDiagonal()          const { return Vec2<T>( cell[0], cell[3] ); }			//!< Returns the diagonal of the matrix
+	Matrix2  GetRotation()          const { Matrix2 s, r; GetComponents(s,r); return r; }	//!< Returns the rotation portion of the transformation
+
+	//! Returns the scale portion of the transformation.
+	//! The returned matrix is symmetric, but not necessarily diagonal, and it can include non-uniform scale.
+	Matrix2 GetScale() const
+	{
+		Matrix2 trns;
+		GetTranspose(trns);
+		Matrix2 u2 = *this * trns;
+		Vec2<T> v0, v1;
+		u2.GetEigenvectors( v0, v1 );
+		Matrix2 v(v0,v1);
+		Matrix2 vt;
+		v.GetTranspose(vt);
+		Matrix2 d2 = vt * (*this) * v;	// the result is a diagonal matrix
+		Vec2<T> diag = d2.GetDiagonal();
+		Matrix2 d;
+		d.SetScale(diag);
+		return v * d * vt;
+	}
 
 	//! Returns the average scale factor
-	TYPE GetAvrgScale() const 
+	T GetAvrgScale() const 
 	{
-		TYPE det = data[0]*data[3]-data[2]*data[1];
-		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(2) );
+		T det = cell[0]*cell[3]-cell[2]*cell[1];
+		T s = Sqrt( std::abs(det) );
 		return det >= 0 ? s : -s;
 	}
 
+	void GetComponents( Matrix2<T> &scale, Matrix2<T> &rotation ) const { scale = GetScale(); rotation = *this * scale.GetInverse(); }	//!< Returns separate transformation components
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Comparison Operators
 
-	bool operator == ( const Matrix2 &right ) const { for ( int i=0; i<4; i++ ) if ( data[i] != right.data[i] ) return false; return true; } //!< compare equal
-	bool operator != ( const Matrix2 &right ) const { for ( int i=0; i<4; i++ ) if ( data[i] != right.data[i] ) return true; return false; } //!< compare not equal
+	bool operator == ( Matrix2 const &right ) const { for ( int i=0; i<4; ++i ) if ( cell[i] != right.cell[i] ) return false; return true; } //!< compare equal
+	bool operator != ( Matrix2 const &right ) const { for ( int i=0; i<4; ++i ) if ( cell[i] != right.cell[i] ) return true; return false; } //!< compare not equal
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	TYPE&       operator () ( int row, int column )       { return data[ column * 2 + row ]; }	//!< subscript operator
-	const TYPE& operator () ( int row, int column ) const { return data[ column * 2 + row ]; }	//!< constant subscript operator
-	TYPE&       operator [] ( int i )                     { return data[i]; }					//!< subscript operator
-	const TYPE& operator [] ( int i )               const { return data[i]; }					//!< constant subscript operator
+	T&        operator () ( int row, int col )       { assert( row>=0 && row<2 && col>=0 && col<2 ); return cell[ col*2 + row ]; }	//!< subscript operator
+	T const & operator () ( int row, int col ) const { assert( row>=0 && row<2 && col>=0 && col<2 ); return cell[ col*2 + row ]; }	//!< constant subscript operator
+	T&        operator [] ( int i )                  { assert( i>=0 && i<4 ); return cell[i]; }										//!< subscript operator
+	T const & operator [] ( int i )            const { assert( i>=0 && i<4 ); return cell[i]; }										//!< constant subscript operator
 	
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Unary and Binary Operators
 
 	// Unary operators
-	Matrix2 operator - () const { Matrix2 r; for (int i=0; i<4; i++) r.data[i]=- data[i]; return r; }	//!< negative matrix
+	Matrix2 operator - () const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i]=- cell[i]; return r; }	//!< negative matrix
 
 	// Binary operators
-	Matrix2 operator * ( const TYPE     value ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix2 operator / ( const TYPE     value ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] / value;         return r; }	//!< divide matrix by a value;
-	Matrix2 operator + ( const Matrix2 &right ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] + right.data[i]; return r; }	//!< add two Matrices
-	Matrix2 operator - ( const Matrix2 &right ) const { Matrix2 r; for (int i=0; i<4; i++) r.data[i] = data[i] - right.data[i]; return r; }	//!< subtract one Matrix2 from another
-	Matrix2 operator * ( const Matrix2 &right ) const	//!< multiply a matrix with another
+	Matrix2 operator * ( T       const  value ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
+	Matrix2 operator / ( T       const  value ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix2 operator + ( Matrix2 const &right ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
+	Matrix2 operator - ( Matrix2 const &right ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix2 from another
+	Matrix2 operator * ( Matrix2 const &right ) const	//!< multiply a matrix with another
 	{
 		Matrix2 r;
-		r[0] = data[0] * right.data[0] + data[2] * right.data[1];
-		r[1] = data[1] * right.data[0] + data[3] * right.data[1];
-		r[2] = data[0] * right.data[2] + data[2] * right.data[3];
-		r[3] = data[1] * right.data[2] + data[3] * right.data[3];
+		r[0] = cell[0] * right.cell[0] + cell[2] * right.cell[1];
+		r[1] = cell[1] * right.cell[0] + cell[3] * right.cell[1];
+		r[2] = cell[0] * right.cell[2] + cell[2] * right.cell[3];
+		r[3] = cell[1] * right.cell[2] + cell[3] * right.cell[3];
 		return r;
 	}
-	Point2<TYPE> operator * ( const Point2<TYPE> &p ) const { return Point2<TYPE>( p.x*data[0] + p.y*data[2], p.x*data[1] + p.y*data[3] ); }
+	Vec2<T> operator * ( Vec2<T> const &p ) const { return Vec2<T>( p.x*cell[0] + p.y*cell[2], p.x*cell[1] + p.y*cell[3] ); }
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
 
-	const Matrix2& operator  = ( const Matrix2 &right ) { CY_MEMCOPY(TYPE,data,right.data,4); return *this; }	
-	const Matrix2& operator += ( const Matrix2 &right ) { for (int i=0; i<4; i++) data[i] += right.data[i]; return *this; }	//!< add two Matrices modify this
-	const Matrix2& operator -= ( const Matrix2 &right ) { for (int i=0; i<4; i++) data[i] -= right.data[i]; return *this; }	//!< subtract one Matrix2 from another matrix and modify this matrix
-	const Matrix2& operator *= ( const Matrix2 &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
-	const Matrix2& operator *= ( const TYPE     value ) { for (int i=0; i<4; i++) data[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
-	const Matrix2& operator /= ( const TYPE     value ) { for (int i=0; i<4; i++) data[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix2 const & operator += ( Matrix2 const &right ) { for ( int i=0; i<4; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
+	Matrix2 const & operator -= ( Matrix2 const &right ) { for ( int i=0; i<4; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix2 from another matrix and modify this matrix
+	Matrix2 const & operator *= ( Matrix2 const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix2 const & operator *= ( T       const  value ) { for ( int i=0; i<4; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
+	Matrix2 const & operator /= ( T       const  value ) { for ( int i=0; i<4; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Other Methods
 
-	void Transpose() { TYPE tmp=data[0]; data[0]=data[3]; data[3]=tmp; }	//!< Transpose this matrix
-	void GetTranspose( Matrix2 &m ) const									//!< return Transpose of this matrix
+	void Transpose() { T tmp=cell[0]; cell[0]=cell[3]; cell[3]=tmp; }	//!< Transpose this matrix
+	void GetTranspose( Matrix2 &m ) const								//!< return Transpose of this matrix
 	{
-		m.data[0] = data[0];   m.data[1] = data[2];
-		m.data[2] = data[1];   m.data[3] = data[3];
+		m.cell[0] = cell[0];   m.cell[1] = cell[2];
+		m.cell[2] = cell[1];   m.cell[3] = cell[3];
 	}
 	Matrix2 GetTranspose() const { Matrix2 t; GetTranspose(t); return t; }	//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
-	Point2<TYPE> TransposeMult( const Point2<TYPE> &p ) const { return Point2<TYPE>( p.x*data[0] + p.y*data[1], p.x*data[2] + p.y*data[3] ); }
+	Vec2<T> TransposeMult( Vec2<T> const &p ) const { return Vec2<T>( p.x*cell[0] + p.y*cell[1], p.x*cell[2] + p.y*cell[3] ); }
 
-	TYPE GetDeterminant() const { return data[0]*data[3]-data[2]*data[1]; }	//!< Get the determinant of this matrix
+	Matrix2 TransposeMult( Matrix2 const & right ) const //!< Multiply a matrix by the transpose of this one (i.e. this^T * right).
+	{
+		Matrix2 r;
+		r[0] = cell[0] * right.cell[0] + cell[1] * right.cell[1];
+		r[1] = cell[2] * right.cell[0] + cell[3] * right.cell[1];
+		r[2] = cell[0] * right.cell[2] + cell[1] * right.cell[3];
+		r[3] = cell[2] * right.cell[2] + cell[3] * right.cell[3];
+		return r;
+	}
+	Matrix2 MultTranspose( Matrix2 const & right ) const //!< Multiply the transpose of a matrix by this one (i.e. this * right^T).
+	{
+		Matrix2 r;
+		r[0] = cell[0] * right.cell[0] + cell[2] * right.cell[2];
+		r[1] = cell[1] * right.cell[0] + cell[3] * right.cell[2];
+		r[2] = cell[0] * right.cell[1] + cell[2] * right.cell[3];
+		r[3] = cell[1] * right.cell[1] + cell[3] * right.cell[3];
+		return r;
+	}
+
+	Matrix2 TransposeMultSelf() const { return TransposeMult(*this); } //!< Multiply the transpose of this matrix with itself (i.e. this^T * this).
+	Matrix2 MultSelfTranspose() const { return MultTranspose(*this); } //!< Multiply the matrix with its transpose (i.e. this * this^T).
+
+	T GetTrace() const { return cell[0] + cell[3]; }	//!< return the Trace of this matrix
+
+	T GetDeterminant() const { return cell[0]*cell[3]-cell[2]*cell[1]; }	//!< Get the determinant of this matrix
 
 	void Invert()					//!< Invert this matrix
 	{
-		TYPE det = GetDeterminant();
-		TYPE d0 =  data[0] / det;
-		data[0] =  data[3] / det;
-		data[1] = -data[1] / det;
-		data[2] = -data[2] / det;
-		data[3] =  d0;
+		T det = GetDeterminant();
+		T d0 =  cell[0] / det;
+		cell[0] =  cell[3] / det;
+		cell[1] = -cell[1] / det;
+		cell[2] = -cell[2] / det;
+		cell[3] =  d0;
 	}
 	void GetInverse( Matrix2 &inverse ) const { inverse=*this; inverse.Invert(); }	//!< Get the inverse of this matrix
 	Matrix2 GetInverse() const { Matrix2 inv(*this); inv.Invert(); return inv; }	//!< Get the inverse of this matrix
 
+	//! Removes the scale component of the matrix by normalizing each column.
+	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
+	void Normalize() { column[0].Normalize(); column[1].Normalize(); }
+
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		Point2<TYPE> *p = (Point2<TYPE>*)data;
-		p[0].Normalize();
-		p[1] -= p[0] * (p[1]%p[0]);
-		p[1].Normalize();
+		column[0].Normalize();
+		column[1] -= column[0] * (column[1] % column[0]);
+		column[1].Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		Point2<TYPE> *p = (Point2<TYPE>*)data;
-		p[1].Normalize();
-		p[0] -= p[1] * (p[0]%p[1]);
-		p[0].Normalize();
+		column[1].Normalize();
+		column[0] -= column[1] * (column[0] % column[1]);
+		column[0].Normalize();
 	}
 
 	//! Returns if the matrix is identity within the given error tollerance.
-	bool IsIdentity( TYPE tollerance=TYPE(0.001) ) const { return cyAbs(data[0] - TYPE(1)) < tollerance && cyAbs(data[1]) < tollerance && cyAbs(data[2]) < tollerance && cyAbs(data[3] - TYPE(1)) < tollerance; }
+	bool IsIdentity( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const { return std::abs(cell[0] - T(1)) < tollerance && std::abs(cell[1]) < tollerance && std::abs(cell[2]) < tollerance && std::abs(cell[3] - T(1)) < tollerance; }
 
 	//! Returns if the matrix is symmetric within the given error tollerance.
-	bool IsSymmetric( TYPE tollerance=TYPE(0.001) ) const { return cyAbs(data[0] - data[2]) < tollerance; }
+	bool IsSymmetric( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const { return std::abs(cell[0] - cell[2]) < tollerance; }
 
+	//! Returns if the matrix is diagonal.
+	bool IsDiagonal( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const { return std::abs(cell[1]) + std::abs(cell[2]) < tollerance*2; }
+
+	//! Returns the eigenvalues of the matrix.
+	//! The eigenvalues are ordered, such that the first one is larger.
+	Vec2<T> GetEigenvalues() const
+	{
+		T t = GetTrace();
+		T d = GetDeterminant();
+		T a = t*t*T(0.25) - d;
+		T s = SqrtSafe<T>(a);
+		Vec2<T> lambda;
+		lambda.x = t * T(0.5) + s;
+		lambda.y = t * T(0.5) - s;
+		return lambda;
+	}
+
+	//! Returns the eigenvalues and sets the given vectors as the eigenvectors of the matrix.
+	//! The eigenvalues are ordered, such that the first one is larger.
+	//! The given tollerance is used for checking whether the eigenvalues are the same.
+	Vec2<T> GetEigenvectors( Vec2<T> &evec0, Vec2<T> &evec1, T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
+	{
+		Vec2<T> lambda = GetEigenvalues();
+		if ( std::abs(lambda.x - lambda.y) < tollerance ) {
+			evec0 = column[0];
+			evec1 = column[1];
+		} else {
+			Matrix2 v0( cell[0]-lambda.y, cell[1], cell[2], cell[3]-lambda.y );
+			Matrix2 v1( cell[0]-lambda.x, cell[1], cell[2], cell[3]-lambda.x );
+			evec0 = v0.column[0] + v0.column[1];
+			evec1 = v1.column[0] + v1.column[1];
+		}
+		return lambda;
+	}
+
+	//! Singular value decomposition (SVD).
+	//! Returns the SVD of the matrix, where U and V are orthogonal matrices and 
+	//! S is the diagonal elements of a diagonal matrix (including zeros),
+	//! such that this matrix A = U S V^T.
+	void SingularValueDecomposition( Matrix2<T> &U, Vec2<T> &S, Matrix2<T> &V )
+	{
+		Matrix2 AAT = MultSelfTranspose();
+		Vec2<T> lambda = AAT.GetEigenvectors( U.column[0], U.column[1] );
+		S = (lambda.Abs()).Sqrt();
+		U.Normalize();
+		Matrix2 ATA = TransposeMultSelf();
+		AAT.GetEigenvectors( V.column[0], V.column[1] );
+		V.Normalize();
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Static Methods
 
 	//! Returns an identity matrix
-	static Matrix2 MatrixIdentity() { Matrix2 m; m.SetIdentity(); return m; }
+	static Matrix2 Identity() { T c[] = { 1,0, 0,1 }; return Matrix2(c); }
 	//! Returns a rotation matrix about the given axis by angle in radians
-	static Matrix2 MatrixRotation( TYPE angle ) { Matrix2 m; m.SetRotation(angle); return m; }
+	static Matrix2 Rotation( T angle ) { Matrix2 m; m.SetRotation(angle); return m; }
 	//! Returns a uniform scale matrix
-	static Matrix2 MatrixScale( TYPE uniformScale ) { Matrix2 m; m.SetScale(uniformScale); return m; }
+	static Matrix2 Scale( T uniformScale ) { Matrix2 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
-	static Matrix2 MatrixScale( TYPE scaleX, TYPE scaleY ) { Matrix2 m; m.SetScale(scaleX,scaleY); return m; }
+	static Matrix2 Scale( T scaleX, T scaleY ) { Matrix2 m; m.SetScale(scaleX,scaleY); return m; }
 	//! Returns a scale matrix
-	static Matrix2 MatrixScale( const Point2<TYPE> &scale ) { Matrix2 m; m.SetScale(scale); return m; }
-
+	static Matrix2 Scale( Vec2<T> const &scale ) { Matrix2 m; m.SetScale(scale); return m; }
+	//! Returns the tensor product (outer product) matrix of two vectors
+	static Matrix2 TensorProduct( Vec2<T> const &v0, Vec2<T> const &v1 ) { Matrix2 m; m.SetTensorProduct(v0,v1); return m; }
 
 	//////////////////////////////////////////////////////////////////////////
 };
@@ -289,17 +382,17 @@ public:
 //! 3x3 matrix class.
 //!
 //! Its data stores 9-value array of column-major matrix elements.
-//! You can use Matrix3 with Point3<TYPE> to transform 3D points.
+//! You can use Matrix3 with Vec3<T> to transform 3D points.
 
-template <typename TYPE>
+template <typename T>
 class Matrix3
 {
 #ifdef CY_NONVECTORIZED_MATRIX3
-	friend Matrix3 operator * ( const TYPE value, const Matrix3 &right ) { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = value * right.data[i]; return r; }	//!< multiply matrix by a value
+	friend Matrix3 operator * ( T const value, Matrix3 const &right ) { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = value * right.cell[i]; return r; }	//!< multiply matrix by a value
 #else
-	friend Matrix3 operator * ( const TYPE value, const Matrix3 &right ) { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = value * right.data[i]; r.data[8] = value * right.data[8]; return r; }	//!< multiply matrix by a value
+	friend Matrix3 operator * ( T const value, Matrix3 const &right ) { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = value * right.cell[i]; r.cell[8] = value * right.cell[8]; return r; }	//!< multiply matrix by a value
 #endif
-	friend Matrix3 Inverse( const Matrix3 &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
+	friend Matrix3 Inverse( Matrix3 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 public:
 
@@ -307,237 +400,249 @@ public:
 	//! | 0  3  6 | \n
 	//! | 1  4  7 | \n
 	//! | 2  5  8 | \n
-	TYPE data[9];
+	union {
+		T       cell[9];
+		Vec3<T> column[3];	// column vectors
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
 
-	Matrix3() {}																							//!< Default constructor
-	Matrix3( const Matrix3 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,9); }								//!< Copy constructor
-	template <typename T> explicit Matrix3<TYPE>( const Matrix3<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,9); }		//!< Copy constructor for different types
-	explicit Matrix3( const TYPE *values ) { Set(values); }													//!< Initialize the matrix using an array of 9 values
-	explicit Matrix3( const TYPE  v )      { SetScaledIdentity(v); }										//!< Initialize the matrix as identity scaled by v
-	explicit Matrix3( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z ) { Set(x,y,z); }	//!< Initialize the matrix using x,y,z vectors as columns
-	explicit Matrix3( const Matrix2<TYPE> &m ) { 
-		data[0] = m.data[0]; data[1] = m.data[1]; data[2] = TYPE(0);
-		data[3] = m.data[2]; data[4] = m.data[3]; data[5] = TYPE(0);
-		data[6] = TYPE(0);   data[7] = TYPE(0);   data[8] = TYPE(1);
-	}
-	explicit Matrix3( const Matrix34<TYPE> &m );
-	explicit Matrix3( const Matrix4<TYPE>  &m );
+	Matrix3() CY_CLASS_FUNCTION_DEFAULT															//!< Default constructor
+	template <typename TT> explicit Matrix3<T>( Matrix3<TT> const &matrix ) { MemConvert(cell,matrix.cell,9); }	//!< Copy constructor for different types
+	explicit Matrix3( T const *values ) { Set(values); }										//!< Initialize the matrix using an array of 9 values
+	explicit Matrix3( T const  v )      { SetIdentity(v); }										//!< Initialize the matrix as identity scaled by v
+	explicit Matrix3( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { Set(x,y,z); }	//!< Initialize the matrix using x,y,z vectors as columns
+	explicit Matrix3( Matrix2 <T> const &m ) { column[0].Set(m.column[0],0); column[1].Set(m.column[1],0); column[2].Set(0,0,1); }
+	explicit Matrix3( Matrix34<T> const &m );
+	explicit Matrix3( Matrix4 <T> const &m );
 
 	//! Constructor using row-major order for initialization
-	Matrix3( TYPE row0col0, TYPE row0col1, TYPE row0col2,
-		     TYPE row1col0, TYPE row1col1, TYPE row1col2,
-		     TYPE row2col0, TYPE row2col1, TYPE row2col2 )
+	Matrix3( T c00, T c01, T c02,
+		      T c10, T c11, T c12,
+		      T c20, T c21, T c22 )
 	{
-		data[0] = row0col0;   data[3] = row0col1;   data[6] = row0col2;
-		data[1] = row1col0;   data[4] = row1col1;   data[7] = row1col2;
-		data[2] = row2col0;   data[5] = row2col1;   data[8] = row2col2;
+		cell[0] = c00;   cell[3] = c01;   cell[6] = c02;
+		cell[1] = c10;   cell[4] = c11;   cell[7] = c12;
+		cell[2] = c20;   cell[5] = c21;   cell[8] = c22;
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set & Get Methods
 
-	//! Set all the values as zero
-	void Zero() { CY_MEMCLEAR(TYPE,data,9); }
-	//! Returns true if the matrix is exactly zero
-	bool IsZero() const { for ( int i=0; i<9; i++ ) if ( data[i] != 0 ) return false; return true; }
-	//! Copies the matrix data to the given values array of size 9
-	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,9); } 
-	//! Set matrix using an array of 9 values
-	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,9); } 
-	//! Set matrix using x,y,z vectors as columns
-	void Set( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z ) { x.Get(&data[0]); y.Get(&data[3]); z.Get(&data[6]); }
-	//! Converts the matrix to an identity matrix
-	void SetIdentity() { SetScaledIdentity(TYPE(1)); }
-	//! Converts the matrix to an identity matrix scaled by a scalar
-	void SetScaledIdentity(TYPE v) { SetScale(v); }
-	//! Sets the matrix as the tensor product (outer product) of two vectors
-	void SetTensorProduct( const Point3<TYPE> &v0, const Point3<TYPE> &v1 )
+	void Zero    ()       { MemClear(cell,9); }																	//!< Set all the values as zero
+	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  () && column[2].IsZero  (); }		//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite() && column[2].IsFinite(); }		//!< Returns true if all components are finite real numbers.
+	void Get( T       *values ) { MemCopy(values,cell,9); }														//!< Copies the matrix cell to the given values array of size 9
+	void Set( T const *values ) { MemCopy(cell,values,9); }														//!< Set matrix using an array of 9 values
+	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { column[0]=x; column[1]=y; column[2]=z; }	//!< Set matrix using x,y,z vectors as columns
+	void SetIdentity()      { *this = Identity(); }																//!< Converts the matrix to an identity matrix
+	void SetIdentity( T v ) { SetScale(v); }																	//!< Converts the matrix to an identity matrix scaled by a scalar
+	void SetTensorProduct( Vec3<T> const &v0, Vec3<T> const &v1 )												//!< Sets the matrix as the tensor product (outer product) of two vectors
 	{
-		for ( int i=0; i<3; i++ ) data[  i] = v0[i] * v1.x;
-		for ( int i=0; i<3; i++ ) data[3+i] = v0[i] * v1.y;
-		for ( int i=0; i<3; i++ ) data[6+i] = v0[i] * v1.z;
+		for ( int i=0; i<3; ++i ) cell[  i] = v0[i] * v1.x;
+		for ( int i=0; i<3; ++i ) cell[3+i] = v0[i] * v1.y;
+		for ( int i=0; i<3; ++i ) cell[6+i] = v0[i] * v1.z;
 	}
 	//! Matrix representation of the cross product ( a x b)
-	void SetCrossProd( const Point3<TYPE> &p ) { data[0]=TYPE(0); data[1]=p.z; data[2]=-p.y; data[3]=-p.z; data[4]=TYPE(0); data[5]=p.x; data[6]=p.y; data[7]=-p.x; data[8]=TYPE(0); }
+	void SetCrossProd( Vec3<T> const &p ) { cell[0]=T(0); cell[1]=p.z; cell[2]=-p.y; cell[3]=-p.z; cell[4]=T(0); cell[5]=p.x; cell[6]=p.y; cell[7]=-p.x; cell[8]=T(0); }
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Affine transformations
 
 	//! Sets a uniform scale matrix
-	void SetScale( const TYPE &uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
+	void SetScale( T uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
 	//! Sets a scale matrix
-	void SetScale( const TYPE &scaleX, const TYPE &scaleY, const TYPE &scaleZ )
+	void SetScale( T scaleX, T scaleY, T scaleZ )
 	{
-		data[0] = scaleX; data[1] = 0;      data[2]=0;     
-		data[3] = 0;      data[4] = scaleY; data[5]=0;     
-		data[6] = 0;      data[7] = 0;      data[8]=scaleZ;
+		cell[0] = scaleX; cell[1] = 0;      cell[2]=0;     
+		cell[3] = 0;      cell[4] = scaleY; cell[5]=0;     
+		cell[6] = 0;      cell[7] = 0;      cell[8]=scaleZ;
 	}
 	//! Sets a scale matrix
-	void SetScale( const Point3<TYPE> &scale ) { SetScale(scale.x,scale.y,scale.z); }
-	//! Removes the scale component of the matrix
-	void SetNoScale() { Point3<TYPE> *p = (Point3<TYPE>*)data; p[0].Normalize(); p[1].Normalize(); p[2].Normalize(); }
+	void SetScale( Vec3<T> const &scale ) { SetScale(scale.x,scale.y,scale.z); }
 	//! Set as rotation matrix around x axis
-	void SetRotationX( TYPE angle ) { SetRotationX( cySin(angle), cyCos(angle) ); }
+	void SetRotationX( T angle ) { SetRotationX( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around x axis by cos and sin of angle
-	void SetRotationX( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationX( T sinAngle, T cosAngle )
 	{
-		data[0] = TYPE(1);   data[1] =  TYPE(0);    data[2] = TYPE(0); 
-		data[3] = TYPE(0);   data[4] =  cosAngle;   data[5] = sinAngle;
-		data[6] = TYPE(0);   data[7] = -sinAngle;   data[8] = cosAngle;
+		cell[0] = T(1);   cell[1] =  T(0);    cell[2] = T(0); 
+		cell[3] = T(0);   cell[4] =  cosAngle;   cell[5] = sinAngle;
+		cell[6] = T(0);   cell[7] = -sinAngle;   cell[8] = cosAngle;
 	}
 	//! Set as rotation matrix around y axis
-	void SetRotationY( TYPE angle ) { SetRotationY( cySin(angle), cyCos(angle) ); }
+	void SetRotationY( T angle ) { SetRotationY( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around y axis by cos and sin of angle
-	void SetRotationY( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationY( T sinAngle, T cosAngle )
 	{
-		data[0] = cosAngle;   data[1] = TYPE(0);   data[2] = -sinAngle;
-		data[3] = TYPE(0);    data[4] = TYPE(1);   data[5] =  TYPE(0); 
-		data[6] = sinAngle;   data[7] = TYPE(0);   data[8] =  cosAngle;
+		cell[0] = cosAngle;   cell[1] = T(0);   cell[2] = -sinAngle;
+		cell[3] = T(0);       cell[4] = T(1);   cell[5] =  T(0); 
+		cell[6] = sinAngle;   cell[7] = T(0);   cell[8] =  cosAngle;
 	}
 	//! Set as rotation matrix around z axis
-	void SetRotationZ( TYPE angle ) { SetRotationZ( cySin(angle), cyCos(angle) ); }
+	void SetRotationZ( T angle ) { SetRotationZ( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around z axis by cos and sin of angle
-	void SetRotationZ( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationZ( T sinAngle, T cosAngle )
 	{
-		data[0] =  cosAngle;   data[1] = sinAngle;   data[2] = TYPE(0);
-		data[3] = -sinAngle;   data[4] = cosAngle;   data[5] = TYPE(0);
-		data[6] =  TYPE(0);    data[7] = TYPE(0);    data[8] = TYPE(1);
+		cell[0] =  cosAngle;   cell[1] = sinAngle;   cell[2] = T(0);
+		cell[3] = -sinAngle;   cell[4] = cosAngle;   cell[5] = T(0);
+		cell[6] =  T(0);       cell[7] = T(0);       cell[8] = T(1);
 	}
 	//! Set as rotation matrix around x, y, and then z axes ( Rz * Ry * Rx )
-	void SetRotationXYZ( TYPE angleX, TYPE angleY, TYPE angleZ )
+	void SetRotationXYZ( T angleX, T angleY, T angleZ )
 	{
-		const TYPE sx = cySin(angleX);
-		const TYPE cx = cyCos(angleX);
-		const TYPE sy = cySin(angleY);
-		const TYPE cy = cyCos(angleY);
-		const TYPE sz = cySin(angleZ);
-		const TYPE cz = cyCos(angleZ);
-		data[0] = cy*cz; 		      data[1] = cy*sz; 			    data[2] =-sy;   
-		data[3] = cz*sx*sy - cx*sz;   data[4] = cx*cz + sx*sy*sz;   data[5] = cy*sx;
-		data[6] = cx*cz*sy + sx*sz;   data[7] =-cz*sx + cx*sy*sz;   data[8] = cx*cy;
+		T sx = std::sin(angleX);
+		T cx = std::cos(angleX);
+		T sy = std::sin(angleY);
+		T cy = std::cos(angleY);
+		T sz = std::sin(angleZ);
+		T cz = std::cos(angleZ);
+		cell[0] = cy*cz; 		      cell[1] = cy*sz; 			    cell[2] =-sy;   
+		cell[3] = cz*sx*sy - cx*sz;   cell[4] = cx*cz + sx*sy*sz;   cell[5] = cy*sx;
+		cell[6] = cx*cz*sy + sx*sz;   cell[7] =-cz*sx + cx*sy*sz;   cell[8] = cx*cy;
 	}
 	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
-	void SetRotationZYX( TYPE angleX, TYPE angleY, TYPE angleZ )
+	void SetRotationZYX( T angleX, T angleY, T angleZ )
 	{
-		const TYPE sx = cySin(angleX);
-		const TYPE cx = cyCos(angleX);
-		const TYPE sy = cySin(angleY);
-		const TYPE cy = cyCos(angleY);
-		const TYPE sz = cySin(angleZ);
-		const TYPE cz = cyCos(angleZ);
-		data[0] =  cy*cz;   data[1] = cx*sz + sx*sy*cz;   data[2] = sx*sz - cx*sy*cz;
-		data[3] = -cy*sz;   data[4] = cx*cz - sx*sy*sz;   data[5] = sx*cz + cx*sy*sz;
-		data[6] =  sy;      data[7] = -sx*cy;		      data[8] = cx*cy;
+		T sx = std::sin(angleX);
+		T cx = std::cos(angleX);
+		T sy = std::sin(angleY);
+		T cy = std::cos(angleY);
+		T sz = std::sin(angleZ);
+		T cz = std::cos(angleZ);
+		cell[0] =  cy*cz;   cell[1] = cx*sz + sx*sy*cz;   cell[2] = sx*sz - cx*sy*cz;
+		cell[3] = -cy*sz;   cell[4] = cx*cz - sx*sy*sz;   cell[5] = sx*cz + cx*sy*sz;
+		cell[6] =  sy;      cell[7] = -sx*cy;		      cell[8] = cx*cy;
 	}
 	//! Set a rotation matrix about the given axis by angle
-	void SetRotation( const Point3<TYPE> &axis, TYPE angle ) { SetRotation(axis,cySin(angle),cyCos(angle)); }
+	void SetRotation( Vec3<T> const &axis, T angle ) { SetRotation(axis,std::sin(angle),std::cos(angle)); }
 	//! Set a rotation matrix about the given axis by cos and sin of angle
-	void SetRotation( const Point3<TYPE> &axis, TYPE sinAngle, TYPE cosAngle )
+	void SetRotation( Vec3<T> const &axis, T sinAngle, T cosAngle )
 	{
-		const TYPE t = TYPE(1) - cosAngle;
-		const TYPE tx = t * axis.x;
-		const TYPE ty = t * axis.y;
-		const TYPE tz = t * axis.z;
-		const TYPE txy = tx * axis.y;
-		const TYPE txz = tx * axis.z;
-		const TYPE tyz = ty * axis.z;
-		const TYPE sx = sinAngle * axis.x;
-		const TYPE sy = sinAngle * axis.y;
-		const TYPE sz = sinAngle * axis.z;
-
-		data[0] = tx * axis.x + cosAngle;   data[1] = txy + sz;                 data[2] = txz - sy;
-		data[3] = txy - sz;                 data[4] = ty * axis.y + cosAngle;   data[5] = tyz + sx;
-		data[6] = txz + sy;                 data[7] = tyz - sx;                 data[8] = tz * axis.z + cosAngle;
+		T t = T(1) - cosAngle;
+		Vec3<T> a = t * axis;
+		T txy = a.x * axis.y;
+		T txz = a.x * axis.z;
+		T tyz = a.y * axis.z;
+		Vec3<T> s = sinAngle * axis;
+		cell[ 0] = a.x * axis.x + cosAngle;   cell[ 1] = txy + s.z;                 cell[ 2] = txz - s.y;
+		cell[ 3] = txy - s.z;                 cell[ 4] = a.y * axis.y + cosAngle;   cell[ 5] = tyz + s.x;
+		cell[ 6] = txz + s.y;                 cell[ 7] = tyz - s.x;                 cell[ 8] = a.z * axis.z + cosAngle;
 	}
 	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
-	void SetRotation( const Point3<TYPE> &from, const Point3<TYPE> &to )
+	void SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 	{
-		TYPE c = from.Dot(to);
-		if ( c > TYPE(0.9999999) ) SetIdentity();
+		assert( from.IsFinite() && to.IsUnit() );
+		Vec3<T> axis = from.Cross(to);
+		T s = axis.Length();
+		if ( s < T(0.000001) ) SetIdentity();
 		else {
-			TYPE s = cySqrt(TYPE(1) - c*c);
-			Point3<TYPE> axis = from.Cross(to).GetNormalized();
-			SetRotation(axis, s, c);
+			T c = from.Dot(to);
+			SetRotation(axis/s, s, c);
 		}
 	}
 	//! Set view matrix using position, target and approximate up vector
-	void SetView( const Point3<TYPE> &target, const Point3<TYPE> &up )
+	void SetView( Vec3<T> const &target, Vec3<T> const &up )
 	{
-		Point3<TYPE> f = target;
+		Vec3<T> f = target;
 		f.Normalize();
-		Point3<TYPE> s = f.Cross(up);
+		Vec3<T> s = f.Cross(up);
 		s.Normalize();
-		Point3<TYPE> u = s.Cross(f);
-		data[0] = s.x; data[1] = u.x; data[2] = -f.x;
-		data[3] = s.y; data[4] = u.y; data[5] = -f.y;
-		data[6] = s.z; data[7] = u.z; data[8] = -f.z;
+		Vec3<T> u = s.Cross(f);
+		cell[0] = s.x; cell[1] = u.x; cell[2] = -f.x;
+		cell[3] = s.y; cell[4] = u.y; cell[5] = -f.y;
+		cell[6] = s.z; cell[7] = u.z; cell[8] = -f.z;
 	}
-	//! Set matrix using normal, and approximate x direction
-	void SetNormal(const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y = normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal); }
+	//! Sets a Cartesian coordinate frame using the given x direction and an approximate y direction. x must be a unit vector.
+	void SetCartesianFrameXY( Vec3<T> const &x, Vec3<T> const &y_approx ) { Vec3<T> z = x.Cross(y_approx); z.Normalize(); Vec3<T> y=z.Cross(x); Set(x,y,z); }
+	//! Sets a Cartesian coordinate frame using the given x direction and an approximate z direction. x must be a unit vector.
+	void SetCartesianFrameXZ( Vec3<T> const &x, Vec3<T> const &z_approx ) { Vec3<T> y = z_approx.Cross(x); y.Normalize(); Vec3<T> z=x.Cross(y); Set(x,y,z); }
+	//! Sets a Cartesian coordinate frame using the given y direction and an approximate x direction. y must be a unit vector.
+	void SetCartesianFrameYX( Vec3<T> const &y, Vec3<T> const &x_approx ) { Vec3<T> z = x_approx.Cross(y); z.Normalize(); Vec3<T> x=y.Cross(z); Set(x,y,z); }
+	//! Sets a Cartesian coordinate frame using the given y direction and an approximate z direction. y must be a unit vector.
+	void SetCartesianFrameYZ( Vec3<T> const &y, Vec3<T> const &z_approx ) { Vec3<T> x = y.Cross(z_approx); x.Normalize(); Vec3<T> z=x.Cross(y); Set(x,y,z); }
+	//! Sets a Cartesian coordinate frame using the given z direction and an approximate x direction. z must be a unit vector.
+	void SetCartesianFrameZX( Vec3<T> const &z, Vec3<T> const &x_approx ) { Vec3<T> y = z.Cross(x_approx); y.Normalize(); Vec3<T> x=y.Cross(z); Set(x,y,z); }
+	//! Sets a Cartesian coordinate frame using the given z direction and an approximate y direction. z must be a unit vector.
+	void SetCartesianFrameZY( Vec3<T> const &z, Vec3<T> const &y_approx ) { Vec3<T> x = y_approx.Cross(z); x.Normalize(); Vec3<T> y=z.Cross(x); Set(x,y,z); }
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row,    TYPE x, TYPE y, TYPE z ) { data[row]=x;      data[row+3]=y;      data[row+6]=z; }			//!< Sets a row of the matrix
-	void SetColumn  ( int column, TYPE x, TYPE y, TYPE z ) { data[3*column]=x; data[3*column+1]=y; data[3*column+2]=z; }	//!< Sets a column of the matrix
-	void SetDiagonal( TYPE xx, TYPE yy, TYPE zz )          { data[0]=xx; data[4]=yy; data[8]=zz; }							//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const Point3<TYPE> &p )              { SetDiagonal( p.x, p.y, p.z ); }								//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const TYPE *values )                 { SetDiagonal(values[0],values[1],values[2]); }					//!< Sets the diagonal values of the matrix
+	void SetRow     ( int row, T x, T y, T z )    { cell[row]=x; cell[row+3]=y; cell[row+6]=z; }	//!< Sets a row of the matrix
+	void SetRow     ( int row, Vec3<T> const &v ) { SetRow(row,v.x,v.y,v.z); }						//!< Sets a row of the matrix
+	void SetColumn  ( int col, T x, T y, T z )    { column[col].Set(x,y,z); }						//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec3<T> const &v ) { column[col]=v; }								//!< Sets a column of the matrix
+	void SetDiagonal( T xx, T yy, T zz )          { cell[0]=xx; cell[4]=yy; cell[8]=zz; }			//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec3<T> const &p )          { SetDiagonal( p.x, p.y, p.z ); }					//!< Sets the diagonal values of the matrix
+	void SetDiagonal( T const *values )           { SetDiagonal(values[0],values[1],values[2]); }	//!< Sets the diagonal values of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 	
-	Point3<TYPE>  GetRow   ( int row )                  const { return Point3<TYPE>( data[row], data[row+3], data[row+6] ); }				//!< Returns a row of the matrix
-	void          GetRow   ( int row, Point3<TYPE> &p ) const { p.Set( data[row], data[row+3], data[row+6] ); }								//!< Returns a row of the matrix
-	void          GetRow   ( int row, TYPE *values )    const { values[0]=data[row]; values[1]=data[row+3]; values[2]=data[row+6]; }		//!< Returns a row of the matrix
-	Point3<TYPE>  GetColumn( int col )                  const { return Point3<TYPE>( &data[col*3] ); }										//!< Returns a column of the matrix
-	void          GetColumn( int col, Point3<TYPE> &p ) const { p.Set( &data[col*3] ); }													//!< Returns a column of the matrix
-	void          GetColumn( int col, TYPE *values )    const { values[0]=data[col*3]; values[1]=data[col*3+1]; values[2]=data[col*3+2]; }	//!< Returns a column of the matrix
-	Point3<TYPE>  GetDiagonal()                         const { Point3<TYPE> r; GetDiagonal(r); return r; }									//!< Returns the diagonal of the matrix
-	void          GetDiagonal( Point3<TYPE> &p )        const { GetDiagonal(&p.x); }														//!< Returns the diagonal of the matrix
-	void	      GetDiagonal( TYPE *values )           const { values[0]=data[0]; values[1]=data[4]; values[2]=data[8]; }					//!< Returns the diagonal of the matrix
+	Vec3<T>  GetRow     ( int row ) const { return Vec3<T>( cell[row], cell[row+3], cell[row+6] ); }	//!< Returns a row of the matrix
+	Vec3<T>  GetColumn  ( int col ) const { return column[col]; }										//!< Returns a column of the matrix
+	Vec3<T>  GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }				//!< Returns the diagonal of the matrix
+	Matrix3  GetRotation()          const { Matrix3 s, r; GetComponents(s,r); return r; }				//!< Returns the rotation portion of the transformation
+
+	//! Returns the scale portion of the transformation.
+	//! The returned matrix is symmetric, but not necessarily diagonal, and it can include non-uniform scale.
+	Matrix3 GetScale() const
+	{
+		Matrix3 trns;
+		GetTranspose(trns);
+		Matrix3 u2 = *this * trns;
+		Vec3<T> v0, v1, v2;
+		u2.GetEigenvectors( v0, v1, v2 );
+		Matrix3 v(v0,v1,v2);
+		Matrix3 vt;
+		v.GetTranspose(vt);
+		Matrix3 d2 = vt * (*this) * v;	// the result is a diagonal matrix
+		Vec3<T> diag = d2.GetDiagonal();
+		Matrix3 d;
+		d.SetScale(diag);
+		return v * d * vt;
+	}
 
 	//! Returns the average scale factor
-	TYPE GetAvrgScale() const 
+	T GetAvrgScale() const 
 	{
-		TYPE det = data[0] * ( data[4] * data[8] - data[5] * data[7] ) + 
-		           data[1] * ( data[5] * data[6] - data[3] * data[8] ) + 
-		           data[2] * ( data[3] * data[7] - data[4] * data[6] );
-		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(3) );
+		T det = cell[0] * ( cell[4] * cell[8] - cell[5] * cell[7] ) + 
+		        cell[1] * ( cell[5] * cell[6] - cell[3] * cell[8] ) + 
+		        cell[2] * ( cell[3] * cell[7] - cell[4] * cell[6] );
+		T s = std::pow( std::abs(det), T(1)/T(3) );
 		return det >= 0 ? s : -s;
 	}
 
+	void GetComponents( Matrix3<T> &scale, Matrix3<T> &rotation ) const { scale = GetScale(); rotation = *this * scale.GetInverse(); }	//!< Returns separate transformation components
 
 	//////////////////////////////////////////////////////////////////////////
-	//!@name Get Sub-matrix data
+	//!@name Get Sub-matrix cell
 	
-	void          GetSubMatrix ( Matrix2<TYPE> &m )     const { GetSubMatrix2(m); }														//!< Returns the 2x2 portion of the matrix
-	Matrix2<TYPE> GetSubMatrix2()                       const { Matrix2<TYPE> m; GetSubMatrix2(m.data); return m; }						//!< Returns the 2x2 portion of the matrix
-	void          GetSubMatrix2( Matrix2<TYPE> &m )     const { GetSubMatrix2(m.data); }												//!< Returns the 2x2 portion of the matrix
-	void          GetSubMatrix2( TYPE *mdata )          const { CY_MEMCOPY(TYPE,mdata,data,2); CY_MEMCOPY(TYPE,mdata+2,data+3,2); }		//!< Returns the 2x2 portion of the matrix
+	void       GetSubMatrix ( Matrix2<T> &m )   const { GetSubMatrix2(m); }									//!< Returns the 2x2 portion of the matrix
+	Matrix2<T> GetSubMatrix2()                  const { Matrix2<T> m; GetSubMatrix2(m.cell); return m; }	//!< Returns the 2x2 portion of the matrix
+	void       GetSubMatrix2( Matrix2<T> &m )   const { GetSubMatrix2(m.cell); }							//!< Returns the 2x2 portion of the matrix
+	void       GetSubMatrix2( T *mdata )        const { MemCopy(mdata,cell,2); MemCopy(mdata+2,cell+3,2); }	//!< Returns the 2x2 portion of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Comparison Operators
 
-	bool operator == ( const Matrix3 &right ) const { for ( int i=0; i<9; i++ ) if ( data[i] != right.data[i] ) return false; return true; } //!< compare equal
-	bool operator != ( const Matrix3 &right ) const { for ( int i=0; i<9; i++ ) if ( data[i] != right.data[i] ) return true; return false; } //!< compare not equal
+	bool operator == ( Matrix3 const &right ) const { for ( int i=0; i<9; ++i ) if ( cell[i] != right.cell[i] ) return false; return true; } //!< compare equal
+	bool operator != ( Matrix3 const &right ) const { for ( int i=0; i<9; ++i ) if ( cell[i] != right.cell[i] ) return true; return false; } //!< compare not equal
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	TYPE&       operator () ( int row, int column )       { return data[ column * 3 + row ]; }	//!< subscript operator
-	const TYPE& operator () ( int row, int column ) const { return data[ column * 3 + row ]; }	//!< constant subscript operator
-	TYPE&       operator [] ( int i )                     { return data[i]; }					//!< subscript operator
-	const TYPE& operator [] ( int i )               const { return data[i]; }					//!< constant subscript operator
+	T&        operator () ( int row, int col )       { assert( row>=0 && row<3 && col>=0 && col<3 ); return cell[ col*3 + row ]; }	//!< subscript operator
+	T const & operator () ( int row, int col ) const { assert( row>=0 && row<3 && col>=0 && col<3 ); return cell[ col*3 + row ]; }	//!< constant subscript operator
+	T&        operator [] ( int i )                  { assert( i>=0 && i<9 ); return cell[i]; }										//!< subscript operator
+	T const & operator [] ( int i )            const { assert( i>=0 && i<9 ); return cell[i]; }										//!< constant subscript operator
 	
 
 	//////////////////////////////////////////////////////////////////////////
@@ -545,47 +650,47 @@ public:
 
 	// Unary operators
 #ifdef CY_NONVECTORIZED_MATRIX3
-	Matrix3 operator - () const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = -data[i]; return r; }	//!< negative matrix
+	Matrix3 operator - () const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = -cell[i]; return r; }	//!< negative matrix
 #else
-	Matrix3 operator - () const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = -data[i]; r.data[8] = -data[8]; return r; }	//!< negative matrix
+	Matrix3 operator - () const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = -cell[i]; r.cell[8] = -cell[8]; return r; }	//!< negative matrix
 #endif
 
 	// Binary operators
 #ifdef CY_NONVECTORIZED_MATRIX3
-	Matrix3 operator * ( const TYPE     value ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix3 operator / ( const TYPE     value ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] / value;         return r; }	//!< divide matrix by a value;
-	Matrix3 operator + ( const Matrix3 &right ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] + right.data[i]; return r; }	//!< add two Matrices
-	Matrix3 operator - ( const Matrix3 &right ) const { Matrix3 r; for (int i=0; i<9; i++) r.data[i] = data[i] - right.data[i]; return r; }	//!< subtract one Matrix3 from another
+	Matrix3 operator * ( T       const  value ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
+	Matrix3 operator / ( T       const  value ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix3 operator + ( Matrix3 const &right ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
+	Matrix3 operator - ( Matrix3 const &right ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix3 from another
 #else
-	Matrix3 operator * ( const TYPE     value ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] * value;         r.data[8] = data[8] * value;         return r; }	//!< multiply matrix by a value
-	Matrix3 operator / ( const TYPE     value ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] / value;         r.data[8] = data[8] / value;         return r; }	//!< divide matrix by a value;
-	Matrix3 operator + ( const Matrix3 &right ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] + right.data[i]; r.data[8] = data[8] + right.data[8]; return r; }	//!< add two Matrices
-	Matrix3 operator - ( const Matrix3 &right ) const { Matrix3 r; _CY_IVDEP_FOR (int i=0; i<8; i++) r.data[i] = data[i] - right.data[i]; r.data[8] = data[8] - right.data[8]; return r; }	//!< subtract one Matrix3 from another
+	Matrix3 operator * ( T       const  value ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] * value;         r.cell[8] = cell[8] * value;         return r; }	//!< multiply matrix by a value
+	Matrix3 operator / ( T       const  value ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] / value;         r.cell[8] = cell[8] / value;         return r; }	//!< divide matrix by a value;
+	Matrix3 operator + ( Matrix3 const &right ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] + right.cell[i]; r.cell[8] = cell[8] + right.cell[8]; return r; }	//!< add two Matrices
+	Matrix3 operator - ( Matrix3 const &right ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] - right.cell[i]; r.cell[8] = cell[8] - right.cell[8]; return r; }	//!< subtract one Matrix3 from another
 #endif
 
-	Matrix3 operator * ( const Matrix3 &right ) const	//!< multiply a matrix with another
+	Matrix3 operator * ( Matrix3 const &right ) const	//!< multiply a matrix with another
 	{
 		Matrix3 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<9; i+=3, rd+=3 ) {
-			TYPE a[3], b[3], c[3];
-			for ( int j=0; j<3; ++j ) a [j] = data[  j] * right.data[i  ];
-			for ( int j=0; j<3; ++j ) b [j] = data[3+j] * right.data[i+1];
-			for ( int j=0; j<3; ++j ) c [j] = data[6+j] * right.data[i+2];
+			T a[3], b[3], c[3];
+			for ( int j=0; j<3; ++j ) a [j] = cell[  j] * right.cell[i  ];
+			for ( int j=0; j<3; ++j ) b [j] = cell[3+j] * right.cell[i+1];
+			for ( int j=0; j<3; ++j ) c [j] = cell[6+j] * right.cell[i+2];
 			for ( int j=0; j<3; ++j ) rd[j] = a[j] + b[j] + c[j];
 		}
 		return r;
 	}
-	Point3<TYPE> operator * ( const Point3<TYPE> &p ) const
+	Vec3<T> operator * ( Vec3<T> const &p ) const
 	{
-		return Point3<TYPE>( p.x*data[0] + p.y*data[3] + p.z*data[6], 
-		                     p.x*data[1] + p.y*data[4] + p.z*data[7],
-		                     p.x*data[2] + p.y*data[5] + p.z*data[8] );
-		//TYPE a[3], b[3], c[3];
-		//Point3<TYPE> rr;
-		//for ( int i=0; i<3; ++i ) a [i] = p[0] * data[  i];
-		//for ( int i=0; i<3; ++i ) b [i] = p[1] * data[3+i];
-		//for ( int i=0; i<3; ++i ) c [i] = p[2] * data[6+i];
+		return Vec3<T>( p.x*cell[0] + p.y*cell[3] + p.z*cell[6], 
+						p.x*cell[1] + p.y*cell[4] + p.z*cell[7],
+						p.x*cell[2] + p.y*cell[5] + p.z*cell[8] );
+		//T a[3], b[3], c[3];
+		//Vec3<T> rr;
+		//for ( int i=0; i<3; ++i ) a [i] = p[0] * cell[  i];
+		//for ( int i=0; i<3; ++i ) b [i] = p[1] * cell[3+i];
+		//for ( int i=0; i<3; ++i ) c [i] = p[2] * cell[6+i];
 		//for ( int i=0; i<3; ++i ) rr[i] = a[i] + b[i] + c[i];	
 		//return rr;
 	}
@@ -594,159 +699,299 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
 
-	const Matrix3& operator  = ( const Matrix3 &right ) { CY_MEMCOPY(TYPE,data,right.data,9); return *this; }				//!< assignment operator
-	const Matrix3& operator *= ( const Matrix3 &right ) { *this = operator*(right);           return *this; }				//!< multiply a matrix with another matrix and modify this matrix
+	Matrix3 const & operator *= ( Matrix3 const &right ) { *this = operator*(right); return *this; }				//!< multiply a matrix with another matrix and modify this matrix
 #ifdef CY_NONVECTORIZED_MATRIX3
-	const Matrix3& operator += ( const Matrix3 &right ) { for (int i=0; i<9; i++) data[i] += right.data[i]; return *this; }	//!< add two Matrices modify this
-	const Matrix3& operator -= ( const Matrix3 &right ) { for (int i=0; i<9; i++) data[i] -= right.data[i]; return *this; }	//!< subtract one Matrix3 from another matrix and modify this matrix
-	const Matrix3& operator *= ( const TYPE     value ) { for (int i=0; i<9; i++) data[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
-	const Matrix3& operator /= ( const TYPE     value ) { for (int i=0; i<9; i++) data[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix3 const & operator += ( Matrix3 const &right ) { for ( int i=0; i<9; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
+	Matrix3 const & operator -= ( Matrix3 const &right ) { for ( int i=0; i<9; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix3 from another matrix and modify this matrix
+	Matrix3 const & operator *= ( T       const  value ) { for ( int i=0; i<9; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
+	Matrix3 const & operator /= ( T       const  value ) { for ( int i=0; i<9; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 #else
-	const Matrix3& operator += ( const Matrix3 &right ) { _CY_IVDEP_FOR (int i=0; i<8; i++) data[i] += right.data[i]; data[8] += right.data[8]; return *this; }	//!< add two Matrices modify this
-	const Matrix3& operator -= ( const Matrix3 &right ) { _CY_IVDEP_FOR (int i=0; i<8; i++) data[i] -= right.data[i]; data[8] -= right.data[8]; return *this; }	//!< subtract one Matrix3 from another matrix and modify this matrix
-	const Matrix3& operator *= ( const TYPE     value ) { _CY_IVDEP_FOR (int i=0; i<8; i++) data[i] *= value;         data[8] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
-	const Matrix3& operator /= ( const TYPE     value ) { _CY_IVDEP_FOR (int i=0; i<8; i++) data[i] /= value;         data[8] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix3 const & operator += ( Matrix3 const &right ) { _CY_IVDEP_FOR ( int i=0; i<8; ++i ) cell[i] += right.cell[i]; cell[8] += right.cell[8]; return *this; }	//!< add two Matrices modify this
+	Matrix3 const & operator -= ( Matrix3 const &right ) { _CY_IVDEP_FOR ( int i=0; i<8; ++i ) cell[i] -= right.cell[i]; cell[8] -= right.cell[8]; return *this; }	//!< subtract one Matrix3 from another matrix and modify this matrix
+	Matrix3 const & operator *= ( T       const  value ) { _CY_IVDEP_FOR ( int i=0; i<8; ++i ) cell[i] *= value;         cell[8] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
+	Matrix3 const & operator /= ( T       const  value ) { _CY_IVDEP_FOR ( int i=0; i<8; ++i ) cell[i] /= value;         cell[8] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 #endif
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Other Methods
 
+	//! Adds a diagonal matrix to this matrix and returns the result.
+	Matrix3 AddDiagonal( T xx, T yy, T zz ) const
+	{
+		Matrix3 m;
+		m.cell[0] = cell[0] + xx;
+		m.cell[1] = cell[1];
+		m.cell[2] = cell[2];
+		m.cell[3] = cell[3];
+		m.cell[4] = cell[4] + yy;
+		m.cell[5] = cell[5];
+		m.cell[6] = cell[6];
+		m.cell[7] = cell[7];
+		m.cell[8] = cell[8] + zz;
+		return m;
+	}
+	Matrix3 AddDiagonal( Vec3<T> const &diag ) const { return AddDiagonal(diag.x,diag.y,diag.z); }	//!< Adds a diagonal matrix to this matrix and returns the result.
+	Matrix3 AddIdentity( T scale=T(1) )        const { return AddDiagonal( scale, scale, scale ); }	//!< Adds a scaled identity matrix to this matrix and returns the result.
+
 	void Transpose()														//!< Transpose this matrix
 	{
-		for (int i = 1; i < 3; i++) {
-			for (int j = 0; j < i; j++) {
-				TYPE temp = data[i * 3 + j];
-				data[i * 3 + j] = data[j * 3 + i];
-				data[j * 3 + i] = temp;
+		for ( int i = 1; i < 3; ++i ) {
+			for ( int j = 0; j < i; j++) {
+				T temp = cell[i * 3 + j];
+				cell[i * 3 + j] = cell[j * 3 + i];
+				cell[j * 3 + i] = temp;
 			}
 		}
 	}
 	void GetTranspose( Matrix3 &m ) const									//!< return Transpose of this matrix
 	{
-		m.data[0] = data[0];   m.data[1] = data[3];   m.data[2] = data[6];
-		m.data[3] = data[1];   m.data[4] = data[4];   m.data[5] = data[7];
-		m.data[6] = data[2];   m.data[7] = data[5];   m.data[8] = data[8];
+		m.cell[0] = cell[0];   m.cell[1] = cell[3];   m.cell[2] = cell[6];
+		m.cell[3] = cell[1];   m.cell[4] = cell[4];   m.cell[5] = cell[7];
+		m.cell[6] = cell[2];   m.cell[7] = cell[5];   m.cell[8] = cell[8];
 	}
 	Matrix3 GetTranspose() const { Matrix3 t; GetTranspose(t); return t; }	//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
-	Point3<TYPE> TransposeMult( const Point3<TYPE> &p ) const
+	Vec3<T> TransposeMult( Vec3<T> const &p ) const
 	{
-		return Point3<TYPE>( p.x*data[0] + p.y*data[1] + p.z*data[2], 
-		                     p.x*data[3] + p.y*data[4] + p.z*data[5],
-		                     p.x*data[6] + p.y*data[7] + p.z*data[8] );
+		return Vec3<T>( p.x*cell[0] + p.y*cell[1] + p.z*cell[2], 
+		                p.x*cell[3] + p.y*cell[4] + p.z*cell[5],
+		                p.x*cell[6] + p.y*cell[7] + p.z*cell[8] );
 	}
 
-	TYPE GetDeterminant() const {	//!< Get the determinant of this matrix
+	Matrix3 TransposeMult( Matrix3 const & right ) const //!< Multiply a matrix by the transpose of this one (i.e. this^T * right).
+	{
+		Matrix3 r;
+		for ( int i=0, k=0; i<3; ++i ) {
+			for ( int j=0; j<3; ++j, ++k ) {
+				r.cell[k] = column[j].Dot( right.column[i] );
+			}
+		}
+		return r;
+	}
+	Matrix3 MultTranspose( Matrix3 const & right ) const //!< Multiply the transpose of a matrix by this one (i.e. this * right^T).
+	{
+		Matrix3 r;
+		T *rd = r.cell;
+		for ( int i=0; i<3; ++i, rd+=3 ) {
+			T a[3], b[3], c[3];
+			for ( int j=0; j<3; ++j ) a [j] = cell[  j] * right.cell[i  ];
+			for ( int j=0; j<3; ++j ) b [j] = cell[3+j] * right.cell[i+3];
+			for ( int j=0; j<3; ++j ) c [j] = cell[6+j] * right.cell[i+6];
+			for ( int j=0; j<3; ++j ) rd[j] = a[j] + b[j] + c[j];
+		}
+		return r;
+	}
+
+	Matrix3 TransposeMultSelf() const { return TransposeMult(*this); } //!< Multiply the transpose of this matrix with itself (i.e. this^T * this).
+	Matrix3 MultSelfTranspose() const { return MultTranspose(*this); } //!< Multiply the matrix with its transpose (i.e. this * this^T).
+
+	T GetTrace() const { return cell[0]+cell[4]+cell[8]; }
+
+	T GetDeterminant() const {	//!< Get the determinant of this matrix
 		// 0 (4 8 - 5 7) + 1 (5 6 - 3 8) + 2 (3 7 - 4 6)
-		return data[0] * ( data[4] * data[8] - data[5] * data[7] ) + 
-		       data[1] * ( data[5] * data[6] - data[3] * data[8] ) + 
-		       data[2] * ( data[3] * data[7] - data[4] * data[6] );
+		return cell[0] * ( cell[4] * cell[8] - cell[5] * cell[7] ) + 
+		       cell[1] * ( cell[5] * cell[6] - cell[3] * cell[8] ) + 
+		       cell[2] * ( cell[3] * cell[7] - cell[4] * cell[6] );
 	}
 
-	void Invert() { Matrix3 inv; GetInverse(inv); *this=inv; }				//!< Invert this matrix
-	void GetInverse( Matrix3 &inverse ) const								//!< Get the inverse of this matrix
+	void Invert() { Matrix3 inv; GetInverse(inv); *this=inv; }			//!< Invert this matrix
+	void GetInverse( Matrix3 &inverse ) const							//!< Get the inverse of this matrix
 	{
 		//  ( 4 8 - 5 7    5 6 - 3 8    3 7 - 4 6 ) 
 		//  ( 2 7 - 1 8    0 8 - 2 6    1 6 - 0 7 )  / det
 		//  ( 1 5 - 2 4    2 3 - 0 5    0 4 - 1 3 ) 
 
-		inverse.data[0] = (data[4]*data[8] - data[5]*data[7]);
-		inverse.data[1] = (data[2]*data[7] - data[1]*data[8]);
-		inverse.data[2] = (data[1]*data[5] - data[2]*data[4]);
+		inverse.cell[0] = (cell[4]*cell[8] - cell[5]*cell[7]);
+		inverse.cell[1] = (cell[2]*cell[7] - cell[1]*cell[8]);
+		inverse.cell[2] = (cell[1]*cell[5] - cell[2]*cell[4]);
 
-		inverse.data[3] = (data[5]*data[6] - data[3]*data[8]);
-		inverse.data[4] = (data[0]*data[8] - data[2]*data[6]);
-		inverse.data[5] = (data[2]*data[3] - data[0]*data[5]);
+		inverse.cell[3] = (cell[5]*cell[6] - cell[3]*cell[8]);
+		inverse.cell[4] = (cell[0]*cell[8] - cell[2]*cell[6]);
+		inverse.cell[5] = (cell[2]*cell[3] - cell[0]*cell[5]);
 
-		inverse.data[6] = (data[3]*data[7] - data[4]*data[6]);
-		inverse.data[7] = (data[1]*data[6] - data[0]*data[7]);
-		inverse.data[8] = (data[0]*data[4] - data[1]*data[3]);
+		inverse.cell[6] = (cell[3]*cell[7] - cell[4]*cell[6]);
+		inverse.cell[7] = (cell[1]*cell[6] - cell[0]*cell[7]);
+		inverse.cell[8] = (cell[0]*cell[4] - cell[1]*cell[3]);
 
-		TYPE det = data[0] * inverse.data[0] + data[1] * inverse.data[3] + data[2] * inverse.data[6];
+		T det = cell[0] * inverse.cell[0] + cell[1] * inverse.cell[3] + cell[2] * inverse.cell[6];
 		inverse /= det;
 
 	}
 	Matrix3 GetInverse() const { Matrix3 inv; GetInverse(inv); return inv; }	//!< Get the inverse of this matrix
 
+	//! Removes the scale component of the matrix by normalizing each column.
+	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
+	void Normalize() { column[0].Normalize(); column[1].Normalize(); column[2].Normalize(); }
+
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		Point3<TYPE> *p = (Point3<TYPE>*)data;
-		p[0].Normalize();
-		p[1] -= p[0] * (p[1]%p[0]);
-		p[1].Normalize();
-		p[2] -= p[0] * (p[2]%p[0]);
-		p[2] -= p[1] * (p[2]%p[1]);
-		p[2].Normalize();
+		column[0].Normalize();
+		column[1] -= column[0] * (column[1] % column[0]);
+		column[1].Normalize();
+		column[2] -= column[0] * (column[2] % column[0]);
+		column[2] -= column[1] * (column[2] % column[1]);
+		column[2].Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		Point3<TYPE> *p = (Point3<TYPE>*)data;
-		p[1].Normalize();
-		p[0] -= p[1] * (p[0]%p[1]);
-		p[0].Normalize();
-		p[2] -= p[1] * (p[2]%p[1]);
-		p[2] -= p[0] * (p[2]%p[0]);
-		p[2].Normalize();
+		column[1].Normalize();
+		column[0] -= column[1] * (column[0] % column[1]);
+		column[0].Normalize();
+		column[2] -= column[1] * (column[2] % column[1]);
+		column[2] -= column[0] * (column[2] % column[0]);
+		column[2].Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the z direction
 	void OrthogonalizeZ()
 	{
-		Point3<TYPE> *p = (Point3<TYPE>*)data;
-		p[2].Normalize();
-		p[0] -= p[2] * (p[0]%p[2]);
-		p[0].Normalize();
-		p[1] -= p[2] * (p[1]%p[2]);
-		p[1] -= p[0] * (p[1]%p[0]);
-		p[1].Normalize();
+		column[2].Normalize();
+		column[0] -= column[2] * (column[0] % column[2]);
+		column[0].Normalize();
+		column[1] -= column[2] * (column[1] % column[2]);
+		column[1] -= column[0] * (column[1] % column[0]);
+		column[1].Normalize();
 	}
 
 
 	//! Returns if the matrix is identity within the given error tollerance.
-	bool IsIdentity( TYPE tollerance=TYPE(0.001) ) const
+	bool IsIdentity( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
 	{
-		return cyAbs(data[0]-TYPE(1)) < tollerance && cyAbs(data[1])         < tollerance && cyAbs(data[2])         < tollerance && 
-			   cyAbs(data[3])         < tollerance && cyAbs(data[4]-TYPE(1)) < tollerance && cyAbs(data[5])         < tollerance &&
-			   cyAbs(data[6])         < tollerance && cyAbs(data[7])         < tollerance && cyAbs(data[8]-TYPE(1)) < tollerance;
+		return std::abs(cell[0]-T(1)) < tollerance && std::abs(cell[1])      < tollerance && std::abs(cell[2])      < tollerance && 
+		       std::abs(cell[3])      < tollerance && std::abs(cell[4]-T(1)) < tollerance && std::abs(cell[5])      < tollerance &&
+		       std::abs(cell[6])      < tollerance && std::abs(cell[7])      < tollerance && std::abs(cell[8]-T(1)) < tollerance;
 	}
 
 	//! Returns if the matrix is symmetric within the given error tollerance.
-	bool IsSymmetric( TYPE tollerance=TYPE(0.001) ) const { return cyAbs(data[1] - data[3]) < tollerance && cyAbs(data[2] - data[6]) < tollerance && cyAbs(data[5] - data[7]) < tollerance; }
+	bool IsSymmetric( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const { return std::abs(cell[1] - cell[3]) < tollerance && std::abs(cell[2] - cell[6]) < tollerance && std::abs(cell[5] - cell[7]) < tollerance; }
 
-	
+	//! Returns if the matrix is diagonal.
+	bool IsDiagonal( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const { return std::abs(cell[1]) + std::abs(cell[2]) + std::abs(cell[3]) + std::abs(cell[5]) + std::abs(cell[6]) + std::abs(cell[7]) < tollerance*6; }
+
+	//! Returns the eigenvalues of the matrix.
+	//! The eigenvalues are ordered, such that the first one is the largest.
+	//! The given tollerance value is used for checking whether the matrix is diagonal.
+	Vec3<T> GetEigenvalues( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
+	{
+		Vec3<T> lambda;
+		if ( IsDiagonal(tollerance) ) {
+			lambda = GetDiagonal();	// diagonal matrix, so the eigenvalues are the same as the diagonal elements.
+		} else {
+			T q = GetTrace() / 3;
+			Matrix3 m = AddIdentity(-q);
+			Matrix3 m2 = m * m;
+			T p = Sqrt( m2.GetTrace() / T(6) );
+			Matrix3 B = m / p;
+			T d_2 = B.GetDeterminant() * T(0.5);
+			T a = d_2 < T(-1) ? Pi<T>()/3 : ( d_2 > T(1) ? T(0) : ACosSafe<T>(d_2)/3 );	// only guaranteed to work for symmetric matrices
+			Vec3<T> b;
+			b.x = 2*std::cos( a );
+			b.y = 2*std::cos( a + Pi<T>()*(T(2)/T(3)) );
+			b.z = 2*std::cos( a + Pi<T>()*(T(4)/T(3)) );
+			lambda = b*p + q;
+		}
+		return lambda;
+	}
+
+	//! Returns the eigenvalues and sets the given vector as the eigenvectors of the matrix.
+	//! The eigenvalues are ordered, such that the first one is the largest.
+	//! The given tollerance is used for checking whether the eigenvalues are the same.
+	Vec3<T> GetEigenvectors( Vec3<T> &evec0, Vec3<T> &evec1, Vec3<T> &evec2, T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
+	{
+		static auto setVectors = [&]( Vec3<T> &e0, Vec3<T> &e1, Vec3<T> &e2, Matrix3 const &v20, Matrix3 const &v12, Matrix3 const &v01 ) {
+			int i = 0;
+			Matrix3 v2 = v20 * v12;
+			e2 = v2.column[0] + v2.column[1] + v2.column[2];
+			if ( (e2 ^ v01.column[0]).LengthSquared() < tollerance ) {
+				e0 = v01.column[1];
+				e1 = v01.column[2];
+			} else {
+				e0 = v01.column[0];
+				e1 = v01.column[ ( (e2 ^ v01.column[1]).LengthSquared() < tollerance ) ? 2 : 1 ];
+			}
+		};
+
+		Vec3<T> lambda = GetEigenvalues(tollerance);
+		bool same01 = std::abs(lambda.x - lambda.y) < tollerance;
+		bool same12 = std::abs(lambda.y - lambda.z) < tollerance;
+		bool same02 = std::abs(lambda.x - lambda.z) < tollerance;
+		if ( same01 & same12 ) {
+			// All eigenvalues are the same, so, assuming that the matrix is normal, it must be scaled identity.
+			evec0 = column[0];
+			evec1 = column[1];
+			evec2 = column[2];
+		} else {
+			Matrix3 v12 = AddIdentity( -lambda.x );
+			Matrix3 v20 = AddIdentity( -lambda.y );
+			Matrix3 v01 = AddIdentity( -lambda.z );
+			char same = char(same01) | char(same12)*char(2) | char(same02)*char(3);	// only one of them can be true here
+			switch (same) {
+				default: case 0: {
+					Matrix3 v0 = v01 * v20;
+					Matrix3 v1 = v12 * v01;
+					Matrix3 v2 = v20 * v12;
+					evec0 = v0.column[0] + v0.column[1] + v0.column[2];
+					evec1 = v1.column[0] + v1.column[1] + v1.column[2];
+					evec2 = v2.column[0] + v2.column[1] + v2.column[2];
+				}
+				break;
+				case 1: setVectors( evec0, evec1, evec2, v20, v12, v01 ); break;
+				case 2: setVectors( evec1, evec2, evec0, v01, v20, v12 ); break;
+				case 3: setVectors( evec0, evec2, evec1, v12, v01, v20 ); break;
+			}
+		}
+		return lambda;
+	}
+
+	//! Singular value decomposition (SVD)
+	//! Returns the SVD of the matrix, where U and V are orthogonal matrices and 
+	//! S is the diagonal elements of a diagonal matrix (including zeros),
+	//! such that this matrix A = U S V^T.
+	//! The given tollerance is used for checking whether the eigenvalues are the same.
+	void SingularValueDecomposition( Matrix3<T> &U, Vec3<T> &S, Matrix3<T> &V, T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) )
+	{
+		Matrix3 AAT = MultSelfTranspose();
+		Vec3<T> lambda = AAT.GetEigenvectors( U.column[0], U.column[1], U.column[2], tollerance );
+		S = (lambda.Abs()).Sqrt();
+		U.Normalize();
+		Matrix3 ATA = TransposeMultSelf();
+		AAT.GetEigenvectors( V.column[0], V.column[1], V.column[2], tollerance );
+		V.Normalize();
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Static Methods
 
 	//! Returns an identity matrix
-	static Matrix3 MatrixIdentity() { Matrix3 m; m.SetIdentity(); return m; }
+	static Matrix3 Identity() { T c[] = { 1,0,0, 0,1,0, 0,0,1 }; return Matrix3(c); }
 	//! Returns a view matrix using position, target and approximate up vector
-	static Matrix3 MatrixView( const Point3<TYPE> &target, Point3<TYPE> &up ) { Matrix3 m; m.SetView(target,up); return m; }
-	//! Returns a matrix using normal, and approximate x direction
-	static Matrix3 MatrixNormal( const Point3<TYPE> &normal, Point3<TYPE> &dir ) { Matrix3 m; m.SetNormal(normal,dir); return m; }
+	static Matrix3 View( Vec3<T> const &target, Vec3<T> const &up ) { Matrix3 m; m.SetView(target,up); return m; }
 	//! Returns a rotation matrix around x axis by angle in radians
-	static Matrix3 MatrixRotationX( TYPE angle ) { Matrix3 m; m.SetRotationX(angle); return m; }
+	static Matrix3 RotationX( T angle ) { Matrix3 m; m.SetRotationX(angle); return m; }
 	//! Returns a rotation matrix around y axis by angle in radians
-	static Matrix3 MatrixRotationY( TYPE angle ) { Matrix3 m; m.SetRotationY(angle); return m; }
+	static Matrix3 RotationY( T angle ) { Matrix3 m; m.SetRotationY(angle); return m; }
 	//! Returns a rotation matrix around z axis by angle in radians
-	static Matrix3 MatrixRotationZ( TYPE angle ) { Matrix3 m; m.SetRotationZ(angle); return m; }
+	static Matrix3 RotationZ( T angle ) { Matrix3 m; m.SetRotationZ(angle); return m; }
 	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
-	static Matrix3 MatrixRotationXYZ( TYPE angleX, TYPE angleY, TYPE angleZ ) { Matrix3 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
+	static Matrix3 RotationXYZ( T angleX, T angleY, T angleZ ) { Matrix3 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
 	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
-	static Matrix3 MatrixRotationZYX( TYPE angleX, TYPE angleY, TYPE angleZ ) { Matrix3 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
+	static Matrix3 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix3 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
-	static Matrix3 MatrixRotation( const Point3<TYPE> &axis, TYPE angle ) { Matrix3 m; m.SetRotation(axis,angle); return m; }
+	static Matrix3 Rotation( Vec3<T> const &axis, T angle ) { Matrix3 m; m.SetRotation(axis,angle); return m; }
 	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
-	static Matrix3 MatrixRotation( const Point3<TYPE> &from, const Point3<TYPE> &to ) { Matrix3 m; m.SetRotation(from,to); return m; }
+	static Matrix3 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix3 m; m.SetRotation(from,to); return m; }
 	//! Returns a uniform scale matrix
-	static Matrix3 MatrixScale( TYPE uniformScale ) { Matrix3 m; m.SetScale(uniformScale); return m; }
+	static Matrix3 Scale( T uniformScale ) { Matrix3 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
-	static Matrix3 MatrixScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ ) { Matrix3 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
+	static Matrix3 Scale( T scaleX, T scaleY, T scaleZ ) { Matrix3 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
 	//! Returns a scale matrix
-	static Matrix3 MatrixScale( const Point3<TYPE> &scale ) { Matrix3 m; m.SetScale(scale); return m; }
+	static Matrix3 Scale( Vec3<T> const &scale ) { Matrix3 m; m.SetScale(scale); return m; }
+	//! Returns the tensor product (outer product) matrix of two vectors
+	static Matrix3 TensorProduct( Vec3<T> const &v0, Vec3<T> const &v1 ) { Matrix3 m; m.SetTensorProduct(v0,v1); return m; }
 	//! Returns the matrix representation of cross product ( a x b )
-	static Matrix3 MatrixCrossProd( const Point3<TYPE> &a ) { Matrix3 m; m.SetCrossProd(a); return m; }
+	static Matrix3 MatrixCrossProd( Vec3<T> const &a ) { Matrix3 m; m.SetCrossProd(a); return m; }
 
 	//////////////////////////////////////////////////////////////////////////
 };
@@ -757,14 +1002,14 @@ public:
 //!
 //! Its data stores 12-value array of column-major matrix elements.
 //! I chose column-major format to be compatible with OpenGL
-//! You can use Matrix34 with Point3<TYPE> and Point4<TYPE>
+//! You can use Matrix34 with Vec3<T> and Vec4<T>
 //! to transform 3D and 4D points.
 
-template <typename TYPE>
+template <typename T>
 class Matrix34
 {
-	friend Matrix34 operator * ( const TYPE value, const Matrix34 &right ) { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = value * right.data[i]; return r; }	//!< multiply matrix by a value
-	friend Matrix34 Inverse( const Matrix34 &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
+	friend Matrix34 operator * ( T const value, Matrix34 const &right ) { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = value * right.cell[i]; return r; }	//!< multiply matrix by a value
+	friend Matrix34 Inverse( Matrix34 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 public:
 
@@ -772,323 +1017,315 @@ public:
 	//! | 0   3   6   9 | \n
 	//! | 1   4   7  10 | \n
 	//! | 2   5   8  11 | \n
-	TYPE data[12];
+	union {
+		T       cell[12];
+		Vec3<T> column[4];	// column vectors
+	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
 
-	Matrix34() {}																				//!< Default constructor
-	Matrix34( const Matrix34 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,12); }				//!< Copy constructor
-	template <typename T> explicit Matrix34<TYPE>( const Matrix34<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,12); }		//!< Copy constructor for different types
-	explicit Matrix34( const TYPE *values ) { Set(values); }									//!< Initialize the matrix using an array of 9 values
-	explicit Matrix34( const TYPE  v )      { SetScaledIdentity(v); }							//!< Initialize the matrix as identity scaled by v
-	explicit Matrix34( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
-	explicit Matrix34( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }				//!< Initialize the matrix using position, normal, and approximate x direction
-	explicit Matrix34( const Matrix3<TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,9); CY_MEMCLEAR(TYPE,data+9,3); }
-	explicit Matrix34( const Matrix3<TYPE> &m, const Point3<TYPE> &pos ) { CY_MEMCOPY(TYPE,data,m.data,9); data[9]=pos.x; data[10]=pos.y; data[11]=pos.z; }
-	explicit Matrix34( const Matrix2<TYPE> &m ) { 
-		data[ 0] = m.data[ 0]; data[ 1] = m.data[ 1]; data[ 2] = TYPE(0);
-		data[ 3] = m.data[ 2]; data[ 4] = m.data[ 3]; data[ 5] = TYPE(0);
-		data[ 6] = TYPE(0);    data[ 7] = TYPE(0);    data[ 8] = TYPE(1);
-		CY_MEMCLEAR(TYPE,data+9,3);
-	}
-	explicit Matrix34( const Matrix4<TYPE> &m );
+	Matrix34() CY_CLASS_FUNCTION_DEFAULT													//!< Default constructor
+	template <typename TT> explicit Matrix34<T>( Matrix34<TT> const &matrix ) { MemConvert(cell,matrix.cell,12); }		//!< Copy constructor for different types
+	explicit Matrix34( T const *values ) { Set(values); }									//!< Initialize the matrix using an array of 9 values
+	explicit Matrix34( T const  v )      { SetIdentity(v); }								//!< Initialize the matrix as identity scaled by v
+	explicit Matrix34( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
+	explicit Matrix34( Matrix3<T> const &m ) { MemCopy(cell,m.cell,9); column[3].Zero(); }
+	explicit Matrix34( Matrix3<T> const &m, Vec3<T> const &pos ) { MemCopy(cell,m.cell,9); column[3]=pos; }
+	explicit Matrix34( Matrix2<T> const &m ) { column[0]=Vec3<T>(m.column[0]); column[1]=Vec3<T>(m.column[1]); column[2].Set(0,0,1); column[3].Zero(); }
+	explicit Matrix34( Matrix4<T> const &m );
 
 	//! Constructor using row-major order for initialization
-	Matrix34( TYPE row0col0, TYPE row0col1, TYPE row0col2, TYPE row0col3,
-		      TYPE row1col0, TYPE row1col1, TYPE row1col2, TYPE row1col3,
-		      TYPE row2col0, TYPE row2col1, TYPE row2col2, TYPE row2col3 )
+	Matrix34( T c00, T c01, T c02, T c03,
+		       T c10, T c11, T c12, T c13,
+		       T c20, T c21, T c22, T c23 )
 	{
-		data[ 0] = row0col0;   data[ 3] = row0col1;   data[ 6] = row0col2;   data[ 9] = row0col3;
-		data[ 1] = row1col0;   data[ 4] = row1col1;   data[ 7] = row1col2;   data[10] = row1col3;
-		data[ 2] = row2col0;   data[ 5] = row2col1;   data[ 8] = row2col2;   data[11] = row2col3;
+		cell[ 0] = c00;   cell[ 3] = c01;   cell[ 6] = c02;   cell[ 9] = c03;
+		cell[ 1] = c10;   cell[ 4] = c11;   cell[ 7] = c12;   cell[10] = c13;
+		cell[ 2] = c20;   cell[ 5] = c21;   cell[ 8] = c22;   cell[11] = c23;
 	}
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set & Get Methods
 
-	//! Set all the values as zero
-	void Zero() { CY_MEMCLEAR(TYPE,data,12); }
-	//! Returns true if the matrix is exactly zero
-	bool IsZero() const { for ( int i=0; i<12; i++ ) if ( data[i] != 0 ) return false; return true; }
-	//! Copies the matrix data to the given values array of size 12
-	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,12); } 
-	//! Set Matrix using an array of 12 values
-	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,12); } 
-	//! Set matrix using x,y,z vectors and coordinate center
-	void Set( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { x.Get(data); y.Get(data+3); z.Get(data+6); pos.Get(data+9); }
-	//! Set matrix using position, normal, and approximate x direction
-	void Set( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y=normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal,pos); }
-	//! Converts the matrix to an identity matrix
-	void SetIdentity() { SetScaledIdentity(TYPE(1)); }
-	//! Converts the matrix to an identity matrix scaled by a scalar
-	void SetScaledIdentity( TYPE v ) { SetScale(v); }
+	void Zero    ()       { MemClear(cell,12); }																					//!< Set all the values as zero
+	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  () && column[2].IsZero  () && column[3].IsZero  (); }	//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite() && column[2].IsFinite() && column[3].IsFinite(); }	//!< Returns true if all components are finite real numbers.
+	void Get( T       *values ) { MemCopy(values,cell,12); }																		//!< Copies the matrix cell to the given values array of size 12
+	void Set( T const *values ) { MemCopy(cell,values,12); }																		//!< Set Matrix using an array of 12 values
+	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { column[0]=x; column[1]=y; column[2]=z; column[3]=pos; }	//!< Set matrix using x,y,z vectors and coordinate center
+	void SetIdentity()      { *this = Identity(); }																					//!< Converts the matrix to an identity matrix
+	void SetIdentity( T v ) { SetScale(v); }																						//!< Converts the matrix to an identity matrix scaled by a scalar
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Affine transformations
 
 	//! Sets a uniform scale matrix
-	void SetScale( TYPE uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
+	void SetScale( T uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
 	//! Sets a scale matrix
-	void SetScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ )
+	void SetScale( T scaleX, T scaleY, T scaleZ )
 	{
-		data[ 0] = scaleX; data[ 1] = 0;      data[ 2]=0;     
-		data[ 3] = 0;      data[ 4] = scaleY; data[ 5]=0;     
-		data[ 6] = 0;      data[ 7] = 0;      data[ 8]=scaleZ;
-		data[ 9] = 0;      data[10] = 0;      data[11]=0;
+		cell[ 0] = scaleX; cell[ 1] = 0;      cell[ 2]=0;     
+		cell[ 3] = 0;      cell[ 4] = scaleY; cell[ 5]=0;     
+		cell[ 6] = 0;      cell[ 7] = 0;      cell[ 8]=scaleZ;
+		cell[ 9] = 0;      cell[10] = 0;      cell[11]=0;
 	}
 	//! Sets a scale matrix
-	void SetScale( const Point3<TYPE> &scale ) { SetScale(scale.x,scale.y,scale.z); }
-	//! Removes the scale component of the matrix
-	void SetNoScale() { Point3<TYPE> *p = (Point3<TYPE>*)data; p[0].Normalize(); p[1].Normalize(); p[2].Normalize(); }
+	void SetScale( Vec3<T> const &scale ) { SetScale(scale.x,scale.y,scale.z); }
 	//! Set as rotation matrix around x axis
-	void SetRotationX( TYPE angle ) { SetRotationX( cySin(angle), cyCos(angle) ); }
+	void SetRotationX( T angle ) { SetRotationX( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around x axis by cos and sin of angle
-	void SetRotationX( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationX( T sinAngle, T cosAngle )
 	{
-		data[0] = TYPE(1);   data[1] = TYPE(0);     data[2] = TYPE(0); 
-		data[3] = TYPE(0);   data[4] = cosAngle;    data[5] = sinAngle;
-		data[6] = TYPE(0);   data[7] = -sinAngle;   data[8] = cosAngle;
-		CY_MEMCLEAR(TYPE,data+9,3);
+		cell[0] = T(1);   cell[1] = T(0);        cell[2] = T(0); 
+		cell[3] = T(0);   cell[4] = cosAngle;    cell[5] = sinAngle;
+		cell[6] = T(0);   cell[7] = -sinAngle;   cell[8] = cosAngle;
+		MemClear(cell+9,3);
 	}
 	//! Set as rotation matrix around y axis
-	void SetRotationY( TYPE angle ) { SetRotationY( cySin(angle), cyCos(angle) ); }
+	void SetRotationY( T angle ) { SetRotationY( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around y axis by cos and sin of angle
-	void SetRotationY( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationY( T sinAngle, T cosAngle )
 	{
-		data[0] = cosAngle;   data[1] = TYPE(0);   data[2] = -sinAngle;  
-		data[3] = TYPE(0);    data[4] = TYPE(1);   data[5] = TYPE(0);  
-		data[6] = sinAngle;   data[7] = TYPE(0);   data[8] = cosAngle; 
-		CY_MEMCLEAR(TYPE,data+9,3);
+		cell[0] = cosAngle;   cell[1] = T(0);   cell[2] = -sinAngle;  
+		cell[3] = T(0);       cell[4] = T(1);   cell[5] = T(0);  
+		cell[6] = sinAngle;   cell[7] = T(0);   cell[8] = cosAngle; 
+		MemClear(cell+9,3);
 	}
 	//! Set as rotation matrix around z axis
-	void SetRotationZ( TYPE angle ) { SetRotationZ( cySin(angle), cyCos(angle) ); }
+	void SetRotationZ( T angle ) { SetRotationZ( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around z axis by cos and sin of angle
-	void SetRotationZ( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationZ( T sinAngle, T cosAngle )
 	{
-		data[0] =  cosAngle;   data[1] = sinAngle;   data[2] = TYPE(0);
-		data[3] = -sinAngle;   data[4] = cosAngle;   data[5] = TYPE(0); 
-		data[6] =  TYPE(0);	   data[7] = TYPE(0);    data[8] = TYPE(1);
-		CY_MEMCLEAR(TYPE,data+9,3);
+		cell[0] =  cosAngle;   cell[1] = sinAngle;   cell[2] = T(0);
+		cell[3] = -sinAngle;   cell[4] = cosAngle;   cell[5] = T(0); 
+		cell[6] =  T(0);       cell[7] = T(0);       cell[8] = T(1);
+		MemClear(cell+9,3);
 	}
 	//! Set as rotation matrix around x, y, and then z axes ( Rz * Ry * Rx )
-	void SetRotationXYZ( TYPE angleX, TYPE angleY, TYPE angleZ )
+	void SetRotationXYZ( T angleX, T angleY, T angleZ )
 	{
-		const TYPE sx = cySin(angleX);
-		const TYPE cx = cyCos(angleX);
-		const TYPE sy = cySin(angleY);
-		const TYPE cy = cyCos(angleY);
-		const TYPE sz = cySin(angleZ);
-		const TYPE cz = cyCos(angleZ);
-		data[0] = cy*cz; 		      data[1] = cy*sz; 			    data[2] =-sy;   
-		data[3] = cz*sx*sy - cx*sz;   data[4] = cx*cz + sx*sy*sz;   data[5] = cy*sx; 
-		data[6] = cx*cz*sy + sx*sz;   data[7] =-cz*sx + cx*sy*sz;   data[8] = cx*cy;
-		CY_MEMCLEAR(TYPE,data+9,3);
+		T sx = std::sin(angleX);
+		T cx = std::cos(angleX);
+		T sy = std::sin(angleY);
+		T cy = std::cos(angleY);
+		T sz = std::sin(angleZ);
+		T cz = std::cos(angleZ);
+		cell[0] = cy*cz; 		      cell[1] = cy*sz; 			    cell[2] =-sy;   
+		cell[3] = cz*sx*sy - cx*sz;   cell[4] = cx*cz + sx*sy*sz;   cell[5] = cy*sx; 
+		cell[6] = cx*cz*sy + sx*sz;   cell[7] =-cz*sx + cx*sy*sz;   cell[8] = cx*cy;
+		MemClear(cell+9,3);
 	}
 	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
-	void SetRotationZYX( TYPE angleX, TYPE angleY, TYPE angleZ )
+	void SetRotationZYX( T angleX, T angleY, T angleZ )
 	{
-		const TYPE sx = cySin(angleX);
-		const TYPE cx = cyCos(angleX);
-		const TYPE sy = cySin(angleY);
-		const TYPE cy = cyCos(angleY);
-		const TYPE sz = cySin(angleZ);
-		const TYPE cz = cyCos(angleZ);
-		data[0] = cy*cz;   data[1] = cx*sz + sx*sy*cz;   data[2] = sx*sz - cx*sy*cz;            
-		data[3] =-cy*sz;   data[4] = cx*cz - sx*sy*sz;   data[5] = sx*cz + cx*sy*sz;            
-		data[6] = sy;      data[7] =-sx*cy;			     data[8] = cx*cy;
-		CY_MEMCLEAR(TYPE,data+9,3);
+		T sx = std::sin(angleX);
+		T cx = std::cos(angleX);
+		T sy = std::sin(angleY);
+		T cy = std::cos(angleY);
+		T sz = std::sin(angleZ);
+		T cz = std::cos(angleZ);
+		cell[0] = cy*cz;   cell[1] = cx*sz + sx*sy*cz;   cell[2] = sx*sz - cx*sy*cz;            
+		cell[3] =-cy*sz;   cell[4] = cx*cz - sx*sy*sz;   cell[5] = sx*cz + cx*sy*sz;            
+		cell[6] = sy;      cell[7] =-sx*cy;			     cell[8] = cx*cy;
+		MemClear(cell+9,3);
 	}
 	//! Set a rotation matrix about the given axis by angle
-	void SetRotation( const Point3<TYPE> &axis, TYPE angle ) { SetRotation(axis,cySin(angle),cyCos(angle)); }
+	void SetRotation( Vec3<T> const &axis, T angle ) { SetRotation(axis,std::sin(angle),std::cos(angle)); }
 	//! Set a rotation matrix about the given axis by cos and sin of angle
-	void SetRotation( const Point3<TYPE> &axis, TYPE sinAngle, TYPE cosAngle )
+	void SetRotation( Vec3<T> const &axis, T sinAngle, T cosAngle )
 	{
-		const TYPE t = TYPE(1) - cosAngle;
-		const TYPE tx = t * axis.x;
-		const TYPE ty = t * axis.y;
-		const TYPE tz = t * axis.z;
-		const TYPE txy = tx * axis.y;
-		const TYPE txz = tx * axis.z;
-		const TYPE tyz = ty * axis.z;
-		const TYPE sx = sinAngle * axis.x;
-		const TYPE sy = sinAngle * axis.y;
-		const TYPE sz = sinAngle * axis.z;
-		data[ 0] = tx * axis.x + cosAngle;   data[ 1] = txy + sz;                 data[ 2] = txz - sy;
-		data[ 3] = txy - sz;                 data[ 4] = ty * axis.y + cosAngle;   data[ 5] = tyz + sx;
-		data[ 6] = txz + sy;                 data[ 7] = tyz - sx;                 data[ 8] = tz * axis.z + cosAngle;
-		CY_MEMCLEAR(TYPE,data+9,3);
+		T t = T(1) - cosAngle;
+		Vec3<T> a = t * axis;
+		T txy = a.x * axis.y;
+		T txz = a.x * axis.z;
+		T tyz = a.y * axis.z;
+		Vec3<T> s = sinAngle * axis;
+		cell[ 0] = a.x * axis.x + cosAngle;   cell[ 1] = txy + s.z;                 cell[ 2] = txz - s.y;
+		cell[ 3] = txy - s.z;                 cell[ 4] = a.y * axis.y + cosAngle;   cell[ 5] = tyz + s.x;
+		cell[ 6] = txz + s.y;                 cell[ 7] = tyz - s.x;                 cell[ 8] = a.z * axis.z + cosAngle;
+		MemClear(cell+9,3);
 	}
 	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
-	void SetRotation( const Point3<TYPE> &from, const Point3<TYPE> &to )
+	void SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 	{
-		TYPE c = from.Dot(to);
-		if ( c > TYPE(0.9999999) ) SetIdentity();
+		T c = from.Dot(to);
+		if ( c > T(0.9999999) ) SetIdentity();
 		else {
-			TYPE s = cySqrt(TYPE(1) - c*c);
-			Point3<TYPE> axis = from.Cross(to).GetNormalized();
+			T s = Sqrt(T(1) - c*c);
+			Vec3<T> axis = from.Cross(to).GetNormalized();
 			SetRotation(axis, s, c);
 		}
 	}
 	//! Sets a translation matrix with no rotation or scale
-	void SetTrans( const Point3<TYPE> &move ) { TYPE d[12]={1,0,0, 0,1,0, 0,0,1 }; CY_MEMCOPY(TYPE,data,d,9); data[9]=move.x; data[10]=move.y; data[11]=move.z; }
+	void SetTranslation( Vec3<T> const &move ) { column[0].Set(1,0,0); column[1].Set(0,1,0); column[2].Set(0,0,1); column[3]=move; }
 	//! Adds a translation to the matrix
-	void AddTrans( const Point3<TYPE> &move ) { data[9]+=move.x; data[10]+=move.y; data[11]+=move.z; }
+	void AddTranslation( Vec3<T> const &move ) { column[3] += move; }
 	//! Sets the translation component of the matrix
-	void SetTransComponent( const Point3<TYPE> &move ) { data[9]=move.x; data[10]=move.y; data[11]=move.z; }
+	void SetTranslationComponent( Vec3<T> const &move ) { column[3] = move; }
+	//! Sets the translation component of the matrix to zero
+	void SetNoTranslation() { column[3].Set(0,0,0); }
 	//! Set view matrix using position, target and approximate up vector
-	void SetView( const Point3<TYPE> &pos, const Point3<TYPE> &target, const Point3<TYPE> &up )
+	void SetView( Vec3<T> const &pos, Vec3<T> const &target, Vec3<T> const &up )
 	{
-		Point3<TYPE> f = target - pos;
+		Vec3<T> f = target - pos;
 		f.Normalize();
-		Point3<TYPE> s = f.Cross(up);
+		Vec3<T> s = f.Cross(up);
 		s.Normalize();
-		Point3<TYPE> u = s.Cross(f);
-		data[ 0]=s.x; data[ 1]=u.x; data[ 2]=-f.x;
-		data[ 3]=s.y; data[ 4]=u.y; data[ 5]=-f.y;
-		data[ 6]=s.z; data[ 7]=u.z; data[ 8]=-f.z;
-		data[ 9]= -s % pos;
-		data[10]= -u % pos;
-		data[11]=  f % pos;
+		Vec3<T> u = s.Cross(f);
+		cell[ 0]=s.x; cell[ 1]=u.x; cell[ 2]=-f.x;
+		cell[ 3]=s.y; cell[ 4]=u.y; cell[ 5]=-f.y;
+		cell[ 6]=s.z; cell[ 7]=u.z; cell[ 8]=-f.z;
+		cell[ 9]= -s % pos;
+		cell[10]= -u % pos;
+		cell[11]=  f % pos;
 	}
-	//! Set matrix using normal and approximate x direction
-	void SetNormal(const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y=normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal,Point3<TYPE>(TYPE(0),TYPE(0),TYPE(0))); }
+	//! Sets a Cartesian coordinate frame using the given x direction, an approximate y direction, and a translation. x must be a unit vector.
+	void SetCartesianFrameXY( Vec3<T> const &x, Vec3<T> const &y_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> z = x.Cross(y_approx); z.Normalize(); Vec3<T> y=z.Cross(x); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given x direction, an approximate z direction, and a translation. x must be a unit vector.
+	void SetCartesianFrameXZ( Vec3<T> const &x, Vec3<T> const &z_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> y = z_approx.Cross(x); y.Normalize(); Vec3<T> z=x.Cross(y); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given y direction, an approximate x direction, and a translation. y must be a unit vector.
+	void SetCartesianFrameYX( Vec3<T> const &y, Vec3<T> const &x_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> z = x_approx.Cross(y); z.Normalize(); Vec3<T> x=y.Cross(z); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given y direction, an approximate z direction, and a translation. y must be a unit vector.
+	void SetCartesianFrameYZ( Vec3<T> const &y, Vec3<T> const &z_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> x = y.Cross(z_approx); x.Normalize(); Vec3<T> z=x.Cross(y); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given z direction, an approximate x direction, and a translation. z must be a unit vector.
+	void SetCartesianFrameZX( Vec3<T> const &z, Vec3<T> const &x_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> y = z.Cross(x_approx); y.Normalize(); Vec3<T> x=y.Cross(z); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given z direction, an approximate y direction, and a translation. z must be a unit vector.
+	void SetCartesianFrameZY( Vec3<T> const &z, Vec3<T> const &y_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> x = y_approx.Cross(z); x.Normalize(); Vec3<T> y=z.Cross(x); Set(x,y,z,trans); }
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, TYPE x, TYPE y, TYPE z, TYPE w ) { data[row]=x; data[row+3]=y; data[row+6]=z; data[row+9]=w; }	//!< Sets a row of the matrix
-	void SetColumn  ( int column, TYPE x, TYPE y, TYPE z )      { data[3*column]=x; data[3*column+1]=y; data[3*column+2]=z; }	//!< Sets a column of the matrix
-	void SetDiagonal( TYPE xx, TYPE yy, TYPE zz )               { data[0]=xx; data[4]=yy; data[8]=zz; }							//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const Point3<TYPE> &p )                   { SetDiagonal( p.x, p.y, p.z ); }								//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const TYPE *values )                      { SetDiagonal(values[0],values[1],values[2]); }					//!< Sets the diagonal values of the matrix
+	void SetRow     ( int row, T x, T y, T z, T w )           { cell[row]=x; cell[row+3]=y; cell[row+6]=z; cell[row+9]=w; }	//!< Sets a row of the matrix
+	void SetRow     ( int row, Vec4<T> const &v )             { SetRow(row,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
+	void SetColumn  ( int col, T x, T y, T z )                { column[col].Set(x,y,z); }									//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec3<T> const &v )             { column[col]=v; }											//!< Sets a column of the matrix
+	void SetDiagonal( T const &xx, T const &yy, T const &zz ) { cell[0]=xx; cell[4]=yy; cell[8]=zz; }						//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec3<T> const &p )                      { SetDiagonal( p.x, p.y, p.z ); }								//!< Sets the diagonal values of the matrix
+	void SetDiagonal( T const *values )                       { SetDiagonal(values[0],values[1],values[2]); }				//!< Sets the diagonal values of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-	Point4<TYPE>  GetRow   ( int row )                  const { return Point4<TYPE>( data[row], data[row+3], data[row+6], data[row+9] ); }					//!< Returns a row of the matrix
-	void          GetRow   ( int row, Point4<TYPE> &p ) const { p.Set( data[row], data[row+3], data[row+6], data[row+9] ); }								//!< Returns a row of the matrix
-	void          GetRow   ( int row, TYPE *values )    const { values[0]=data[row]; values[1]=data[row+3]; values[2]=data[row+6]; values[3]=data[row+9]; }	//!< Returns a row of the matrix
-	Point3<TYPE>  GetColumn( int col )                  const { return Point3<TYPE>( &data[col*3] ); }														//!< Returns a column of the matrix
-	void          GetColumn( int col, Point3<TYPE> &p ) const { p.Set( &data[col*3] ); }																	//!< Returns a column of the matrix
-	void          GetColumn( int col, TYPE *values )    const { values[0]=data[col*3]; values[1]=data[col*3+1]; values[2]=data[col*3+2]; }					//!< Returns a column of the matrix
-	Point3<TYPE>  GetDiagonal()                         const { Point3<TYPE> r; GetDiagonal(r); return r; }													//!< Returns the diagonal of the matrix
-	void          GetDiagonal( Point3<TYPE> &p )        const { GetDiagonal(&p.x); }																		//!< Returns the diagonal of the matrix
-	void	      GetDiagonal( TYPE *values )           const { values[0]=data[0]; values[1]=data[4]; values[2]=data[8]; }									//!< Returns the diagonal of the matrix
+	Vec4<T> GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+3], cell[row+6], cell[row+9] ); }	//!< Returns a row of the matrix
+	Vec3<T> GetColumn  ( int col ) const { return column[col]; }													//!< Returns a column of the matrix
+	Vec3<T> GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }							//!< Returns the diagonal of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
-	//!@name Get Sub-matrix data
+	//!@name Get Sub-matrix cell
 
-	void          GetSubMatrix ( Matrix3<TYPE> &m )     const { GetSubMatrix3(m); }														//!< Returns the 3x3 portion of the matrix
-	void          GetSubMatrix ( Matrix2<TYPE> &m )     const { GetSubMatrix2(m); }														//!< Returns the 2x2 portion of the matrix
-	Matrix3<TYPE> GetSubMatrix3()                       const { Matrix3<TYPE> m; GetSubMatrix3(m.data); return m; }						//!< Returns the 3x3 portion of the matrix
-	void          GetSubMatrix3( Matrix3<TYPE> &m )     const { GetSubMatrix3(m.data); }												//!< Returns the 3x3 portion of the matrix
-	void          GetSubMatrix3( TYPE *mdata )          const { CY_MEMCOPY(TYPE,mdata,data,9); }										//!< Returns the 3x3 portion of the matrix
-	Matrix2<TYPE> GetSubMatrix2()                       const { Matrix2<TYPE> m; GetSubMatrix2(m.data); return m; }						//!< Returns the 2x2 portion of the matrix
-	void          GetSubMatrix2( Matrix2<TYPE> &m )     const { GetSubMatrix2(m.data); }												//!< Returns the 2x2 portion of the matrix
-	void          GetSubMatrix2( TYPE *mdata )          const { CY_MEMCOPY(TYPE,mdata,data,2); CY_MEMCOPY(TYPE,mdata+2,data+3,2); }		//!< Returns the 2x2 portion of the matrix
-	Point3<TYPE>  GetTrans()                            const { Point3<TYPE> p; GetTrans(p); return p; }								//!< Returns the translation component of the matrix
-	void          GetTrans( Point3<TYPE> &p )           const { p.x=data[9]; p.y=data[10]; p.z=data[11]; }								//!< Returns the translation component of the matrix
-	void          GetTrans( TYPE *trans )               const { CY_MEMCOPY(TYPE,trans,data+9,3); }										//!< Returns the translation component of the matrix
+	void       GetSubMatrix  ( Matrix3<T> &m ) const { GetSubMatrix3(m); }									//!< Returns the 3x3 portion of the matrix
+	void       GetSubMatrix  ( Matrix2<T> &m ) const { GetSubMatrix2(m); }									//!< Returns the 2x2 portion of the matrix
+	Matrix3<T> GetSubMatrix3 ()                const { Matrix3<T> m; GetSubMatrix3(m.cell); return m; }		//!< Returns the 3x3 portion of the matrix
+	void       GetSubMatrix3 ( Matrix3<T> &m ) const { GetSubMatrix3(m.cell); }								//!< Returns the 3x3 portion of the matrix
+	void       GetSubMatrix3 ( T *mdata )      const { MemCopy(mdata,cell,9); }								//!< Returns the 3x3 portion of the matrix
+	Matrix2<T> GetSubMatrix2 ()                const { Matrix2<T> m; GetSubMatrix2(m.cell); return m; }		//!< Returns the 2x2 portion of the matrix
+	void       GetSubMatrix2 ( Matrix2<T> &m ) const { GetSubMatrix2(m.cell); }								//!< Returns the 2x2 portion of the matrix
+	void       GetSubMatrix2 ( T *mdata )      const { MemCopy(mdata,cell,2); MemCopy(mdata+2,cell+3,2); }	//!< Returns the 2x2 portion of the matrix
+	Vec3<T>    GetTranslation()                const { return column[3]; }									//!< Returns the translation component of the matrix
+	void       GetTranslation( Vec3<T> &p )    const { p = column[3]; }										//!< Returns the translation component of the matrix
+	void       GetTranslation( T *trans )      const { MemCopy(trans,cell+9,3); }							//!< Returns the translation component of the matrix
+	Matrix3<T> GetRotation   ()                const { Matrix3<T> m(*this); return m.GetRotation(); }		//!< Returns the rotation portion of the transformation
+	Matrix3<T> GetScale      ()                const { Matrix3<T> m(*this); return m.GetScale   (); }		//!< Returns the scale portion of the transformation.
 
 	//! Returns the average scale factor of the 3 by 3 sub-matrix
-	TYPE GetAvrgScale() const 
+	T GetAvrgScale() const 
 	{
-		TYPE det = data[0] * ( data[4] * data[8] - data[5] * data[7] ) + 
-		           data[1] * ( data[5] * data[6] - data[3] * data[8] ) + 
-		           data[2] * ( data[3] * data[7] - data[4] * data[6] );
-		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(3) );
+		T det = cell[0] * ( cell[4] * cell[8] - cell[5] * cell[7] ) + 
+		        cell[1] * ( cell[5] * cell[6] - cell[3] * cell[8] ) + 
+		        cell[2] * ( cell[3] * cell[7] - cell[4] * cell[6] );
+		T s = std::pow( std::abs(det), T(1)/T(3) );
 		return det >= 0 ? s : -s;
 	}
 
+	void GetComponents( Matrix3<T> &scale, Matrix3<T> &rotation, Vec3<T> &translation ) const { Matrix3<T> m(*this); m.GetComponents(scale,rotation); GetTranslation(translation); }	//!< Returns separate transformation components
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Comparison Operators
 
-	bool operator == ( const Matrix34 &right ) const { for ( int i=0; i<12; i++ ) if ( data[i] != right.data[i] ) return false; return true; } //!< compare equal
-	bool operator != ( const Matrix34 &right ) const { for ( int i=0; i<12; i++ ) if ( data[i] != right.data[i] ) return true; return false; } //!< compare not equal
+	bool operator == ( Matrix34 const &right ) const { for ( int i=0; i<12; ++i ) if ( cell[i] != right.cell[i] ) return false; return true; } //!< compare equal
+	bool operator != ( Matrix34 const &right ) const { for ( int i=0; i<12; ++i ) if ( cell[i] != right.cell[i] ) return true; return false; } //!< compare not equal
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	TYPE&       operator () ( int row, int column )       { return data[ column * 3 + row ]; }	//!< subscript operator
-	const TYPE& operator () ( int row, int column ) const { return data[ column * 3 + row ]; }	//!< constant subscript operator
-	TYPE&       operator [] ( int i )                     { return data[i]; }					//!< subscript operator
-	const TYPE& operator [] ( int i )               const { return data[i]; }					//!< constant subscript operator
+	T&        operator () ( int row, int col )       { assert( row>=0 && row<3 && col>=0 && col<4 ); return cell[ col*3 + row ]; }	//!< subscript operator
+	T const & operator () ( int row, int col ) const { assert( row>=0 && row<3 && col>=0 && col<4 ); return cell[ col*3 + row ]; }	//!< constant subscript operator
+	T&        operator [] ( int i )                  { assert( i>=0 && i<12 ); return cell[i]; }									//!< subscript operator
+	T const & operator [] ( int i )            const { assert( i>=0 && i<12 ); return cell[i]; }									//!< constant subscript operator
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Unary and Binary Operators
 
 	// Unary operators
-	Matrix34 operator - () const { Matrix34 r; for (int i=0; i<12; i++) r.data[i]=-data[i]; return r; }	//!< negative matrix
+	Matrix34 operator - () const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i]=-cell[i]; return r; }	//!< negative matrix
 
 	// Binary operators
-	Matrix34 operator * ( const TYPE      value ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix34 operator / ( const TYPE      value ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] / value;         return r; }	//!< divide matrix by a value;
-	Matrix34 operator + ( const Matrix34 &right ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] + right.data[i]; return r; }	//!< add two Matrices
-	Matrix34 operator - ( const Matrix34 &right ) const { Matrix34 r; for (int i=0; i<12; i++) r.data[i] = data[i] - right.data[i]; return r; }	//!< subtract one Matrix4 from another
-	Matrix34 operator * ( const Matrix34 &right ) const	//!< multiply a matrix with another
+	Matrix34 operator * ( T         const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
+	Matrix34 operator / ( T         const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix34 operator + ( Matrix34 const &right ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
+	Matrix34 operator - ( Matrix34 const &right ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix4 from another
+	Matrix34 operator * ( Matrix34 const &right ) const	//!< multiply a matrix with another
 	{
 		Matrix34 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<12; i+=3, rd+=3 ) {
-			TYPE a[3], b[3], c[3];
-			for ( int k=0; k<3; ++k ) a[k] = data[  k] * right.data[i  ];
-			for ( int k=0; k<3; ++k ) b[k] = data[3+k] * right.data[i+1];
-			for ( int k=0; k<3; ++k ) c[k] = data[6+k] * right.data[i+2];
+			T a[3], b[3], c[3];
+			for ( int k=0; k<3; ++k ) a[k] = cell[  k] * right.cell[i  ];
+			for ( int k=0; k<3; ++k ) b[k] = cell[3+k] * right.cell[i+1];
+			for ( int k=0; k<3; ++k ) c[k] = cell[6+k] * right.cell[i+2];
 			for ( int j=0; j<3; ++j ) rd[j] = a[j] + b[j] + c[j];
 		}
-		for ( int j=0; j<3; ++j ) r.data[9+j] += data[9+j];
+		for ( int j=0; j<3; ++j ) r.cell[9+j] += cell[9+j];
 		return r;
 	}
-	Matrix34 operator * ( const Matrix3<TYPE> &right ) const	//!< multiply a matrix with another
+	Matrix34 operator * ( Matrix3<T> const &right ) const	//!< multiply a matrix with another
 	{
 		Matrix34 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<9; i+=3, rd+=3 ) {
-			TYPE a[3], b[3], c[3];
-			for ( int k=0; k<3; ++k ) a[k] = data[  k] * right.data[i  ];
-			for ( int k=0; k<3; ++k ) b[k] = data[3+k] * right.data[i+1];
-			for ( int k=0; k<3; ++k ) c[k] = data[6+k] * right.data[i+2];
+			T a[3], b[3], c[3];
+			for ( int k=0; k<3; ++k ) a[k] = cell[  k] * right.cell[i  ];
+			for ( int k=0; k<3; ++k ) b[k] = cell[3+k] * right.cell[i+1];
+			for ( int k=0; k<3; ++k ) c[k] = cell[6+k] * right.cell[i+2];
 			for ( int j=0; j<3; ++j ) rd[j] = a[j] + b[j] + c[j];
 		}
-		CY_MEMCOPY(TYPE,r.data+9,data+9,3);
+		MemCopy(r.cell+9,cell+9,3);
 		return r;
 	}
-	Point3<TYPE> operator * ( const Point3<TYPE> &p ) const
+	Vec3<T> operator * ( Vec3<T> const &p ) const
 	{
-		//return Point3<TYPE>( p.x*data[0] + p.y*data[3] + p.z*data[6] + data[ 9], 
-		//					   p.x*data[1] + p.y*data[4] + p.z*data[7] + data[10],
-		//					   p.x*data[2] + p.y*data[5] + p.z*data[8] + data[11] );
-		TYPE a[4], b[4], c[4];
-		for ( int i=0; i<3; ++i ) a[i] = p.x * data[  i];
-		for ( int i=0; i<3; ++i ) b[i] = p.y * data[3+i];
-		for ( int i=0; i<3; ++i ) c[i] = p.z * data[6+i];
-		Point3<TYPE> rr;
-		for ( int i=0; i<3; ++i ) rr[i] = a[i] + b[i] + c[i] + data[9+i];	
+		//return Vec3<T>( p.x*cell[0] + p.y*cell[3] + p.z*cell[6] + cell[ 9], 
+		//                p.x*cell[1] + p.y*cell[4] + p.z*cell[7] + cell[10],
+		//                p.x*cell[2] + p.y*cell[5] + p.z*cell[8] + cell[11] );
+		T a[4], b[4], c[4];
+		for ( int i=0; i<3; ++i ) a[i] = p.x * cell[  i];
+		for ( int i=0; i<3; ++i ) b[i] = p.y * cell[3+i];
+		for ( int i=0; i<3; ++i ) c[i] = p.z * cell[6+i];
+		Vec3<T> rr;
+		for ( int i=0; i<3; ++i ) rr[i] = a[i] + b[i] + c[i] + cell[9+i];	
 		return rr;
 	}
-	Point4<TYPE> operator * ( const Point4<TYPE> &p ) const
+	Vec4<T> operator * ( Vec4<T> const &p ) const
 	{
-		//return Point4<TYPE>( p.x*data[0] + p.y*data[3] + p.z*data[6] + p.w*data[ 9],
-		//					 p.x*data[1] + p.y*data[4] + p.z*data[7] + p.w*data[10],
-		//					 p.x*data[2] + p.y*data[5] + p.z*data[8] + p.w*data[11],
-		//					 0           + 0           + 0           + p.w          );
-		TYPE a[6], b[6];
-		for ( int i=0; i<3; ++i ) a[  i] = p.x * data[  i];
-		for ( int i=0; i<3; ++i ) a[3+i] = p.y * data[3+i];
-		for ( int i=0; i<3; ++i ) b[  i] = p.z * data[6+i];
-		for ( int i=0; i<3; ++i ) b[3+i] = p.w * data[9+i];
+		//return Vec4<T>( p.x*cell[0] + p.y*cell[3] + p.z*cell[6] + p.w*cell[ 9],
+		//                p.x*cell[1] + p.y*cell[4] + p.z*cell[7] + p.w*cell[10],
+		//                p.x*cell[2] + p.y*cell[5] + p.z*cell[8] + p.w*cell[11],
+		//                0           + 0           + 0           + p.w          );
+		T a[6], b[6];
+		for ( int i=0; i<3; ++i ) a[  i] = p.x * cell[  i];
+		for ( int i=0; i<3; ++i ) a[3+i] = p.y * cell[3+i];
+		for ( int i=0; i<3; ++i ) b[  i] = p.z * cell[6+i];
+		for ( int i=0; i<3; ++i ) b[3+i] = p.w * cell[9+i];
 		for ( int i=0; i<6; ++i ) a[i] += b[i];
-		Point4<TYPE> rr;
+		Vec4<T> rr;
 		for ( int i=0; i<3; ++i ) rr[i] = a[i] + a[3+i];
 		rr.w = p.w;
 		return rr;
@@ -1099,16 +1336,16 @@ public:
 	//!@name 3D Vector Transform Methods
 
 	//! Transforms the vector by multiplying it with the matrix, ignoring the translation component.
-	Point3<TYPE> VectorTransform(const Point3<TYPE>& p) const
+	Vec3<T> VectorTransform( Vec3<T> const &p ) const
 	{
-		//return Point3<T>( p.x*data[0] + p.y*data[3] + p.z*data[6], 
-		//                  p.x*data[1] + p.y*data[4] + p.z*data[7],
-		//                  p.x*data[2] + p.y*data[5] + p.z*data[8] );
-		TYPE a[4], b[4], c[4];
-		for ( int i=0; i<3; ++i ) a[i] = p.x * data[   i];
-		for ( int i=0; i<3; ++i ) b[i] = p.y * data[ 3+i];
-		for ( int i=0; i<3; ++i ) c[i] = p.z * data[ 6+i];
-		Point3<TYPE> rr;
+		//return Vec3<T>( p.x*cell[0] + p.y*cell[3] + p.z*cell[6], 
+		//                p.x*cell[1] + p.y*cell[4] + p.z*cell[7],
+		//                p.x*cell[2] + p.y*cell[5] + p.z*cell[8] );
+		T a[4], b[4], c[4];
+		for ( int i=0; i<3; ++i ) a[i] = p.x * cell[   i];
+		for ( int i=0; i<3; ++i ) b[i] = p.y * cell[ 3+i];
+		for ( int i=0; i<3; ++i ) c[i] = p.z * cell[ 6+i];
+		Vec3<T> rr;
 		for ( int i=0; i<3; ++i ) rr[i] = a[i] + b[i] + c[i];
 		return rr;
 	}
@@ -1117,13 +1354,12 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
 
-	const Matrix34& operator  = ( const Matrix34 &right ) { CY_MEMCOPY(TYPE,data,right.data,12); return *this; }	
-	const Matrix34& operator += ( const Matrix34 &right ) { for (int i=0; i<12; i++) data[i] += right.data[i]; return *this; }	//!< add two Matrices modify this
-	const Matrix34& operator -= ( const Matrix34 &right ) { for (int i=0; i<12; i++) data[i] -= right.data[i]; return *this; }	//!< subtract one Matrix4 from another matrix and modify this matrix
-	const Matrix34& operator *= ( const Matrix34 &right )      { *this = operator*(right); return *this; }						//!< multiply a matrix with another matrix and modify this matrix
-	const Matrix34& operator *= ( const Matrix3<TYPE> &right ) { *this = operator*(right); return *this; }						//!< multiply a matrix with another matrix and modify this matrix
-	const Matrix34& operator *= ( const TYPE      value ) { for (int i=0; i<12; i++) data[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
-	const Matrix34& operator /= ( const TYPE      value ) { for (int i=0; i<12; i++) data[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix34 const & operator += ( Matrix34   const &right ) { for ( int i=0; i<12; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
+	Matrix34 const & operator -= ( Matrix34   const &right ) { for ( int i=0; i<12; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix4 from another matrix and modify this matrix
+	Matrix34 const & operator *= ( Matrix34   const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix34 const & operator *= ( Matrix3<T> const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix34 const & operator *= ( T          const  value ) { for ( int i=0; i<12; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
+	Matrix34 const & operator /= ( T          const  value ) { for ( int i=0; i<12; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1132,43 +1368,43 @@ public:
 	//! Transpose this matrix
 	void Transpose()
 	{
-		for (int i = 1; i < 3; i++) {
-			for (int j = 0; j < i; j++) {
-				TYPE temp = data[i * 3 + j];
-				data[i * 3 + j] = data[j * 3 + i];
-				data[j * 3 + i] = temp;
+		for ( int i=1; i<3; ++i ) {
+			for ( int j=0; j<i; j++ ) {
+				T temp = cell[i * 3 + j];
+				cell[i * 3 + j] = cell[j * 3 + i];
+				cell[j * 3 + i] = temp;
 			}
 		}
-		CY_MEMCLEAR(TYPE,data+9,3);
+		MemClear(cell+9,3);
 	}
 
-	void GetTranspose( Matrix4<TYPE> &m ) const;	//!< return Transpose of this matrix
-	Matrix4<TYPE> GetTranspose() const;			//!< return Transpose of this matrix
+	void GetTranspose( Matrix4<T> &m ) const;	//!< return Transpose of this matrix
+	Matrix4<T> GetTranspose() const;			//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
-	Point4<TYPE> TransposeMult( const Point3<TYPE> &p ) const
+	Vec4<T> TransposeMult( Vec3<T> const &p ) const
 	{
-		return Point4<TYPE>( p.x*data[ 0] + p.y*data[ 1] + p.z*data[ 2], 
-							 p.x*data[ 3] + p.y*data[ 4] + p.z*data[ 5],
-							 p.x*data[ 6] + p.y*data[ 7] + p.z*data[ 8],
-							 p.x*data[ 9] + p.y*data[10] + p.z*data[11] + 1 );
+		return Vec4<T>( p.x*cell[ 0] + p.y*cell[ 1] + p.z*cell[ 2], 
+		                p.x*cell[ 3] + p.y*cell[ 4] + p.z*cell[ 5],
+		                p.x*cell[ 6] + p.y*cell[ 7] + p.z*cell[ 8],
+		                p.x*cell[ 9] + p.y*cell[10] + p.z*cell[11] + T(1) );
 	}
 
 	//! Multiply the give vector with the transpose of the matrix
-	Point4<TYPE> TransposeMult( const Point4<TYPE> &p ) const
+	Vec4<T> TransposeMult( Vec4<T> const &p ) const
 	{
-		return Point4<TYPE>( p.x*data[ 0] + p.y*data[ 1] + p.z*data[ 2], 
-							 p.x*data[ 3] + p.y*data[ 4] + p.z*data[ 5],
-							 p.x*data[ 6] + p.y*data[ 7] + p.z*data[ 8],
-							 p.x*data[ 9] + p.y*data[10] + p.z*data[11] + p.w );
+		return Vec4<T>( p.x*cell[ 0] + p.y*cell[ 1] + p.z*cell[ 2], 
+		                p.x*cell[ 3] + p.y*cell[ 4] + p.z*cell[ 5],
+		                p.x*cell[ 6] + p.y*cell[ 7] + p.z*cell[ 8],
+		                p.x*cell[ 9] + p.y*cell[10] + p.z*cell[11] + p.w );
 	}
 
-	TYPE GetDeterminant() const	//!< Get the determinant of this matrix
+	T GetDeterminant() const	//!< Get the determinant of this matrix
 	{
 		// 0 (4 8 - 5 7) + 1 (5 6 - 3 8) + 2 (3 7 - 4 6)
-		return data[0] * ( data[4] * data[8] - data[5] * data[7] ) + 
-		       data[1] * ( data[5] * data[6] - data[3] * data[8] ) + 
-		       data[2] * ( data[3] * data[7] - data[4] * data[6] );
+		return cell[0] * ( cell[4] * cell[8] - cell[5] * cell[7] ) + 
+		       cell[1] * ( cell[5] * cell[6] - cell[3] * cell[8] ) + 
+		       cell[2] * ( cell[3] * cell[7] - cell[4] * cell[6] );
 	}
 	void Invert() { Matrix34 inv; GetInverse(inv); *this=inv; }	//!< Invert this matrix
 	void GetInverse( Matrix34 &inverse ) const					//!< Get the inverse of this matrix
@@ -1177,117 +1413,126 @@ public:
 		//  (2 7 - 1 8)    (0 8 - 2 6)    (1 6 - 0 7)    (0 (7 11 - 8 10) + 1 (8  9 - 6 11) + 2 (6 10 -  7 9))    / det
 		//  (1 5 - 2 4)    (2 3 - 0 5)    (0 4 - 1 3)    (0 (5 10 - 4 11) + 1 (3 11 - 5  9) + 2 (4  9 - 3 10))
 
-		const TYPE data_8_10__7_11 = data[8] * data[10] - data[7] * data[11];
-		const TYPE data_6_11__8__9 = data[6] * data[11] - data[8] * data[ 9];
-		const TYPE data_7__9__6_10 = data[7] * data[ 9] - data[6] * data[10];
+		T data_8_10__7_11 = cell[8] * cell[10] - cell[7] * cell[11];
+		T data_6_11__8__9 = cell[6] * cell[11] - cell[8] * cell[ 9];
+		T data_7__9__6_10 = cell[7] * cell[ 9] - cell[6] * cell[10];
 
-		inverse.data[ 0] = (data[4]*data[8] - data[5]*data[7]);
-		inverse.data[ 1] = (data[2]*data[7] - data[1]*data[8]);
-		inverse.data[ 2] = (data[1]*data[5] - data[2]*data[4]);
+		inverse.cell[ 0] = (cell[4]*cell[8] - cell[5]*cell[7]);
+		inverse.cell[ 1] = (cell[2]*cell[7] - cell[1]*cell[8]);
+		inverse.cell[ 2] = (cell[1]*cell[5] - cell[2]*cell[4]);
 
-		inverse.data[ 3] = (data[5]*data[6] - data[3]*data[8]);
-		inverse.data[ 4] = (data[0]*data[8] - data[2]*data[6]);
-		inverse.data[ 5] = (data[2]*data[3] - data[0]*data[5]);
+		inverse.cell[ 3] = (cell[5]*cell[6] - cell[3]*cell[8]);
+		inverse.cell[ 4] = (cell[0]*cell[8] - cell[2]*cell[6]);
+		inverse.cell[ 5] = (cell[2]*cell[3] - cell[0]*cell[5]);
 
-		inverse.data[ 6] = (data[3]*data[7] - data[4]*data[6]);
-		inverse.data[ 7] = (data[1]*data[6] - data[0]*data[7]);
-		inverse.data[ 8] = (data[0]*data[4] - data[1]*data[3]);
+		inverse.cell[ 6] = (cell[3]*cell[7] - cell[4]*cell[6]);
+		inverse.cell[ 7] = (cell[1]*cell[6] - cell[0]*cell[7]);
+		inverse.cell[ 8] = (cell[0]*cell[4] - cell[1]*cell[3]);
 
-		inverse.data[ 9] = data[3] * data_8_10__7_11 + data[4] * data_6_11__8__9 + data[5] * data_7__9__6_10;
-		inverse.data[10] = data[0] *-data_8_10__7_11 + data[1] *-data_6_11__8__9 + data[2] *-data_7__9__6_10;
-		inverse.data[11] = data[0] * (data[5] * data[10] - data[4] * data[11]) + 
-		                   data[1] * (data[3] * data[11] - data[5] * data[ 9]) +
-		                   data[2] * (data[4] * data[ 9] - data[3] * data[10]);
+		inverse.cell[ 9] = cell[3] * data_8_10__7_11 + cell[4] * data_6_11__8__9 + cell[5] * data_7__9__6_10;
+		inverse.cell[10] = cell[0] *-data_8_10__7_11 + cell[1] *-data_6_11__8__9 + cell[2] *-data_7__9__6_10;
+		inverse.cell[11] = cell[0] * (cell[5] * cell[10] - cell[4] * cell[11]) + 
+		                   cell[1] * (cell[3] * cell[11] - cell[5] * cell[ 9]) +
+		                   cell[2] * (cell[4] * cell[ 9] - cell[3] * cell[10]);
 
-		const TYPE det = data[0] * inverse.data[0] + data[1] * inverse.data[3] + data[2] * inverse.data[6];
+		T det = cell[0] * inverse.cell[0] + cell[1] * inverse.cell[3] + cell[2] * inverse.cell[6];
 		inverse /= det;
 	}
 	Matrix34 GetInverse() const { Matrix34 inv; GetInverse(inv); return inv; }	//!< Get the inverse of this matrix
 
+	//! Removes the scale component of the matrix by normalizing the first three columns.
+	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
+	void Normalize() { column[0].Normalize(); column[1].Normalize(); column[2].Normalize(); }
+
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		Point3<TYPE> *p = (Point3<TYPE>*)data;
-		p[0].Normalize();
-		p[1] -= p[0] * (p[1]%p[0]);
-		p[1].Normalize();
-		p[2] -= p[0] * (p[2]%p[0]);
-		p[2] -= p[1] * (p[2]%p[1]);
-		p[2].Normalize();
+		column[0].Normalize();
+		column[1] -= column[0] * (column[1] % column[0]);
+		column[1].Normalize();
+		column[2] -= column[0] * (column[2] % column[0]);
+		column[2] -= column[1] * (column[2] % column[1]);
+		column[2].Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		Point3<TYPE> *p = (Point3<TYPE>*)data;
-		p[1].Normalize();
-		p[0] -= p[1] * (p[0]%p[1]);
-		p[0].Normalize();
-		p[2] -= p[1] * (p[2]%p[1]);
-		p[2] -= p[0] * (p[2]%p[0]);
-		p[2].Normalize();
+		column[1].Normalize();
+		column[0] -= column[1] * (column[0] % column[1]);
+		column[0].Normalize();
+		column[2] -= column[1] * (column[2] % column[1]);
+		column[2] -= column[0] * (column[2] % column[0]);
+		column[2].Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the z direction
 	void OrthogonalizeZ()
 	{
-		Point3<TYPE> *p = (Point3<TYPE>*)data;
-		p[2].Normalize();
-		p[0] -= p[2] * (p[0]%p[2]);
-		p[0].Normalize();
-		p[1] -= p[2] * (p[1]%p[2]);
-		p[1] -= p[0] * (p[1]%p[0]);
-		p[1].Normalize();
+		column[2].Normalize();
+		column[0] -= column[2] * (column[0] % column[2]);
+		column[0].Normalize();
+		column[1] -= column[2] * (column[1] % column[2]);
+		column[1] -= column[0] * (column[1] % column[0]);
+		column[1].Normalize();
 	}
 
 	//! Returns if the matrix is identity within the given error tollerance.
-	bool IsIdentity( TYPE tollerance=TYPE(0.001) ) const
+	bool IsIdentity( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
 	{
-		return cyAbs(data[0]-TYPE(1)) < tollerance && cyAbs(data[ 1])         < tollerance && cyAbs(data[ 2])         < tollerance && 
-			   cyAbs(data[3])         < tollerance && cyAbs(data[ 4]-TYPE(1)) < tollerance && cyAbs(data[ 5])         < tollerance &&
-			   cyAbs(data[6])         < tollerance && cyAbs(data[ 7])         < tollerance && cyAbs(data[ 8]-TYPE(1)) < tollerance &&
-			   cyAbs(data[9])         < tollerance && cyAbs(data[10])         < tollerance && cyAbs(data[11])         < tollerance;
+		return std::abs(cell[0]-T(1)) < tollerance && std::abs(cell[ 1])      < tollerance && std::abs(cell[ 2])      < tollerance && 
+			   std::abs(cell[3])      < tollerance && std::abs(cell[ 4]-T(1)) < tollerance && std::abs(cell[ 5])      < tollerance &&
+			   std::abs(cell[6])      < tollerance && std::abs(cell[ 7])      < tollerance && std::abs(cell[ 8]-T(1)) < tollerance &&
+			   std::abs(cell[9])      < tollerance && std::abs(cell[10])      < tollerance && std::abs(cell[11])      < tollerance;
 	}
 
 	//! Returns if the matrix is symmetric within the given error tollerance.
-	bool IsSymmetric( TYPE tollerance=TYPE(0.001) ) const
+	bool IsSymmetric( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
 	{
-		return cyAbs(data[ 1] - data[3]) < tollerance && 
-			   cyAbs(data[ 2] - data[6]) < tollerance &&
-			   cyAbs(data[ 5] - data[7]) < tollerance &&
-			   cyAbs(data[ 9])           < tollerance &&
-			   cyAbs(data[10])           < tollerance &&
-			   cyAbs(data[11])           < tollerance;
+		return std::abs(cell[ 1] - cell[3]) < tollerance && 
+			   std::abs(cell[ 2] - cell[6]) < tollerance &&
+			   std::abs(cell[ 5] - cell[7]) < tollerance &&
+			   std::abs(cell[ 9])           < tollerance &&
+			   std::abs(cell[10])           < tollerance &&
+			   std::abs(cell[11])           < tollerance;
 	}
 
+	//! Returns if the matrix is diagonal.
+	bool IsDiagonal( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
+	{
+		return                      std::abs(cell[ 1]) + std::abs(cell[ 2])
+			 + std::abs(cell[ 3])                      + std::abs(cell[ 5])
+			 + std::abs(cell[ 6]) + std::abs(cell[ 7])
+			 + std::abs(cell[ 9]) + std::abs(cell[10]) + std::abs(cell[11]) < tollerance*9;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Static Methods
 
 	//! Returns an identity matrix
-	static Matrix34 MatrixIdentity() { Matrix34 m; m.SetIdentity(); return m; }
-	//! Returns a matrix using normal, and approximate x direction
-	static Matrix34 MatrixNormal( const Point3<TYPE> &normal, Point3<TYPE> &dir ) { Matrix34 m; m.SetNormal(normal,dir); return m; }
+	static Matrix34 Identity() { T c[] = { 1,0,0, 0,1,0, 0,0,1, 0,0,0 }; return Matrix34(c); }
+	//! Returns a view matrix using position, target and approximate up vector
+	static Matrix34 View( Vec3<T> const &pos, Vec3<T> const &target, Vec3<T> const &up ) { Matrix34 m; m.SetView(pos,target,up); return m; }
 	//! Returns a rotation matrix around x axis by angle in radians
-	static Matrix34 MatrixRotationX( TYPE angle ) { Matrix34 m; m.SetRotationX(angle); return m; }
+	static Matrix34 RotationX( T angle ) { Matrix34 m; m.SetRotationX(angle); return m; }
 	//! Returns a rotation matrix around y axis by angle in radians
-	static Matrix34 MatrixRotationY( TYPE angle ) { Matrix34 m; m.SetRotationY(angle); return m; }
+	static Matrix34 RotationY( T angle ) { Matrix34 m; m.SetRotationY(angle); return m; }
 	//! Returns a rotation matrix around z axis by angle in radians
-	static Matrix34 MatrixRotationZ( TYPE angle ) { Matrix34 m; m.SetRotationZ(angle); return m; }
+	static Matrix34 RotationZ( T angle ) { Matrix34 m; m.SetRotationZ(angle); return m; }
 	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
-	static Matrix34 MatrixRotationXYZ( TYPE angleX, TYPE angleY, TYPE angleZ ) { Matrix34 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
+	static Matrix34 RotationXYZ( T angleX, T angleY, T angleZ ) { Matrix34 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
 	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
-	static Matrix34 MatrixRotationZYX( TYPE angleX, TYPE angleY, TYPE angleZ ) { Matrix34 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
+	static Matrix34 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix34 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
-	static Matrix34 MatrixRotation( const Point3<TYPE> &axis, TYPE angle ) { Matrix34 m; m.SetRotation(axis,angle); return m; }
+	static Matrix34 Rotation( Vec3<T> const &axis, T angle ) { Matrix34 m; m.SetRotation(axis,angle); return m; }
 	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
-	static Matrix34 MatrixRotation( const Point3<TYPE> &from, const Point3<TYPE> &to ) { Matrix34 m; m.SetRotation(from,to); return m; }
+	static Matrix34 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix34 m; m.SetRotation(from,to); return m; }
 	//! Returns a uniform scale matrix
-	static Matrix34 MatrixScale( TYPE uniformScale ) { Matrix34 m; m.SetScale(uniformScale); return m; }
+	static Matrix34 Scale( T uniformScale ) { Matrix34 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
-	static Matrix34 MatrixScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ ) { Matrix34 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
+	static Matrix34 Scale( T scaleX, T scaleY, T scaleZ ) { Matrix34 m; m.SetScale(scaleX,scaleY,scaleZ); return m; }
 	//! Returns a scale matrix
-	static Matrix34 MatrixScale( const Point3<TYPE> &scale ) { Matrix34 m; m.SetScale(scale); return m; }
+	static Matrix34 Scale( Vec3<T> const &scale ) { Matrix34 m; m.SetScale(scale); return m; }
 	//! Returns a translation matrix with no rotation or scale
-	static Matrix34 MatrixTrans( const Point3<TYPE> &move ) { Matrix34 m; m.SetTrans(move); return m; }
+	static Matrix34 Translation( Vec3<T> const &move ) { Matrix34 m; m.SetTranslation(move); return m; }
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1300,32 +1545,32 @@ public:
 //!
 //! Its data stores 16-value array of column-major matrix elements.
 //! I chose column-major format to be compatible with OpenGL
-//! You can use Matrix4 with Point3<TYPE> and Point4<TYPE>
+//! You can use Matrix4 with Vec3<T> and Vec4<T>
 //! to transform 3D and 4D points.
 
-template <typename TYPE>
+template <typename T>
 class Matrix4
 {
-	friend Matrix4 operator * ( const TYPE value, const Matrix4 &right ) { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = value * right.data[i]; return r; }	//!< multiply matrix by a value
-	friend Matrix4 Inverse( const Matrix4 &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
+	friend Matrix4 operator * ( T value, Matrix4 const &right ) { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = value * right.cell[i]; return r; }	//!< multiply matrix by a value
+	friend Matrix4 Inverse( Matrix4 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 	//! multiply a 4x4 matrix with a 3x4 matrix, treating it as a 4x4 matrix with last row 0,0,0,1
-	friend Matrix4 operator * ( const Matrix34<TYPE> &left, const Matrix4 &right )
+	friend Matrix4 operator * ( Matrix34<T> const &left, Matrix4 const &right )
 	{
 		Matrix4 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<16; i+=4, rd+=4 ) {
-			TYPE a[3], b[3], c[3], d[3];
-			for ( int j=0; j<3; ++j ) a[j] = left.data[  j] * right.data[i  ];
-			for ( int j=0; j<3; ++j ) b[j] = left.data[3+j] * right.data[i+1];
-			for ( int j=0; j<3; ++j ) c[j] = left.data[6+j] * right.data[i+2];
-			for ( int j=0; j<3; ++j ) d[j] = left.data[9+j] * right.data[i+3];
+			T a[3], b[3], c[3], d[3];
+			for ( int j=0; j<3; ++j ) a[j] = left.cell[  j] * right.cell[i  ];
+			for ( int j=0; j<3; ++j ) b[j] = left.cell[3+j] * right.cell[i+1];
+			for ( int j=0; j<3; ++j ) c[j] = left.cell[6+j] * right.cell[i+2];
+			for ( int j=0; j<3; ++j ) d[j] = left.cell[9+j] * right.cell[i+3];
 			_CY_IVDEP_FOR ( int j=0; j<3; ++j ) rd[j] = a[j] + b[j] + c[j] + d[j];
 		}
-		r.data[ 3] = right.data[ 3];
-		r.data[ 7] = right.data[ 7];
-		r.data[11] = right.data[11];
-		r.data[15] = right.data[15];
+		r.cell[ 3] = right.cell[ 3];
+		r.cell[ 7] = right.cell[ 7];
+		r.cell[11] = right.cell[11];
+		r.cell[15] = right.cell[15];
 		return r;
 	}
 
@@ -1336,83 +1581,63 @@ public:
 	//! | 1   5   9  13 | \n
 	//! | 2   6  10  14 | \n
 	//! | 3   7  11  15 | \n
-	TYPE data[16];
+	struct Column3 {
+		Vec3<T> v;
+		T s;
+		void Set( Vec3<T> const &_v, T _s ) { v=_v; s=_s; }
+	};	// column vector plus scalar
+	union {
+		T       cell [16];
+		Vec4<T> column[4];	// column vectors
+		Column3 col3  [4];	// column vectors plus scalars
+	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
 
-	Matrix4() {}																	//!< Default constructor
-	Matrix4( const Matrix4 &matrix ) { CY_MEMCOPY(TYPE,data,matrix.data,16); }		//!< Copy constructor
-	template <typename T> explicit Matrix4<TYPE>( const Matrix4<T> &matrix ) { CY_MEMCONVERT(TYPE,data,matrix.data,16); }	//!< Copy constructor for different types
-	explicit Matrix4( const TYPE *values ) { Set(values); }							//!< Initialize the matrix using an array of 9 values
-	explicit Matrix4( const TYPE  v )      { SetScaledIdentity(v); }				//!< Initialize the matrix as identity scaled by v
-	explicit Matrix4( const Point3<TYPE> &x,   const Point3<TYPE> &y,      const Point3<TYPE> &z, const Point3<TYPE> &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
-	explicit Matrix4( const Point4<TYPE> &x,   const Point4<TYPE> &y,      const Point4<TYPE> &z, const Point4<TYPE> &w   ) { Set(x,y,z,w);   }	//!< Initialize the matrix using x,y,z vectors as columns
-	explicit Matrix4( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Set(pos,normal,dir); }					//!< Initialize the matrix using position, normal, and approximate x direction
-	explicit Matrix4( const Matrix34<TYPE> &m ) { 
-		data[ 0]=m.data[ 0]; data[ 1]=m.data[ 1]; data[ 2]=m.data[ 2]; data[ 3]=TYPE(0); 
-		data[ 4]=m.data[ 3]; data[ 5]=m.data[ 4]; data[ 6]=m.data[ 5]; data[ 7]=TYPE(0); 
-		data[ 8]=m.data[ 6]; data[ 9]=m.data[ 7]; data[10]=m.data[ 8]; data[11]=TYPE(0); 
-		data[12]=m.data[ 9]; data[13]=m.data[10]; data[14]=m.data[11]; data[15]=TYPE(1);
-	}
-	explicit Matrix4( const Matrix3<TYPE> &m ) { 
-		data[ 0]=m.data[ 0]; data[ 1]=m.data[ 1]; data[ 2]=m.data[ 2]; data[ 3]=TYPE(0); 
-		data[ 4]=m.data[ 3]; data[ 5]=m.data[ 4]; data[ 6]=m.data[ 5]; data[ 7]=TYPE(0); 
-		data[ 8]=m.data[ 6]; data[ 9]=m.data[ 7]; data[10]=m.data[ 8]; 
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15]=TYPE(1);
-	}
-	explicit Matrix4( const Matrix2<TYPE> &m ) { 
-		data[ 0]=m.data[ 0]; data[ 1]=m.data[ 1]; data[ 2]=TYPE(0); data[ 3]=TYPE(0); 
-		data[ 4]=m.data[ 2]; data[ 5]=m.data[ 3]; 
-		CY_MEMCLEAR(TYPE,data+6,4);
-		data[10]=TYPE(1);
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15]=TYPE(1);
-	}
+	Matrix4() CY_CLASS_FUNCTION_DEFAULT											//!< Default constructor
+	template <typename TT> explicit Matrix4<T>( Matrix4<TT> const &matrix ) { MemConvert(cell,matrix.cell,16); }	//!< Copy constructor for different types
+	explicit Matrix4( T const *values ) { Set(values); }							//!< Initialize the matrix using an array of 9 values
+	explicit Matrix4( T const  v )      { SetIdentity(v); }						//!< Initialize the matrix as identity scaled by v
+	explicit Matrix4( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
+	explicit Matrix4( Vec4<T> const &x, Vec4<T> const &y, Vec4<T> const &z, Vec4<T> const &w   ) { Set(x,y,z,w);   }	//!< Initialize the matrix using x,y,z vectors as columns
+	explicit Matrix4( Matrix34<T> const &m ) { column[0].Set(m.column[0],T(0)); column[1].Set(m.column[1],T(0)); column[2].Set(m.column[2],T(0)); column[3].Set(m.column[3],T(1)); }
+	explicit Matrix4( Matrix3 <T> const &m ) { column[0].Set(m.column[0],T(0)); column[1].Set(m.column[1],T(0)); column[2].Set(m.column[2],T(0)); column[3].Set(0,0,0,1); }
+	explicit Matrix4( Matrix2 <T> const &m ) { column[0].Set(m.column[0],T(0),T(0)); column[1].Set(m.column[1],T(0),T(0)); column[2].Set(0,0,1,0); column[3].Set(0,0,0,1); }
+	explicit Matrix4( Matrix3 <T> const &m, Vec3<T> const &pos ) { column[0].Set(m.column[0],T(0)); column[1].Set(m.column[1],T(0)); column[2].Set(m.column[2],T(0)); column[3].Set(pos,T(1)); }
 
 	//! Constructor using row-major order for initialization
-	Matrix4( TYPE row0col0, TYPE row0col1, TYPE row0col2,  TYPE row0col3,
-		     TYPE row1col0, TYPE row1col1, TYPE row1col2,  TYPE row1col3,
-		     TYPE row2col0, TYPE row2col1, TYPE row2col2,  TYPE row2col3,
-		     TYPE row3col0, TYPE row3col1, TYPE row3col2,  TYPE row3col3 )
+	Matrix4( T c00, T c01, T c02, T c03,
+		      T c10, T c11, T c12, T c13,
+		      T c20, T c21, T c22, T c23,
+		      T c30, T c31, T c32, T c33 )
 	{
-		data[ 0] = row0col0;   data[ 4] = row0col1;   data[ 8] = row0col2;   data[12] = row0col3;
-		data[ 1] = row1col0;   data[ 5] = row1col1;   data[ 9] = row1col2;   data[13] = row1col3;
-		data[ 2] = row2col0;   data[ 6] = row2col1;   data[10] = row2col2;   data[14] = row2col3;
-		data[ 3] = row3col0;   data[ 7] = row3col1;   data[11] = row3col2;   data[15] = row3col3;
+		cell[ 0] = c00;   cell[ 4] = c01;   cell[ 8] = c02;   cell[12] = c03;
+		cell[ 1] = c10;   cell[ 5] = c11;   cell[ 9] = c12;   cell[13] = c13;
+		cell[ 2] = c20;   cell[ 6] = c21;   cell[10] = c22;   cell[14] = c23;
+		cell[ 3] = c30;   cell[ 7] = c31;   cell[11] = c32;   cell[15] = c33;
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set & Get Methods
 
-	//! Set all the values as zero
-	void Zero() { CY_MEMCLEAR(TYPE,data,16); }
-	//! Returns true if the matrix is exactly zero
-	bool IsZero() const { for ( int i=0; i<16; i++ ) if ( data[i] != 0 ) return false; return true; }
-	//! Copies the matrix data to the given values array of size 16
-	void Get( TYPE *values ) { CY_MEMCOPY(TYPE,values,data,16); } 
-	//! Set Matrix using an array of 16 values
-	void Set( const TYPE *values ) { CY_MEMCOPY(TYPE,data,values,16); } 
-	//! Set matrix using x,y,z vectors and coordinate center
-	void Set( const Point3<TYPE> &x, const Point3<TYPE> &y, const Point3<TYPE> &z, const Point3<TYPE> &pos ) { x.Get(data); data[3]=TYPE(0); y.Get(data+4); data[7]=TYPE(0); z.Get(data+8); data[11]=TYPE(0); pos.Get(data+12); data[15]=TYPE(1); }
-	//! Set matrix using x,y,z,w vectors
-	void Set( const Point4<TYPE> &x, const Point4<TYPE> &y, const Point4<TYPE> &z, const Point4<TYPE> &w ) { x.Get(data); y.Get(data+4); z.Get(data+8); w.Get(data+12); }
-	//! Set matrix using position, normal, and approximate x direction
-	void Set( const Point3<TYPE> &pos, const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y=normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal,pos); }
-	//! Converts the matrix to an identity matrix
-	void SetIdentity() { SetScaledIdentity(TYPE(1)); }
-	//! Converts the matrix to an identity matrix scaled by a scalar
-	void SetScaledIdentity(TYPE v) { SetScale(v); }
-	//! Sets the matrix as the tensor product (outer product) of two vectors
-	void SetTensorProduct( const Point4<TYPE> &v0, const Point4<TYPE> &v1 )
+	void Zero    ()       { MemClear(cell,16); }																					//!< Set all the values as zero
+	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  () && column[2].IsZero  () && column[3].IsZero  (); }	//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite() && column[2].IsFinite() && column[3].IsFinite(); }	//!< Returns true if all components are finite real numbers.
+	void Get( T       *values ) { MemCopy(values,cell,16); }																		//!< Copies the matrix cell to the given values array of size 16
+	void Set( T const *values ) { MemCopy(cell,values,16); }																		//!< Set Matrix using an array of 16 values
+	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { col3[0].Set(x,T(0)); col3[1].Set(y,T(0)); col3[2].Set(z,T(0)); col3[4].Set(pos,T(1)); }	//!< Set matrix using x,y,z column vectors and coordinate center
+	void Set( Vec4<T> const &x, Vec4<T> const &y, Vec4<T> const &z, Vec4<T> const &w ) { column[0]=x; column[1]=y; column[2]=z; column[3]=w; }	//!< Set matrix using x,y,z,w column vectors
+	void SetIdentity()      { *this = Identity(); }																					//!< Converts the matrix to an identity matrix
+	void SetIdentity( T v ) { SetScale(v); }																						//!< Converts the matrix to an identity matrix scaled by a scalar
+	void SetTensorProduct( Vec4<T> const &v0, Vec4<T> const &v1 )																	//!< Sets the matrix as the tensor product (outer product) of two vectors
 	{
-		for ( int i=0; i<4; ++i ) data[   i] = v0[i] * v1.x;	 // data[0]=v0.x*v1.x;  data[4]=v0.x*v1.y;  data[ 8]=v0.x*v1.z;  data[12]=v0.x*v1.w;
-		for ( int i=0; i<4; ++i ) data[ 4+i] = v0[i] * v1.y;	 // data[1]=v0.y*v1.x;  data[5]=v0.y*v1.y;  data[ 9]=v0.y*v1.z;  data[13]=v0.y*v1.w;
-		for ( int i=0; i<4; ++i ) data[ 8+i] = v0[i] * v1.z;	 // data[2]=v0.z*v1.x;  data[6]=v0.z*v1.y;  data[10]=v0.z*v1.z;  data[14]=v0.z*v1.w;
-		for ( int i=0; i<4; ++i ) data[12+i] = v0[i] * v1.w;	 // data[3]=v0.w*v1.x;  data[7]=v0.w*v1.y;  data[11]=v0.w*v1.z;  data[15]=v0.w*v1.w;
+		for ( int i=0; i<4; ++i ) cell[   i] = v0[i] * v1.x;	 // cell[0]=v0.x*v1.x;  cell[4]=v0.x*v1.y;  cell[ 8]=v0.x*v1.z;  cell[12]=v0.x*v1.w;
+		for ( int i=0; i<4; ++i ) cell[ 4+i] = v0[i] * v1.y;	 // cell[1]=v0.y*v1.x;  cell[5]=v0.y*v1.y;  cell[ 9]=v0.y*v1.z;  cell[13]=v0.y*v1.w;
+		for ( int i=0; i<4; ++i ) cell[ 8+i] = v0[i] * v1.z;	 // cell[2]=v0.z*v1.x;  cell[6]=v0.z*v1.y;  cell[10]=v0.z*v1.z;  cell[14]=v0.z*v1.w;
+		for ( int i=0; i<4; ++i ) cell[12+i] = v0[i] * v1.w;	 // cell[3]=v0.w*v1.x;  cell[7]=v0.w*v1.y;  cell[11]=v0.w*v1.z;  cell[15]=v0.w*v1.w;
 	}
 
 
@@ -1420,341 +1645,346 @@ public:
 	//!@name Affine transformations
 
 	//! Sets a uniform scale matrix
-	void SetScale( TYPE uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
+	void SetScale( T uniformScale ) { SetScale(uniformScale,uniformScale,uniformScale); }
 	//! Sets a scale matrix
-	void SetScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ, TYPE scaleW=1 )
+	void SetScale( T scaleX, T scaleY, T scaleZ, T scaleW=T(1) )
 	{
-		data[ 0] = scaleX; data[ 1] = 0;      data[ 2]=0;      data[ 3]=0; 
-		data[ 4] = 0;      data[ 5] = scaleY; data[ 6]=0;      data[ 7]=0; 
-		data[ 8] = 0;      data[ 9] = 0;      data[10]=scaleZ; data[11]=0;
-		data[12] = 0;      data[13] = 0;      data[14]=0;      data[15]=scaleW;
+		cell[ 0] = scaleX;  cell[ 1] = T(0);    cell[ 2] = T(0);    cell[ 3] = T(0); 
+		cell[ 4] = T(0);    cell[ 5] = scaleY;  cell[ 6] = T(0);    cell[ 7] = T(0); 
+		cell[ 8] = T(0);    cell[ 9] = T(0);    cell[10] = scaleZ;  cell[11] = T(0);
+		cell[12] = T(0);    cell[13] = T(0);    cell[14] = T(0);    cell[15] = scaleW;
 	}
 	//! Sets a scale matrix
-	void SetScale( const Point3<TYPE> &scale ) { SetScale(scale.x,scale.y,scale.z); }
-	//! Removes the scale component of the matrix
-	void SetNoScale() { ((Point3<TYPE>*)&data[0])->Normalize(); ((Point3<TYPE>*)&data[4])->Normalize(); ((Point3<TYPE>*)&data[8])->Normalize(); }
+	void SetScale( Vec3<T> const &scale ) { SetScale(scale.x,scale.y,scale.z); }
 	//! Set as rotation matrix around x axis
-	void SetRotationX( TYPE angle ) { SetRotationX( cySin(angle), cyCos(angle) ); }
+	void SetRotationX( T angle ) { SetRotationX( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around x axis by cos and sin of angle
-	void SetRotationX( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationX( T sinAngle, T cosAngle )
 	{
-		data[ 0] = TYPE(1);  data[ 1] =  TYPE(0);    data[ 2] = TYPE(0);   data[ 3] = TYPE(0);
-		data[ 4] = TYPE(0);  data[ 5] =  cosAngle;   data[ 6] = sinAngle;  data[ 7] = TYPE(0);
-		data[ 8] = TYPE(0);  data[ 9] = -sinAngle;   data[10] = cosAngle;
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15] = TYPE(1);
+		cell[ 0] = T(1);  cell[ 1] =  T(0);       cell[ 2] = T(0);      cell[ 3] = T(0);
+		cell[ 4] = T(0);  cell[ 5] =  cosAngle;   cell[ 6] = sinAngle;  cell[ 7] = T(0);
+		cell[ 8] = T(0);  cell[ 9] = -sinAngle;   cell[10] = cosAngle;
+		MemClear(cell+11,4);
+		cell[15] = T(1);
 	}
 	//! Set as rotation matrix around y axis
-	void SetRotationY( TYPE angle ) { SetRotationY( cySin(angle), cyCos(angle) ); }
+	void SetRotationY( T angle ) { SetRotationY( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around y axis by cos and sin of angle
-	void SetRotationY( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationY( T sinAngle, T cosAngle )
 	{
-		data[ 0] = cosAngle;  data[ 1] = TYPE(0);  data[ 2] = -sinAngle;  data[ 3] = TYPE(0);
-		data[ 4] = TYPE(0);   data[ 5] = TYPE(1);  data[ 6] =  TYPE(0);   data[ 7] = TYPE(0);
-		data[ 8] = sinAngle;  data[ 9] = TYPE(0);  data[10] =  cosAngle;
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15] = TYPE(1);
+		cell[ 0] = cosAngle;  cell[ 1] = T(0);  cell[ 2] = -sinAngle;  cell[ 3] = T(0);
+		cell[ 4] = T(0);      cell[ 5] = T(1);  cell[ 6] =  T(0);      cell[ 7] = T(0);
+		cell[ 8] = sinAngle;  cell[ 9] = T(0);  cell[10] =  cosAngle;
+		MemClear(cell+11,4);
+		cell[15] = T(1);
 	}
 	//! Set as rotation matrix around z axis
-	void SetRotationZ( TYPE angle ) { SetRotationZ( cySin(angle), cyCos(angle) ); }
+	void SetRotationZ( T angle ) { SetRotationZ( std::sin(angle), std::cos(angle) ); }
 	//! Set as rotation matrix around z axis by cos and sin of angle
-	void SetRotationZ( TYPE sinAngle, TYPE cosAngle )
+	void SetRotationZ( T sinAngle, T cosAngle )
 	{
-		data[ 0] =  cosAngle;  data[ 1] = sinAngle;  data[ 2] = TYPE(0);  data[ 3] = TYPE(0);
-		data[ 4] = -sinAngle;  data[ 5] = cosAngle;  data[ 6] = TYPE(0);  data[ 7] = TYPE(0); 
-		data[ 8] =  TYPE(0);   data[ 9] = TYPE(0);   data[10] = TYPE(1);
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15] = TYPE(1);
+		cell[ 0] =  cosAngle;  cell[ 1] = sinAngle;  cell[ 2] = T(0);  cell[ 3] = T(0);
+		cell[ 4] = -sinAngle;  cell[ 5] = cosAngle;  cell[ 6] = T(0);  cell[ 7] = T(0); 
+		cell[ 8] =  T(0);      cell[ 9] = T(0);      cell[10] = T(1);
+		MemClear(cell+11,4);
+		cell[15] = T(1);
 	}
 	//! Set as rotation matrix around x, y, and then z axes ( Rz * Ry * Rx )
-	void SetRotationXYZ( TYPE angleX, TYPE angleY, TYPE angleZ )
+	void SetRotationXYZ( T angleX, T angleY, T angleZ )
 	{
-		const TYPE sx = cySin(angleX);
-		const TYPE cx = cyCos(angleX);
-		const TYPE sy = cySin(angleY);
-		const TYPE cy = cyCos(angleY);
-		const TYPE sz = cySin(angleZ);
-		const TYPE cz = cyCos(angleZ);
-		data[ 0] = cy*cz;             data[ 1] = cy*sz;             data[ 2] =-sy;     data[ 3] = TYPE(0);
-		data[ 4] = cz*sx*sy - cx*sz;  data[ 5] = cx*cz + sx*sy*sz;  data[ 6] = cy*sx;  data[ 7] = TYPE(0);
-		data[ 8] = cx*cz*sy + sx*sz;  data[ 9] =-cz*sx + cx*sy*sz;  data[10] = cx*cy;
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15] = TYPE(1);
+		T sx = std::sin(angleX);
+		T cx = std::cos(angleX);
+		T sy = std::sin(angleY);
+		T cy = std::cos(angleY);
+		T sz = std::sin(angleZ);
+		T cz = std::cos(angleZ);
+		cell[ 0] = cy*cz;             cell[ 1] = cy*sz;             cell[ 2] =-sy;     cell[ 3] = T(0);
+		cell[ 4] = cz*sx*sy - cx*sz;  cell[ 5] = cx*cz + sx*sy*sz;  cell[ 6] = cy*sx;  cell[ 7] = T(0);
+		cell[ 8] = cx*cz*sy + sx*sz;  cell[ 9] =-cz*sx + cx*sy*sz;  cell[10] = cx*cy;
+		MemClear(cell+11,4);
+		cell[15] = T(1);
 	}
 	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
-	void SetRotationZYX( TYPE angleX, TYPE angleY, TYPE angleZ )
+	void SetRotationZYX( T angleX, T angleY, T angleZ )
 	{
-		const TYPE sx = cySin(angleX);
-		const TYPE cx = cyCos(angleX);
-		const TYPE sy = cySin(angleY);
-		const TYPE cy = cyCos(angleY);
-		const TYPE sz = cySin(angleZ);
-		const TYPE cz = cyCos(angleZ);
-		data[ 0] = cy*cz;  data[ 1] = cx*sz + sx*sy*cz;  data[ 2] = sx*sz - cx*sy*cz;  data[ 3] = TYPE(0);           
-		data[ 4] =-cy*sz;  data[ 5] = cx*cz - sx*sy*sz;  data[ 6] = sx*cz + cx*sy*sz;  data[ 7] = TYPE(0);           
-		data[ 8] = sy;     data[ 9] =-sx*cy;             data[10] = cx*cy;
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15] = TYPE(1);
+		T sx = std::sin(angleX);
+		T cx = std::cos(angleX);
+		T sy = std::sin(angleY);
+		T cy = std::cos(angleY);
+		T sz = std::sin(angleZ);
+		T cz = std::cos(angleZ);
+		cell[ 0] = cy*cz;  cell[ 1] = cx*sz + sx*sy*cz;  cell[ 2] = sx*sz - cx*sy*cz;  cell[ 3] = T(0);           
+		cell[ 4] =-cy*sz;  cell[ 5] = cx*cz - sx*sy*sz;  cell[ 6] = sx*cz + cx*sy*sz;  cell[ 7] = T(0);           
+		cell[ 8] = sy;     cell[ 9] =-sx*cy;             cell[10] = cx*cy;
+		MemClear(cell+11,4);
+		cell[15] = T(1);
 	}
 	//! Set a rotation matrix about the given axis by angle
-	void SetRotation( const Point3<TYPE> &axis, TYPE angle ) { SetRotation(axis,cySin(angle),cyCos(angle)); }
+	void SetRotation( Vec3<T> const &axis, T angle ) { SetRotation(axis,std::sin(angle),std::cos(angle)); }
 	//! Set a rotation matrix about the given axis by cos and sin of angle
-	void SetRotation( const Point3<TYPE> &axis, TYPE sinAngle, TYPE cosAngle )
+	void SetRotation( Vec3<T> const &axis, T sinAngle, T cosAngle )
 	{
-		const TYPE t = TYPE(1) - cosAngle;
-		const TYPE tx = t * axis.x;
-		const TYPE ty = t * axis.y;
-		const TYPE tz = t * axis.z;
-		const TYPE txy = tx * axis.y;
-		const TYPE txz = tx * axis.z;
-		const TYPE tyz = ty * axis.z;
-		const TYPE sx = sinAngle * axis.x;
-		const TYPE sy = sinAngle * axis.y;
-		const TYPE sz = sinAngle * axis.z;
-		data[ 0] = tx * axis.x + cosAngle;  data[ 1] = txy + sz;                data[ 2] = txz - sy;                data[ 3] = TYPE(0);
-		data[ 4] = txy - sz;                data[ 5] = ty * axis.y + cosAngle;  data[ 6] = tyz + sx;                data[ 7] = TYPE(0);
-		data[ 8] = txz + sy;                data[ 9] = tyz - sx;                data[10] = tz * axis.z + cosAngle;
-		CY_MEMCLEAR(TYPE,data+11,4);
-		data[15] = TYPE(1);
+		T t = T(1) - cosAngle;
+		Vec3<T> a = t * axis;
+		T txy = a.x * axis.y;
+		T txz = a.x * axis.z;
+		T tyz = a.y * axis.z;
+		Vec3<T> s = sinAngle * axis;
+		cell[ 0] = a.x * axis.x + cosAngle;   cell[ 1] = txy + s.z;                 cell[ 2] = txz - s.y;                 cell[ 3] = T(0);
+		cell[ 4] = txy - s.z;                 cell[ 5] = a.y * axis.y + cosAngle;   cell[ 6] = tyz + s.x;                 cell[ 7] = T(0);
+		cell[ 8] = txz + s.y;                 cell[ 9] = tyz - s.x;                 cell[10] = a.z * axis.z + cosAngle;
+		MemClear(cell+11,4);
+		cell[15] = T(1);
 	}
 	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
-	void SetRotation( const Point3<TYPE> &from, const Point3<TYPE> &to )
+	void SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 	{
-		TYPE c = from.Dot(to);
-		if ( c > TYPE(0.9999999) ) SetIdentity();
+		T c = from.Dot(to);
+		if ( c > T(0.9999999) ) SetIdentity();
 		else {
-			TYPE s = cySqrt(TYPE(1) - c*c);
-			Point3<TYPE> axis = from.Cross(to).GetNormalized();
+			T s = Sqrt(T(1) - c*c);
+			Vec3<T> axis = from.Cross(to).GetNormalized();
 			SetRotation(axis, s, c);
 		}
 	}
 	//! Sets a translation matrix with no rotation or scale
-	void SetTrans( const Point3<TYPE> &move ) { TYPE d[12]={1,0,0,0, 0,1,0,0, 0,0,1,0}; CY_MEMCOPY(TYPE,data,d,12); data[12]=move.x; data[13]=move.y; data[14]=move.z; data[15]=TYPE(1); }
+	void SetTranslation( Vec3<T> const &move ) { column[0].Set(1,0,0,0); column[1].Set(0,1,0,0); column[2].Set(0,0,1,0); column[3].Set(move,1); }
 	//! Adds a translation to the matrix
-	void AddTrans( const Point3<TYPE> &move ) { data[12]+=move.x; data[13]+=move.y; data[14]+=move.z; }
+	void AddTranslation( Vec3<T> const &move ) { cell[12]+=move.x; cell[13]+=move.y; cell[14]+=move.z; }
 	//! Sets the translation component of the matrix
-	void SetTransComponent( const Point3<TYPE> &move ) { data[12]=move.x; data[13]=move.y; data[14]=move.z; }
+	void SetTranslationComponent( Vec3<T> const &move ) { cell[12]=move.x; cell[13]=move.y; cell[14]=move.z; }
+	//! Sets the translation component of the matrix to zero
+	void SetNoTranslation() { cell[12]=0; cell[13]=0; cell[14]=0; }
 	//! Set view matrix using position, target and approximate up vector
-	void SetView( const Point3<TYPE> &pos, const Point3<TYPE> &target, const Point3<TYPE> &up )
+	void SetView( Vec3<T> const &pos, Vec3<T> const &target, Vec3<T> const &up )
 	{
-		Point3<TYPE> f = target - pos;
+		Vec3<T> f = target - pos;
 		f.Normalize();
-		Point3<TYPE> s = f.Cross(up);
+		Vec3<T> s = f.Cross(up);
 		s.Normalize();
-		Point3<TYPE> u = s.Cross(f);
-		data[ 0]=s.x; data[ 1]=u.x; data[ 2]=-f.x; data[ 3]=TYPE(0);
-		data[ 4]=s.y; data[ 5]=u.y; data[ 6]=-f.y; data[ 7]=TYPE(0);
-		data[ 8]=s.z; data[ 9]=u.z; data[10]=-f.z; data[11]=TYPE(0);
-		data[12]= -s % pos;
-		data[13]= -u % pos;
-		data[14]=  f % pos;
-		data[15]=TYPE(1);
+		Vec3<T> u = s.Cross(f);
+		cell[ 0]=s.x; cell[ 1]=u.x; cell[ 2]=-f.x; cell[ 3]=T(0);
+		cell[ 4]=s.y; cell[ 5]=u.y; cell[ 6]=-f.y; cell[ 7]=T(0);
+		cell[ 8]=s.z; cell[ 9]=u.z; cell[10]=-f.z; cell[11]=T(0);
+		cell[12]= -s % pos;
+		cell[13]= -u % pos;
+		cell[14]=  f % pos;
+		cell[15]=T(1);
 	}
-	//! Set matrix using normal and approximate x direction
-	void SetNormal(const Point3<TYPE> &normal, const Point3<TYPE> &dir ) { Point3<TYPE> y=normal.Cross(dir); y.Normalize(); Point3<TYPE> newdir=y.Cross(normal); Set(newdir,y,normal,Point3<TYPE>(TYPE(0),TYPE(0),TYPE(0))); }
+	//! Sets a Cartesian coordinate frame using the given x direction, an approximate y direction, and a translation. x must be a unit vector.
+	void SetCartesianFrameXY( Vec3<T> const &x, Vec3<T> const &y_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> z = x.Cross(y_approx); z.Normalize(); Vec3<T> y=z.Cross(x); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given x direction, an approximate z direction, and a translation. x must be a unit vector.
+	void SetCartesianFrameXZ( Vec3<T> const &x, Vec3<T> const &z_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> y = z_approx.Cross(x); y.Normalize(); Vec3<T> z=x.Cross(y); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given y direction, an approximate x direction, and a translation. y must be a unit vector.
+	void SetCartesianFrameYX( Vec3<T> const &y, Vec3<T> const &x_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> z = x_approx.Cross(y); z.Normalize(); Vec3<T> x=y.Cross(z); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given y direction, an approximate z direction, and a translation. y must be a unit vector.
+	void SetCartesianFrameYZ( Vec3<T> const &y, Vec3<T> const &z_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> x = y.Cross(z_approx); x.Normalize(); Vec3<T> z=x.Cross(y); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given z direction, an approximate x direction, and a translation. z must be a unit vector.
+	void SetCartesianFrameZX( Vec3<T> const &z, Vec3<T> const &x_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> y = z.Cross(x_approx); y.Normalize(); Vec3<T> x=y.Cross(z); Set(x,y,z,trans); }
+	//! Sets a Cartesian coordinate frame using the given z direction, an approximate y direction, and a translation. z must be a unit vector.
+	void SetCartesianFrameZY( Vec3<T> const &z, Vec3<T> const &y_approx, Vec3<T> const &trans=Vec3<T>(T(0),T(0),T(0)) ) { Vec3<T> x = y_approx.Cross(z); x.Normalize(); Vec3<T> y=z.Cross(x); Set(x,y,z,trans); }
 	//! Set a project matrix with field of view in radians
-	void SetPerspective( TYPE fov, TYPE aspect, TYPE znear, TYPE zfar ) { SetPerspectiveTan(cyTan(fov*TYPE(0.5)),aspect,znear,zfar); }
+	void SetPerspective( T fov, T aspect, T znear, T zfar ) { SetPerspectiveTan(std::tan(fov*T(0.5)),aspect,znear,zfar); }
 	//! Set a project matrix with the tangent of the half field of view (tan_fov_2)
-	void SetPerspectiveTan( TYPE tan_fov_2, TYPE aspect, TYPE znear, TYPE zfar )
+	void SetPerspectiveTan( T tan_fov_2, T aspect, T znear, T zfar )
 	{
-		const TYPE yScale = TYPE(1) / tan_fov_2;
-		const TYPE xScale = yScale / aspect;
-		const TYPE zdif = znear - zfar;
-		TYPE d[16] = { xScale,0,0,0,  0,yScale,0,0,  0,0,(zfar+znear)/zdif,-1,  0,0,(2*zfar*znear)/zdif,0 };
-		CY_MEMCOPY(TYPE,data,d,16);
+		T yScale = T(1) / tan_fov_2;
+		T xScale = yScale / aspect;
+		T zdif = znear - zfar;
+		column[0].Set(xScale,0,0,0);
+		column[1].Set(0,yScale,0,0);
+		column[2].Set(0,0,(zfar+znear)/zdif,-1);
+		column[3].Set(0,0,(2*zfar*znear)/zdif,0);
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, TYPE x, TYPE y, TYPE z, TYPE w )    { data[row]=x; data[row+4]=y; data[row+8]=z; data[row+12]=w; }						//!< Sets a row of the matrix
-	void SetColumn  ( int column, TYPE x, TYPE y, TYPE z, TYPE w ) { data[4*column]=x; data[4*column+1]=y; data[4*column+2]=z; data[4*column+3]=w; }	//!< Sets a column of the matrix
-	void SetDiagonal( TYPE xx, TYPE yy, TYPE zz, TYPE ww=1 )       { data[0]=xx; data[5]=yy; data[10]=zz; data[15]=ww; }								//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const Point4<TYPE> &p )                      { SetDiagonal( p.x, p.y, p.z, p.w ); }												//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const Point3<TYPE> &p )                      { SetDiagonal( p.x, p.y, p.z, TYPE(1) ); }											//!< Sets the diagonal values of the matrix
-	void SetDiagonal( const TYPE *values )                         { SetDiagonal(values[0],values[1],values[2],values[3]); }							//!< Sets the 4 diagonal values of the matrix
+	void SetRow     ( int row, T x, T y, T z, T w ) { cell[row]=x; cell[row+4]=y; cell[row+8]=z; cell[row+12]=w; }	//!< Sets a row of the matrix
+	void SetRow     ( int row, Vec4<T> const &v )   { SetRow(row,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
+	void SetColumn  ( int col, T x, T y, T z, T w ) { column[col].Set(x,y,z,w); }									//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec4<T> const &v )   { column[col]=v; }												//!< Sets a column of the matrix
+	void SetDiagonal( T xx, T yy, T zz, T ww=1 )    { cell[0]=xx; cell[5]=yy; cell[10]=zz; cell[15]=ww; }			//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec4<T> const &p )            { SetDiagonal( p.x, p.y, p.z, p.w ); }							//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec3<T> const &p )            { SetDiagonal( p.x, p.y, p.z, T(1) ); }							//!< Sets the diagonal values of the matrix
+	void SetDiagonal( T const *values )             { SetDiagonal(values[0],values[1],values[2],values[3]); }		//!< Sets the 4 diagonal values of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-	Point4<TYPE>   GetRow   ( int row )                  const { return Point4<TYPE>( data[row], data[row+4], data[row+8], data[row+12] ); }							//!< Returns a row of the matrix
-	void           GetRow   ( int row, Point4<TYPE> &p ) const { p.Set( data[row], data[row+4], data[row+8], data[row+12] ); }											//!< Returns a row of the matrix
-	void           GetRow   ( int row, TYPE *values )    const { values[0]=data[row]; values[1]=data[row+4]; values[2]=data[row+8]; values[3]=data[row+12]; }			//!< Returns a row of the matrix
-	Point4<TYPE>   GetColumn( int col )                  const { return Point4<TYPE>( &data[col*4] ); }																	//!< Returns a column of the matrix
-	void           GetColumn( int col, Point4<TYPE> &p ) const { p.Set( &data[col*4] ); }																				//!< Returns a column of the matrix
-	void           GetColumn( int col, TYPE *values )    const { values[0]=data[col*4]; values[1]=data[col*4+1]; values[2]=data[col*4+2]; values[3]=data[col*4+3]; }	//!< Returns a column of the matrix
-	Point4<TYPE>   GetDiagonal()                         const { Point4<TYPE> r; GetDiagonal(r); return r; }															//!< Returns the diagonal of the matrix
-	void           GetDiagonal( Point4<TYPE> &p )        const { GetDiagonal(&p.x); }																					//!< Returns the diagonal of the matrix
-	void	       GetDiagonal( TYPE *values )           const { values[0]=data[0]; values[1]=data[5]; values[2]=data[10]; values[3]=data[15]; }						//!< Returns the diagonal of the matrix
+	Vec4<T> GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+4], cell[row+8], cell[row+12] ); }	//!< Returns a row of the matrix
+	Vec4<T> GetColumn  ( int col ) const { return column[col]; }													//!< Returns a column of the matrix
+	Vec4<T> GetDiagonal()          const { return Vec4<T>( cell[0], cell[5], cell[10], cell[15] ); }				//!< Returns the diagonal of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
-	//!@name Get Sub-matrix data
+	//!@name Get Sub-matrix cell
 
-	void           GetSubMatrix ( Matrix34<TYPE> &m )    const { GetSubMatrix34(m); }																					//!< Returns the 3x4 portion of the matrix
-	void           GetSubMatrix ( Matrix3 <TYPE> &m )    const { GetSubMatrix3 (m); }																					//!< Returns the 3x3 portion of the matrix
-	void           GetSubMatrix ( Matrix2 <TYPE> &m )    const { GetSubMatrix2 (m); }																					//!< Returns the 2x2 portion of the matrix
-	Matrix34<TYPE> GetSubMatrix34()                      const { Matrix34<TYPE> m; GetSubMatrix34(m.data); return m; }													//!< Returns the 3x4 portion of the matrix
-	void           GetSubMatrix34( Matrix34<TYPE> &m )   const { GetSubMatrix34(m.data); }																				//!< Returns the 3x4 portion of the matrix
-	void           GetSubMatrix34( TYPE *mdata )         const { CY_MEMCOPY(TYPE,mdata,data,3); CY_MEMCOPY(TYPE,mdata+3,data+4,3); CY_MEMCOPY(TYPE,mdata+6,data+8,3); CY_MEMCOPY(TYPE,mdata+9,data+12,3); }	//!< Returns the 3x4 portion of the matrix
-	Matrix3<TYPE>  GetSubMatrix3 ()                      const { Matrix3<TYPE> m; GetSubMatrix3(m.data); return m; }													//!< Returns the 3x3 portion of the matrix
-	void           GetSubMatrix3 ( Matrix3<TYPE> &m )    const { GetSubMatrix3(m.data); }																				//!< Returns the 3x3 portion of the matrix
-	void           GetSubMatrix3 ( TYPE *mdata )         const { CY_MEMCOPY(TYPE,mdata,data,3); CY_MEMCOPY(TYPE,mdata+3,data+4,3); CY_MEMCOPY(TYPE,mdata+6,data+8,3); }	//!< Returns the 3x3 portion of the matrix
-	Matrix2<TYPE>  GetSubMatrix2 ()                      const { Matrix2<TYPE> m; GetSubMatrix2(m.data); return m; }													//!< Returns the 2x2 portion of the matrix
-	void           GetSubMatrix2 ( Matrix2<TYPE> &m )    const { GetSubMatrix2(m.data); }																				//!< Returns the 2x2 portion of the matrix
-	void           GetSubMatrix2 ( TYPE *mdata )         const { CY_MEMCOPY(TYPE,mdata,data,2); CY_MEMCOPY(TYPE,mdata+2,data+4,2); }									//!< Returns the 2x2 portion of the matrix
-	Point3<TYPE>   GetTrans()                            const { Point3<TYPE> p; GetTrans(p); return p; }																//!< Returns the translation component of the matrix
-	void           GetTrans( Point3<TYPE> &p )           const { GetTrans(&p.x); }																						//!< Returns the translation component of the matrix
-	void           GetTrans( TYPE *trans )               const { CY_MEMCOPY(TYPE,trans,data+12,3); }																	//!< Returns the translation component of the matrix
+	void        GetSubMatrix  ( Matrix34<T> &m ) const { GetSubMatrix34(m); }																	//!< Returns the 3x4 portion of the matrix
+	void        GetSubMatrix  ( Matrix3 <T> &m ) const { GetSubMatrix3 (m); }																	//!< Returns the 3x3 portion of the matrix
+	void        GetSubMatrix  ( Matrix2 <T> &m ) const { GetSubMatrix2 (m); }																	//!< Returns the 2x2 portion of the matrix
+	Matrix34<T> GetSubMatrix34()                 const { return Matrix34<T>( col3[0].v, col3[1].v, col3[2].v, col3[3].v ); }					//!< Returns the 3x4 portion of the matrix
+	void        GetSubMatrix34( Matrix34<T> &m ) const { m.Set( col3[0].v, col3[1].v, col3[2].v, col3[3].v ); }									//!< Returns the 3x4 portion of the matrix
+	void        GetSubMatrix34( T *mdata )       const { MemCopy(mdata,cell,3); MemCopy(mdata+3,cell+4,3); MemCopy(mdata+6,cell+8,3); MemCopy(mdata+9,cell+12,3); }	//!< Returns the 3x4 portion of the matrix
+	Matrix3<T>  GetSubMatrix3 ()                 const { Matrix3<T> m; GetSubMatrix3(m.cell); return m; }										//!< Returns the 3x3 portion of the matrix
+	void        GetSubMatrix3 ( Matrix3<T> &m )  const { GetSubMatrix3(m.cell); }																//!< Returns the 3x3 portion of the matrix
+	void        GetSubMatrix3 ( T *mdata )       const { MemCopy(mdata,cell,3); MemCopy(mdata+3,cell+4,3); MemCopy(mdata+6,cell+8,3); }			//!< Returns the 3x3 portion of the matrix
+	Matrix2<T>  GetSubMatrix2 ()                 const { Matrix2<T> m; GetSubMatrix2(m.cell); return m; }										//!< Returns the 2x2 portion of the matrix
+	void        GetSubMatrix2 ( Matrix2<T> &m )  const { GetSubMatrix2(m.cell); }																//!< Returns the 2x2 portion of the matrix
+	void        GetSubMatrix2 ( T *mdata )       const { MemCopy(mdata,cell,2); MemCopy(mdata+2,cell+4,2); }									//!< Returns the 2x2 portion of the matrix
+	Vec3<T>     GetTranslation()                 const { return col3[3].v; }																	//!< Returns the translation component of the matrix
+	void        GetTranslation( Vec3<T> &p )     const { p = col3[3].v; }																		//!< Returns the translation component of the matrix
+	void        GetTranslation( T *trans )       const { MemCopy(trans,cell+12,3); }															//!< Returns the translation component of the matrix
+	Matrix3<T>  GetRotation   ()                 const { Matrix3<T> m(*this); return m.GetRotation(); }											//!< Returns the rotation portion of the transformation
+	Matrix3<T>  GetScale      ()                 const { Matrix3<T> m(*this); return m.GetScale   (); }											//!< Returns the scale portion of the transformation.
 
 	//! Returns the average scale factor of the 3 by 3 sub-matrix
-	TYPE GetAvrgScale() const 
+	T GetAvrgScale() const 
 	{
-		TYPE det = data[0] * ( data[5] * data[10] - data[6] * data[ 9] ) + 
-		           data[1] * ( data[6] * data[ 8] - data[4] * data[10] ) + 
-		           data[2] * ( data[4] * data[ 9] - data[5] * data[ 8] );
-		TYPE s = cyPow( cyAbs(det), TYPE(1)/TYPE(3) );
+		T det = cell[0] * ( cell[5] * cell[10] - cell[6] * cell[ 9] ) + 
+		        cell[1] * ( cell[6] * cell[ 8] - cell[4] * cell[10] ) + 
+		        cell[2] * ( cell[4] * cell[ 9] - cell[5] * cell[ 8] );
+		T s = std::pow( std::abs(det), T(1)/T(3) );
 		return det >= 0 ? s : -s;
 	}
 
+	void GetComponents( Matrix3<T> &scale, Matrix3<T> &rotation, Vec3<T> &translation ) const { Matrix3<T> m(*this); m.GetComponents(scale,rotation); GetTranslation(translation); }	//!< Returns separate transformation components
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Comparison Operators
 
-	bool operator == ( const Matrix4 &right ) const { for ( int i=0; i<16; i++ ) if ( data[i] != right.data[i] ) return false; return true; } //!< compare equal
-	bool operator != ( const Matrix4 &right ) const { for ( int i=0; i<16; i++ ) if ( data[i] != right.data[i] ) return true; return false; } //!< compare not equal
+	bool operator == ( Matrix4 const &right ) const { for ( int i=0; i<16; ++i ) if ( cell[i] != right.cell[i] ) return false; return true; } //!< compare equal
+	bool operator != ( Matrix4 const &right ) const { for ( int i=0; i<16; ++i ) if ( cell[i] != right.cell[i] ) return true; return false; } //!< compare not equal
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	TYPE&       operator () ( int row, int column )       { return data[ column * 4 + row ]; }	//!< subscript operator
-	const TYPE& operator () ( int row, int column ) const { return data[ column * 4 + row ]; }	//!< constant subscript operator
-	TYPE&       operator [] ( int i )                     { return data[i]; }					//!< subscript operator
-	const TYPE& operator [] ( int i )               const { return data[i]; }					//!< constant subscript operator
+	T&        operator () ( int row, int col )       { assert( row>=0 && row<4 && col>=0 && col<4 ); return cell[ col*4 + row ]; }	//!< subscript operator
+	T const & operator () ( int row, int col ) const { assert( row>=0 && row<4 && col>=0 && col<4 ); return cell[ col*4 + row ]; }	//!< constant subscript operator
+	T&        operator [] ( int i )                  { assert( i>=0 && i<16 ); return cell[i]; }									//!< subscript operator
+	T const & operator [] ( int i )            const { assert( i>=0 && i<16 ); return cell[i]; }									//!< constant subscript operator
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Unary and Binary Operators
 
 	// Unary operators
-	Matrix4 operator - () const { Matrix4 r; for (int i=0; i<16; i++) r.data[i]=-data[i]; return r; }	//!< negative matrix
+	Matrix4 operator - () const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i]=-cell[i]; return r; }	//!< negative matrix
 
 	// Binary operators
-	Matrix4 operator * ( const TYPE     value ) const { Matrix4 r; for (int i=0; i<16; ++i) r.data[i] = data[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix4 operator / ( const TYPE     value ) const { Matrix4 r; for (int i=0; i<16; ++i) r.data[i] = data[i] / value;         return r; }	//!< divide matrix by a value;
-	Matrix4 operator + ( const Matrix4 &right ) const { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = data[i] + right.data[i]; return r; }	//!< add two Matrices
-	Matrix4 operator - ( const Matrix4 &right ) const { Matrix4 r; for (int i=0; i<16; i++) r.data[i] = data[i] - right.data[i]; return r; }	//!< subtract one Matrix4 from another
-	Matrix4 operator * ( const Matrix4 &right ) const	//!< multiply a matrix with another
+	Matrix4 operator * ( T        const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
+	Matrix4 operator / ( T        const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix4 operator + ( Matrix4 const &right ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
+	Matrix4 operator - ( Matrix4 const &right ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix4 from another
+	Matrix4 operator * ( Matrix4 const &right ) const	//!< multiply a matrix with another
 	{
 		Matrix4 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<16; i+=4, rd+=4 ) {
-			TYPE a[4], b[4], c[4], d[4];
-			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) a[j] = data[   j] * right.data[i  ];
-			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) b[j] = data[ 4+j] * right.data[i+1];
-			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) c[j] = data[ 8+j] * right.data[i+2];
-			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) d[j] = data[12+j] * right.data[i+3];
+			T a[4], b[4], c[4], d[4];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) a[j] = cell[   j] * right.cell[i  ];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) b[j] = cell[ 4+j] * right.cell[i+1];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) c[j] = cell[ 8+j] * right.cell[i+2];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) d[j] = cell[12+j] * right.cell[i+3];
 			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = a[j] + b[j] + c[j] + d[j];
 		}
 		return r;
 	}
-	Matrix4 operator * ( const Matrix34<TYPE> &right ) const	//!< multiply a matrix with another
+	Matrix4 operator * ( Matrix34<T> const &right ) const	//!< multiply a matrix with another
 	{
-		TYPE a[4], b[4], c[4];
+		T a[4], b[4], c[4];
 		Matrix4 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<9; i+=3, rd+=4 ) {
-			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) a[k] = data[  k] * right.data[i  ];
-			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) b[k] = data[4+k] * right.data[i+1];
-			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) c[k] = data[8+k] * right.data[i+2];
+			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) a[k] = cell[  k] * right.cell[i  ];
+			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) b[k] = cell[4+k] * right.cell[i+1];
+			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) c[k] = cell[8+k] * right.cell[i+2];
 			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = a[j] + b[j] + c[j];
 		}
-		_CY_IVDEP_FOR ( int k=0; k<4; ++k ) a[k] = data[  k] * right.data[ 9];
-		_CY_IVDEP_FOR ( int k=0; k<4; ++k ) b[k] = data[4+k] * right.data[10];
-		_CY_IVDEP_FOR ( int k=0; k<4; ++k ) c[k] = data[8+k] * right.data[11];
-		_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = (a[j] + b[j]) + (c[j] + data[12+j]);
+		_CY_IVDEP_FOR ( int k=0; k<4; ++k ) a[k] = cell[  k] * right.cell[ 9];
+		_CY_IVDEP_FOR ( int k=0; k<4; ++k ) b[k] = cell[4+k] * right.cell[10];
+		_CY_IVDEP_FOR ( int k=0; k<4; ++k ) c[k] = cell[8+k] * right.cell[11];
+		_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = (a[j] + b[j]) + (c[j] + cell[12+j]);
 		return r;
 	}
-	Matrix4 operator * ( const Matrix3<TYPE> &right ) const	//!< multiply a matrix with another
+	Matrix4 operator * ( Matrix3<T> const &right ) const	//!< multiply a matrix with another
 	{
-		TYPE a[4], b[4], c[4];
+		T a[4], b[4], c[4];
 		Matrix4 r;
-		TYPE *rd = r.data;
+		T *rd = r.cell;
 		for ( int i=0; i<9; i+=3, rd+=4 ) {
-			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) a[k] = data[  k] * right.data[i  ];
-			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) b[k] = data[4+k] * right.data[i+1];
-			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) c[k] = data[8+k] * right.data[i+2];
+			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) a[k] = cell[  k] * right.cell[i  ];
+			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) b[k] = cell[4+k] * right.cell[i+1];
+			_CY_IVDEP_FOR ( int k=0; k<4; ++k ) c[k] = cell[8+k] * right.cell[i+2];
 			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = a[j] + b[j] + c[j];
 		}
-		CY_MEMCOPY(TYPE,r.data+12,data+12,4);
+		MemCopy(r.cell+12,cell+12,4);
 		return r;
 	}
-	Point4<TYPE> operator * ( const Point3<TYPE>& p ) const 
+	Vec4<T> operator * ( Vec3<T> const &p ) const 
 	{
-		//return Point4<TYPE>( p.x*data[0] + p.y*data[4] + p.z*data[ 8] + data[12], 
-		//                     p.x*data[1] + p.y*data[5] + p.z*data[ 9] + data[13],
-		//                     p.x*data[2] + p.y*data[6] + p.z*data[10] + data[14],
-		//                     p.x*data[3] + p.y*data[7] + p.z*data[11] + data[15] );
-		TYPE a[4], b[4], c[4];
-		Point4<TYPE> rr;
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[i] = p.x * data[   i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[i] = p.y * data[ 4+i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) c[i] = p.z * data[ 8+i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) rr[i] = a[i] + b[i] + c[i] + data[12+i];	
+		//return Vec4<T>( p.x*cell[0] + p.y*cell[4] + p.z*cell[ 8] + cell[12], 
+		//                p.x*cell[1] + p.y*cell[5] + p.z*cell[ 9] + cell[13],
+		//                p.x*cell[2] + p.y*cell[6] + p.z*cell[10] + cell[14],
+		//                p.x*cell[3] + p.y*cell[7] + p.z*cell[11] + cell[15] );
+		T a[4], b[4], c[4];
+		Vec4<T> rr;
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[i] = p.x * cell[   i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[i] = p.y * cell[ 4+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) c[i] = p.z * cell[ 8+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) rr[i] = a[i] + b[i] + c[i] + cell[12+i];	
 		return rr;
 	}
-	Point4<TYPE> operator * ( const Point4<TYPE>& p ) const 
+	Vec4<T> operator * ( Vec4<T> const &p ) const 
 	{
-		//return Point4<TYPE>( p.x*data[0] + p.y*data[4] + p.z*data[ 8] + p.w*data[12],
-		//                     p.x*data[1] + p.y*data[5] + p.z*data[ 9] + p.w*data[13],
-		//                     p.x*data[2] + p.y*data[6] + p.z*data[10] + p.w*data[14],
-		//                     p.x*data[3] + p.y*data[7] + p.z*data[11] + p.w*data[15] );
-		TYPE a[8], b[8];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[  i] = p.x * data[   i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[4+i] = p.y * data[ 4+i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[  i] = p.z * data[ 8+i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[4+i] = p.w * data[12+i];
+		//return Vec4<T>( p.x*cell[0] + p.y*cell[4] + p.z*cell[ 8] + p.w*cell[12],
+		//                p.x*cell[1] + p.y*cell[5] + p.z*cell[ 9] + p.w*cell[13],
+		//                p.x*cell[2] + p.y*cell[6] + p.z*cell[10] + p.w*cell[14],
+		//                p.x*cell[3] + p.y*cell[7] + p.z*cell[11] + p.w*cell[15] );
+		T a[8], b[8];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[  i] = p.x * cell[   i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[4+i] = p.y * cell[ 4+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[  i] = p.z * cell[ 8+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[4+i] = p.w * cell[12+i];
 		_CY_IVDEP_FOR ( int i=0; i<8; ++i ) a[i] += b[i];
-		Point4<TYPE> rr;
-		TYPE *rd = rr.Data();
+		Vec4<T> rr;
+		T *rd = rr.Elements();
 		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) rd[i] = a[i] + a[4+i];
 		return rr;
 	}
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name 3D Vector Transform Methods
 
 	//! Transforms the vector by multiplying it with the matrix, ignoring the translation component.
-	Point3<TYPE> VectorTransform(const Point3<TYPE>& p) const
+	Vec4<T> VectorTransform( Vec3<T> const &p ) const
 	{
-		//return Point3<T>( p.x*data[0] + p.y*data[4] + p.z*data[ 8], 
-		//                  p.x*data[1] + p.y*data[5] + p.z*data[ 9],
-		//                  p.x*data[2] + p.y*data[6] + p.z*data[10] );
-		TYPE a[4], b[4], c[4];
-		for ( int i=0; i<3; ++i ) a[i] = p.x * data[   i];
-		for ( int i=0; i<3; ++i ) b[i] = p.y * data[ 4+i];
-		for ( int i=0; i<3; ++i ) c[i] = p.z * data[ 8+i];
-		Point3<TYPE> rr;
-		for ( int i=0; i<3; ++i ) rr[i] = a[i] + b[i] + c[i];
+		//return Vec4<T>( p.x*cell[0] + p.y*cell[4] + p.z*cell[ 8], 
+		//                p.x*cell[1] + p.y*cell[5] + p.z*cell[ 9],
+		//                p.x*cell[2] + p.y*cell[6] + p.z*cell[10],
+		//                p.x*cell[3] + p.y*cell[7] + p.z*cell[11] );
+		T a[4], b[4], c[4];
+		Vec4<T> rr;
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[i] = p.x * cell[   i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[i] = p.y * cell[ 4+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) c[i] = p.z * cell[ 8+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) rr[i] = a[i] + b[i] + c[i];	
 		return rr;
 	}
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
 
-	const Matrix4& operator  = ( const Matrix4 &right ) { CY_MEMCOPY(TYPE,data,right.data,16); return *this; }	
-	const Matrix4& operator += ( const Matrix4 &right ) { for (int i=0; i<16; i++) data[i] += right.data[i]; return *this; }	//!< add two Matrices modify this
-	const Matrix4& operator -= ( const Matrix4 &right ) { for (int i=0; i<16; i++) data[i] -= right.data[i]; return *this; }	//!< subtract one Matrix4 from another matrix and modify this matrix
-	const Matrix4& operator *= ( const Matrix4 &right )        { *this = operator*(right); return *this; }						//!< multiply a matrix with another matrix and modify this matrix
-	const Matrix4& operator *= ( const Matrix34<TYPE> &right ) { *this = operator*(right); return *this; }						//!< multiply a matrix with another matrix and modify this matrix
-	const Matrix4& operator *= ( const Matrix3<TYPE>  &right ) { *this = operator*(right); return *this; }						//!< multiply a matrix with another matrix and modify this matrix
-	const Matrix4& operator *= ( const TYPE     value ) { for (int i=0; i<16; i++) data[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
-	const Matrix4& operator /= ( const TYPE     value ) { for (int i=0; i<16; i++) data[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix4 const & operator += ( Matrix4     const &right ) { for ( int i=0; i<16; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
+	Matrix4 const & operator -= ( Matrix4     const &right ) { for ( int i=0; i<16; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix4 from another matrix and modify this matrix
+	Matrix4 const & operator *= ( Matrix4     const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix4 const & operator *= ( Matrix34<T> const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix4 const & operator *= ( Matrix3<T>  const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix4 const & operator *= ( T           const  value ) { for ( int i=0; i<16; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
+	Matrix4 const & operator /= ( T           const  value ) { for ( int i=0; i<16; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1762,40 +1992,40 @@ public:
 
 	void Transpose()															//!< Transpose this matrix
 	{
-		for (int i = 1; i < 4; i++) {
-			for (int j = 0; j < i; j++) {
-				TYPE temp = data[i * 4 + j];
-				data[i * 4 + j] = data[j * 4 + i];
-				data[j * 4 + i] = temp;
+		for ( int i = 1; i < 4; ++i ) {
+			for ( int j = 0; j < i; j++) {
+				T temp = cell[i * 4 + j];
+				cell[i * 4 + j] = cell[j * 4 + i];
+				cell[j * 4 + i] = temp;
 			}
 		}
 	}
 	void GetTranspose( Matrix4 &m ) const										//!< return Transpose of this matrix
 	{
-		m.data[ 0] = data[0];   m.data[ 1] = data[4];   m.data[ 2] = data[ 8];  m.data[ 3] = data[12];
-		m.data[ 4] = data[1];   m.data[ 5] = data[5];   m.data[ 6] = data[ 9];  m.data[ 7] = data[13];
-		m.data[ 8] = data[2];   m.data[ 9] = data[6];   m.data[10] = data[10];  m.data[11] = data[14];
-		m.data[12] = data[3];   m.data[13] = data[7];   m.data[14] = data[11];  m.data[15] = data[15];
+		m.cell[ 0] = cell[0];   m.cell[ 1] = cell[4];   m.cell[ 2] = cell[ 8];  m.cell[ 3] = cell[12];
+		m.cell[ 4] = cell[1];   m.cell[ 5] = cell[5];   m.cell[ 6] = cell[ 9];  m.cell[ 7] = cell[13];
+		m.cell[ 8] = cell[2];   m.cell[ 9] = cell[6];   m.cell[10] = cell[10];  m.cell[11] = cell[14];
+		m.cell[12] = cell[3];   m.cell[13] = cell[7];   m.cell[14] = cell[11];  m.cell[15] = cell[15];
 	}
 	Matrix4 GetTranspose() const { Matrix4 t; GetTranspose(t); return t; }	//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
-	Point4<TYPE> TransposeMult( const Point3<TYPE>& p ) const { return TransposeMult( Point4<TYPE>(p.x, p.y, p.z, TYPE(1)) ); }
+	Vec4<T> TransposeMult( Vec3<T> const &p ) const { return TransposeMult( Vec4<T>(p.x, p.y, p.z, T(1)) ); }
 
 	//! Multiply the give vector with the transpose of the matrix
-	Point4<TYPE> TransposeMult( const Point4<TYPE>& p ) const 
+	Vec4<T> TransposeMult( Vec4<T> const &p ) const 
 	{
-		//return Point4<TYPE>(	p.x*data[ 0] + p.y*data[ 1] + p.z*data[ 2] + p.w*data[ 3],
-		//						p.x*data[ 4] + p.y*data[ 5] + p.z*data[ 6] + p.w*data[ 7],
-		//						p.x*data[ 8] + p.y*data[ 9] + p.z*data[10] + p.w*data[11],
-		//						p.x*data[12] + p.y*data[13] + p.z*data[14] + p.w*data[15] );
-		TYPE a[4], b[4], c[4], d[4];
-		const TYPE *pd = p.Data();
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[i] = pd[i] * data[   i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[i] = pd[i] * data[ 4+i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) c[i] = pd[i] * data[ 8+i];
-		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) d[i] = pd[i] * data[12+i];
-		Point4<TYPE> rr;
+		//return Vec4<T>(	p.x*cell[ 0] + p.y*cell[ 1] + p.z*cell[ 2] + p.w*cell[ 3],
+		//						p.x*cell[ 4] + p.y*cell[ 5] + p.z*cell[ 6] + p.w*cell[ 7],
+		//						p.x*cell[ 8] + p.y*cell[ 9] + p.z*cell[10] + p.w*cell[11],
+		//						p.x*cell[12] + p.y*cell[13] + p.z*cell[14] + p.w*cell[15] );
+		T a[4], b[4], c[4], d[4];
+		T const *pd = p.Elements();
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) a[i] = pd[i] * cell[   i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) b[i] = pd[i] * cell[ 4+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) c[i] = pd[i] * cell[ 8+i];
+		_CY_IVDEP_FOR ( int i=0; i<4; ++i ) d[i] = pd[i] * cell[12+i];
+		Vec4<T> rr;
 		rr.x = a[0] + a[1] + a[2] + a[3];
 		rr.y = b[0] + b[1] + b[2] + b[3];
 		rr.z = c[0] + c[1] + c[2] + c[3];
@@ -1803,23 +2033,53 @@ public:
 		return rr;
 	}
 
-	TYPE GetDeterminant() const	//!< Get the determinant of this matrix
+	Matrix4 TransposeMult( Matrix4 const & right ) const //!< Multiply a matrix by the transpose of this one (i.e. this^T * right).
+	{
+		Matrix4 r;
+		for ( int i=0, k=0; i<3; ++i ) {
+			for ( int j=0; j<3; ++j, ++k ) {
+				r.cell[k] = column[j].Dot( right.column[i] );
+			}
+		}
+		return r;
+	}
+	Matrix4 MultTranspose( Matrix4 const & right ) const //!< Multiply the transpose of a matrix by this one (i.e. this * right^T).
+	{
+		Matrix4 r;
+		T *rd = r.cell;
+		for ( int i=0; i<16; i+=4, rd+=4 ) {
+			T a[4], b[4], c[4], d[4];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) a[j] = cell[   j] * right.cell[i   ];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) b[j] = cell[ 4+j] * right.cell[i+ 4];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) c[j] = cell[ 8+j] * right.cell[i+ 8];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) d[j] = cell[12+j] * right.cell[i+12];
+			_CY_IVDEP_FOR ( int j=0; j<4; ++j ) rd[j] = a[j] + b[j] + c[j] + d[j];
+		}
+		return r;
+	}
+
+	Matrix4 TransposeMultSelf() const { return TransposeMult(*this); } //!< Multiply the transpose of this matrix with itself (i.e. this^T * this).
+	Matrix4 MultSelfTranspose() const { return MultTranspose(*this); } //!< Multiply the matrix with its transpose (i.e. this * this^T).
+
+	T GetTrace() const { return cell[0]+cell[5]+cell[10]+cell[15]; }
+
+	T GetDeterminant() const	//!< Get the determinant of this matrix
 	{
 		// 0 (                      5 ( 10 15 - 11 14) + 6 ( 11 13 -  9 15) + 7 (  9 14 - 10 13)) +  
 		// 1 ( 4 ( 11 14 - 10 15) +                      6 (  8 15 - 11 12) + 7 ( 10 12 -  8 14)) +  
 		// 2 ( 4 (  9 15 - 11 13) + 5 ( 11 12 -  8 15) +                      7 (  8 13 -  9 12)) + 
 		// 3 ( 4 ( 10 13 -  9 14) + 5 (  8 14 - 10 12) + 6 (  9 12 -  8 13)) 
 
-		const TYPE data_11_14__10_15 = data[11] * data[14] - data[10] * data[15];
-		const TYPE data__9_15__11_13 = data[ 9] * data[15] - data[11] * data[13];
-		const TYPE data_10_13___9_14 = data[10] * data[13] - data[ 9] * data[14];
-		const TYPE data_11_12___8_15 = data[11] * data[12] - data[ 8] * data[15];
-		const TYPE data__8_14__10_12 = data[ 8] * data[14] - data[10] * data[12];
-		const TYPE data__9_12___8_13 = data[ 9] * data[12] - data[ 8] * data[13];
-		return data[0] * ( data[5] * (-data_11_14__10_15 ) + data[6] * (-data__9_15__11_13 ) + data[7] * (-data_10_13___9_14 ) ) +  
-		       data[1] * ( data[4] * ( data_11_14__10_15 ) + data[6] * (-data_11_12___8_15 ) + data[7] * (-data__8_14__10_12 ) ) +  
-		       data[2] * ( data[4] * ( data__9_15__11_13 ) + data[5] * ( data_11_12___8_15 ) + data[7] * (-data__9_12___8_13 ) ) + 
-		       data[3] * ( data[4] * ( data_10_13___9_14 ) + data[5] * ( data__8_14__10_12 ) + data[6] * ( data__9_12___8_13 ) );
+		T data_11_14__10_15 = cell[11] * cell[14] - cell[10] * cell[15];
+		T data__9_15__11_13 = cell[ 9] * cell[15] - cell[11] * cell[13];
+		T data_10_13___9_14 = cell[10] * cell[13] - cell[ 9] * cell[14];
+		T data_11_12___8_15 = cell[11] * cell[12] - cell[ 8] * cell[15];
+		T data__8_14__10_12 = cell[ 8] * cell[14] - cell[10] * cell[12];
+		T data__9_12___8_13 = cell[ 9] * cell[12] - cell[ 8] * cell[13];
+		return cell[0] * ( cell[5] * (-data_11_14__10_15 ) + cell[6] * (-data__9_15__11_13 ) + cell[7] * (-data_10_13___9_14 ) ) +  
+		       cell[1] * ( cell[4] * ( data_11_14__10_15 ) + cell[6] * (-data_11_12___8_15 ) + cell[7] * (-data__8_14__10_12 ) ) +  
+		       cell[2] * ( cell[4] * ( data__9_15__11_13 ) + cell[5] * ( data_11_12___8_15 ) + cell[7] * (-data__9_12___8_13 ) ) + 
+		       cell[3] * ( cell[4] * ( data_10_13___9_14 ) + cell[5] * ( data__8_14__10_12 ) + cell[6] * ( data__9_12___8_13 ) );
 	}
 
 	void Invert() { Matrix4 inv; GetInverse(inv); *this=inv; }					//!< Invert this matrix
@@ -1845,182 +2105,188 @@ public:
 		// 0 (  6 13 -  5 14 ) + 1 (  4 14 -  6 12 ) + 2 (  5 12 -  4 13 )
 		// 0 (  5 10 -  6  9 ) + 1 (  6  8 -  4 10 ) + 2 (  4  9 -  5  8 )
 
-		const TYPE data_11_14__10_15 = data[11] * data[14] - data[10] * data[15];
-		const TYPE data_10_15__11_14 = data[10] * data[15] - data[11] * data[14];
-		const TYPE data__7_14___6_15 = data[ 7] * data[14] - data[ 6] * data[15];
-		const TYPE data__6_11___7_10 = data[ 6] * data[11] - data[ 7] * data[10];
+		T data_11_14__10_15 = cell[11] * cell[14] - cell[10] * cell[15];
+		T data_10_15__11_14 = cell[10] * cell[15] - cell[11] * cell[14];
+		T data__7_14___6_15 = cell[ 7] * cell[14] - cell[ 6] * cell[15];
+		T data__6_11___7_10 = cell[ 6] * cell[11] - cell[ 7] * cell[10];
 
-		const TYPE data__9_15__11_13 = data[ 9] * data[15] - data[11] * data[13];
-		const TYPE data_11_13___9_15 = data[11] * data[13] - data[ 9] * data[15];
-		const TYPE data__5_15___7_13 = data[ 5] * data[15] - data[ 7] * data[13];
-		const TYPE data__7__9___5_11 = data[ 7] * data[ 9] - data[ 5] * data[11];
+		T data__9_15__11_13 = cell[ 9] * cell[15] - cell[11] * cell[13];
+		T data_11_13___9_15 = cell[11] * cell[13] - cell[ 9] * cell[15];
+		T data__5_15___7_13 = cell[ 5] * cell[15] - cell[ 7] * cell[13];
+		T data__7__9___5_11 = cell[ 7] * cell[ 9] - cell[ 5] * cell[11];
 		
-		const TYPE data_10_13___9_14 = data[10] * data[13] - data[ 9] * data[14];
-		const TYPE data__9_14__10_13 = data[ 9] * data[14] - data[10] * data[13];
-		const TYPE data__6_13___5_14 = data[ 6] * data[13] - data[ 5] * data[14];
-		const TYPE data__5_10___6__9 = data[ 5] * data[10] - data[ 6] * data[ 9];
+		T data_10_13___9_14 = cell[10] * cell[13] - cell[ 9] * cell[14];
+		T data__9_14__10_13 = cell[ 9] * cell[14] - cell[10] * cell[13];
+		T data__6_13___5_14 = cell[ 6] * cell[13] - cell[ 5] * cell[14];
+		T data__5_10___6__9 = cell[ 5] * cell[10] - cell[ 6] * cell[ 9];
 		
-		const TYPE data_11_12___8_15 = data[11] * data[12] - data[ 8] * data[15];
-		const TYPE data__8_15__11_12 = data[ 8] * data[15] - data[11] * data[12];
-		const TYPE data__7_12___4_15 = data[ 7] * data[12] - data[ 4] * data[15];
-		const TYPE data__4_11___7__8 = data[ 4] * data[11] - data[ 7] * data[ 8];
+		T data_11_12___8_15 = cell[11] * cell[12] - cell[ 8] * cell[15];
+		T data__8_15__11_12 = cell[ 8] * cell[15] - cell[11] * cell[12];
+		T data__7_12___4_15 = cell[ 7] * cell[12] - cell[ 4] * cell[15];
+		T data__4_11___7__8 = cell[ 4] * cell[11] - cell[ 7] * cell[ 8];
 		
-		const TYPE data__8_14__10_12 = data[ 8] * data[14] - data[10] * data[12];
-		const TYPE data_10_12___8_14 = data[10] * data[12] - data[ 8] * data[14];
-		const TYPE data__4_14___6_12 = data[ 4] * data[14] - data[ 6] * data[12];
-		const TYPE data__6__8___4_10 = data[ 6] * data[ 8] - data[ 4] * data[10];
+		T data__8_14__10_12 = cell[ 8] * cell[14] - cell[10] * cell[12];
+		T data_10_12___8_14 = cell[10] * cell[12] - cell[ 8] * cell[14];
+		T data__4_14___6_12 = cell[ 4] * cell[14] - cell[ 6] * cell[12];
+		T data__6__8___4_10 = cell[ 6] * cell[ 8] - cell[ 4] * cell[10];
 		
-		const TYPE data__9_12___8_13 = data[ 9] * data[12] - data[ 8] * data[13];
-		const TYPE data__8_13___9_12 = data[ 8] * data[13] - data[ 9] * data[12];
-		const TYPE data__5_12___4_13 = data[ 5] * data[12] - data[ 4] * data[13];
-		const TYPE data__4__9___5__8 = data[ 4] * data[ 9] - data[ 5] * data[ 8];
+		T data__9_12___8_13 = cell[ 9] * cell[12] - cell[ 8] * cell[13];
+		T data__8_13___9_12 = cell[ 8] * cell[13] - cell[ 9] * cell[12];
+		T data__5_12___4_13 = cell[ 5] * cell[12] - cell[ 4] * cell[13];
+		T data__4__9___5__8 = cell[ 4] * cell[ 9] - cell[ 5] * cell[ 8];
 
-		inverse.data[ 0] = data[5] * (-data_11_14__10_15) + data[6] * (-data__9_15__11_13) + data[7] * (-data_10_13___9_14);
-		inverse.data[ 1] = data[1] * (-data_10_15__11_14) + data[2] * (-data_11_13___9_15) + data[3] * (-data__9_14__10_13);
-		inverse.data[ 2] = data[1] * (-data__7_14___6_15) + data[2] * (-data__5_15___7_13) + data[3] * (-data__6_13___5_14);
-		inverse.data[ 3] = data[1] * (-data__6_11___7_10) + data[2] * (-data__7__9___5_11) + data[3] * (-data__5_10___6__9);
+		inverse.cell[ 0] = cell[5] * (-data_11_14__10_15) + cell[6] * (-data__9_15__11_13) + cell[7] * (-data_10_13___9_14);
+		inverse.cell[ 1] = cell[1] * (-data_10_15__11_14) + cell[2] * (-data_11_13___9_15) + cell[3] * (-data__9_14__10_13);
+		inverse.cell[ 2] = cell[1] * (-data__7_14___6_15) + cell[2] * (-data__5_15___7_13) + cell[3] * (-data__6_13___5_14);
+		inverse.cell[ 3] = cell[1] * (-data__6_11___7_10) + cell[2] * (-data__7__9___5_11) + cell[3] * (-data__5_10___6__9);
 		
-		inverse.data[ 4] = data[4] * ( data_11_14__10_15) + data[6] * (-data_11_12___8_15) + data[7] * (-data__8_14__10_12);
-		inverse.data[ 5] = data[0] * ( data_10_15__11_14) + data[2] * (-data__8_15__11_12) + data[3] * (-data_10_12___8_14);
-		inverse.data[ 6] = data[0] * ( data__7_14___6_15) + data[2] * (-data__7_12___4_15) + data[3] * (-data__4_14___6_12);
-		inverse.data[ 7] = data[0] * ( data__6_11___7_10) + data[2] * (-data__4_11___7__8) + data[3] * (-data__6__8___4_10);
+		inverse.cell[ 4] = cell[4] * ( data_11_14__10_15) + cell[6] * (-data_11_12___8_15) + cell[7] * (-data__8_14__10_12);
+		inverse.cell[ 5] = cell[0] * ( data_10_15__11_14) + cell[2] * (-data__8_15__11_12) + cell[3] * (-data_10_12___8_14);
+		inverse.cell[ 6] = cell[0] * ( data__7_14___6_15) + cell[2] * (-data__7_12___4_15) + cell[3] * (-data__4_14___6_12);
+		inverse.cell[ 7] = cell[0] * ( data__6_11___7_10) + cell[2] * (-data__4_11___7__8) + cell[3] * (-data__6__8___4_10);
 		
-		inverse.data[ 8] = data[4] * ( data__9_15__11_13) + data[5] * ( data_11_12___8_15) + data[7] * (-data__9_12___8_13);
-		inverse.data[ 9] = data[0] * ( data_11_13___9_15) + data[1] * ( data__8_15__11_12) + data[3] * (-data__8_13___9_12);
-		inverse.data[10] = data[0] * ( data__5_15___7_13) + data[1] * ( data__7_12___4_15) + data[3] * (-data__5_12___4_13);
-		inverse.data[11] = data[0] * ( data__7__9___5_11) + data[1] * ( data__4_11___7__8) + data[3] * (-data__4__9___5__8);
+		inverse.cell[ 8] = cell[4] * ( data__9_15__11_13) + cell[5] * ( data_11_12___8_15) + cell[7] * (-data__9_12___8_13);
+		inverse.cell[ 9] = cell[0] * ( data_11_13___9_15) + cell[1] * ( data__8_15__11_12) + cell[3] * (-data__8_13___9_12);
+		inverse.cell[10] = cell[0] * ( data__5_15___7_13) + cell[1] * ( data__7_12___4_15) + cell[3] * (-data__5_12___4_13);
+		inverse.cell[11] = cell[0] * ( data__7__9___5_11) + cell[1] * ( data__4_11___7__8) + cell[3] * (-data__4__9___5__8);
 
-		inverse.data[12] = data[4] * ( data_10_13___9_14) + data[5] * ( data__8_14__10_12) + data[6] * ( data__9_12___8_13);
-		inverse.data[13] = data[0] * ( data__9_14__10_13) + data[1] * ( data_10_12___8_14) + data[2] * ( data__8_13___9_12);
-		inverse.data[14] = data[0] * ( data__6_13___5_14) + data[1] * ( data__4_14___6_12) + data[2] * ( data__5_12___4_13);
-		inverse.data[15] = data[0] * ( data__5_10___6__9) + data[1] * ( data__6__8___4_10) + data[2] * ( data__4__9___5__8);
+		inverse.cell[12] = cell[4] * ( data_10_13___9_14) + cell[5] * ( data__8_14__10_12) + cell[6] * ( data__9_12___8_13);
+		inverse.cell[13] = cell[0] * ( data__9_14__10_13) + cell[1] * ( data_10_12___8_14) + cell[2] * ( data__8_13___9_12);
+		inverse.cell[14] = cell[0] * ( data__6_13___5_14) + cell[1] * ( data__4_14___6_12) + cell[2] * ( data__5_12___4_13);
+		inverse.cell[15] = cell[0] * ( data__5_10___6__9) + cell[1] * ( data__6__8___4_10) + cell[2] * ( data__4__9___5__8);
 
-		const TYPE det = data[0] * inverse.data[0] + data[1] * inverse.data[4] + data[2] * inverse.data[8] + data[3] * inverse.data[12];
+		T det = cell[0] * inverse.cell[0] + cell[1] * inverse.cell[4] + cell[2] * inverse.cell[8] + cell[3] * inverse.cell[12];
 		inverse /= det;
 	}
 	Matrix4 GetInverse() const { Matrix4 inv; GetInverse(inv); return inv; }	//!< Get the inverse of this matrix
 
+	//! Removes the scale component of the matrix by normalizing each column of the 3x3 sub-matrix.
+	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
+	void Normalize() { col3[0].v.Normalize(); col3[1].v.Normalize(); col3[2].v.Normalize(); }
+
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		Point3<TYPE> &px = *((Point3<TYPE>*)&data[0]);
-		Point3<TYPE> &py = *((Point3<TYPE>*)&data[4]);
-		Point3<TYPE> &pz = *((Point3<TYPE>*)&data[8]);
-		px.Normalize();
-		py -= px * (py%px);
-		py.Normalize();
-		pz -= px * (pz%px);
-		pz -= py * (pz%py);
-		pz.Normalize();
+		col3[0].v.Normalize();
+		col3[1].v -= col3[0].v * (col3[1].v % col3[0].v);
+		col3[1].v.Normalize();
+		col3[2].v -= col3[0].v * (col3[2].v % col3[0].v);
+		col3[2].v -= col3[1].v * (col3[2].v % col3[1].v);
+		col3[2].v.Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		Point3<TYPE> &px = *((Point3<TYPE>*)&data[0]);
-		Point3<TYPE> &py = *((Point3<TYPE>*)&data[4]);
-		Point3<TYPE> &pz = *((Point3<TYPE>*)&data[8]);
-		py.Normalize();
-		px -= py * (px%py);
-		px.Normalize();
-		pz -= py * (pz%py);
-		pz -= px * (pz%px);
-		pz.Normalize();
+		col3[1].v.Normalize();
+		col3[0].v -= col3[1].v * (col3[0].v % col3[1].v);
+		col3[0].v.Normalize();
+		col3[2].v -= col3[1].v * (col3[2].v % col3[1].v);
+		col3[2].v -= col3[0].v * (col3[2].v % col3[0].v);
+		col3[2].v.Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the z direction
 	void OrthogonalizeZ()
 	{
-		Point3<TYPE> &px = *((Point3<TYPE>*)&data[0]);
-		Point3<TYPE> &py = *((Point3<TYPE>*)&data[4]);
-		Point3<TYPE> &pz = *((Point3<TYPE>*)&data[8]);
-		pz.Normalize();
-		px -= pz * (px%pz);
-		px.Normalize();
-		py -= pz * (py%pz);
-		py -= px * (py%px);
-		py.Normalize();
+		col3[2].v.Normalize();
+		col3[0].v -= col3[2].v * (col3[0].v % col3[2].v);
+		col3[0].v.Normalize();
+		col3[1].v -= col3[2].v * (col3[1].v % col3[2].v);
+		col3[1].v -= col3[0].v * (col3[1].v % col3[0].v);
+		col3[1].v.Normalize();
 	}
 
 	//! Returns if the matrix is identity within the given error tollerance.
-	bool IsIdentity( TYPE tollerance=TYPE(0.001) ) const
+	bool IsIdentity( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
 	{
-		return cyAbs(data[ 0]-TYPE(1)) < tollerance && cyAbs(data[ 1])         < tollerance && cyAbs(data[ 2])         < tollerance && cyAbs(data[ 3])         < tollerance && 
-			   cyAbs(data[ 4])         < tollerance && cyAbs(data[ 5]-TYPE(1)) < tollerance && cyAbs(data[ 6])         < tollerance && cyAbs(data[ 7])         < tollerance &&
-			   cyAbs(data[ 8])         < tollerance && cyAbs(data[ 9])         < tollerance && cyAbs(data[10]-TYPE(1)) < tollerance && cyAbs(data[11])         < tollerance &&
-			   cyAbs(data[12])         < tollerance && cyAbs(data[13])         < tollerance && cyAbs(data[14])         < tollerance && cyAbs(data[15]-TYPE(1)) < tollerance;
+		return std::abs(cell[ 0]-T(1)) < tollerance && std::abs(cell[ 1])      < tollerance && std::abs(cell[ 2])      < tollerance && std::abs(cell[ 3])      < tollerance && 
+			   std::abs(cell[ 4])      < tollerance && std::abs(cell[ 5]-T(1)) < tollerance && std::abs(cell[ 6])      < tollerance && std::abs(cell[ 7])      < tollerance &&
+			   std::abs(cell[ 8])      < tollerance && std::abs(cell[ 9])      < tollerance && std::abs(cell[10]-T(1)) < tollerance && std::abs(cell[11])      < tollerance &&
+			   std::abs(cell[12])      < tollerance && std::abs(cell[13])      < tollerance && std::abs(cell[14])      < tollerance && std::abs(cell[15]-T(1)) < tollerance;
 	}
 
 	//! Returns if the matrix is symmetric within the given error tollerance.
-	bool IsSymmetric( TYPE tollerance=TYPE(0.001) ) const
+	bool IsSymmetric( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
 	{
-		return cyAbs(data[ 1] - data[ 4]) < tollerance && 
-			   cyAbs(data[ 2] - data[ 8]) < tollerance &&
-			   cyAbs(data[ 3] - data[12]) < tollerance &&
-			   cyAbs(data[ 6] - data[ 9]) < tollerance &&
-			   cyAbs(data[ 7] - data[13]) < tollerance &&
-			   cyAbs(data[11] - data[14]) < tollerance;
+		return std::abs(cell[ 1] - cell[ 4]) < tollerance && 
+			   std::abs(cell[ 2] - cell[ 8]) < tollerance &&
+			   std::abs(cell[ 3] - cell[12]) < tollerance &&
+			   std::abs(cell[ 6] - cell[ 9]) < tollerance &&
+			   std::abs(cell[ 7] - cell[13]) < tollerance &&
+			   std::abs(cell[11] - cell[14]) < tollerance;
 	}
 
+	//! Returns if the matrix is diagonal.
+	bool IsDiagonal( T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
+	{
+		return                      std::abs(cell[ 1]) + std::abs(cell[ 2]) + std::abs(cell[ 3])
+			 + std::abs(cell[ 4])                      + std::abs(cell[ 6]) + std::abs(cell[ 7])
+			 + std::abs(cell[ 8]) + std::abs(cell[ 9])                      + std::abs(cell[11])
+			 + std::abs(cell[12]) + std::abs(cell[13]) + std::abs(cell[14]) < tollerance*12;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Static Methods
 
 	//! Returns an identity matrix
-	static Matrix4 MatrixIdentity() { Matrix4 m; m.SetIdentity(); return m; }
+	static Matrix4 Identity() { T c[] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 }; return Matrix4(c); }
 	//! Returns a view matrix using position, target and approximate up vector
-	static Matrix4 MatrixView( const Point3<TYPE> &pos, const Point3<TYPE> &target, Point3<TYPE> &up ) { Matrix4 m; m.SetView(pos,target,up); return m; }
-	//! Returns a matrix using normal, and approximate x direction
-	static Matrix4 MatrixNormal( const Point3<TYPE> &normal, Point3<TYPE> &dir ) { Matrix4 m; m.SetNormal(normal,dir); return m; }
+	static Matrix4 View( Vec3<T> const &pos, Vec3<T> const &target, Vec3<T> const &up ) { Matrix4 m; m.SetView(pos,target,up); return m; }
 	//! Returns a rotation matrix around x axis by angle in radians
-	static Matrix4 MatrixRotationX( TYPE angle ) { Matrix4 m; m.SetRotationX(angle); return m; }
+	static Matrix4 RotationX( T angle ) { Matrix4 m; m.SetRotationX(angle); return m; }
 	//! Returns a rotation matrix around y axis by angle in radians
-	static Matrix4 MatrixRotationY( TYPE angle ) { Matrix4 m; m.SetRotationY(angle); return m; }
+	static Matrix4 RotationY( T angle ) { Matrix4 m; m.SetRotationY(angle); return m; }
 	//! Returns a rotation matrix around z axis by angle in radians
-	static Matrix4 MatrixRotationZ( TYPE angle ) { Matrix4 m; m.SetRotationZ(angle); return m; }
+	static Matrix4 RotationZ( T angle ) { Matrix4 m; m.SetRotationZ(angle); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
-	static Matrix4 MatrixRotation( const Point3<TYPE> &axis, TYPE angle ) { Matrix4 m; m.SetRotation(axis,angle); return m; }
+	static Matrix4 Rotation( Vec3<T> const &axis, T angle ) { Matrix4 m; m.SetRotation(axis,angle); return m; }
 	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
-	static Matrix4 MatrixRotation( const Point3<TYPE> &from, const Point3<TYPE> &to ) { Matrix4 m; m.SetRotation(from,to); return m; }
+	static Matrix4 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix4 m; m.SetRotation(from,to); return m; }
+	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
+	static Matrix4 RotationXYZ( T angleX, T angleY, T angleZ ) { Matrix4 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
+	static Matrix4 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix4 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
 	//! Returns a uniform scale matrix
-	static Matrix4 MatrixScale( TYPE uniformScale ) { Matrix4 m; m.SetScale(uniformScale); return m; }
+	static Matrix4 Scale( T uniformScale ) { Matrix4 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
-	static Matrix4 MatrixScale( TYPE scaleX, TYPE scaleY, TYPE scaleZ, TYPE scaleW=1 ) { Matrix4 m; m.SetScale(scaleX,scaleY,scaleZ,scaleW); return m; }
+	static Matrix4 Scale( T scaleX, T scaleY, T scaleZ, T scaleW=T(1) ) { Matrix4 m; m.SetScale(scaleX,scaleY,scaleZ,scaleW); return m; }
 	//! Returns a scale matrix
-	static Matrix4 MatrixScale( const Point3<TYPE> &scale ) { Matrix4 m; m.SetScale(scale); return m; }
+	static Matrix4 Scale( Vec3<T> const &scale ) { Matrix4 m; m.SetScale(scale); return m; }
 	//! Returns a translation matrix with no rotation or scale
-	static Matrix4 MatrixTrans( const Point3<TYPE> &move ) { Matrix4 m; m.SetTrans(move); return m; }
+	static Matrix4 Translation( Vec3<T> const &move ) { Matrix4 m; m.SetTranslation(move); return m; }
 	//! Returns a project matrix with field of view in radians
-	static Matrix4 MatrixPerspective( TYPE fov, TYPE aspect, TYPE znear, TYPE zfar ) { Matrix4 m; m.SetPerspective(fov,aspect,znear,zfar); return m; }
+	static Matrix4 Perspective( T fov, T aspect, T znear, T zfar ) { Matrix4 m; m.SetPerspective(fov,aspect,znear,zfar); return m; }
 	//! Returns a project matrix with the tangent of the half field of view (tan_fov_2)
-	static Matrix4 MatrixPerspectiveTan( TYPE tan_fov_2, TYPE aspect, TYPE znear, TYPE zfar ) { Matrix4 m; m.SetPerspectiveTan(tan_fov_2,aspect,znear,zfar); return m; }
-
+	static Matrix4 PerspectiveTan( T tan_fov_2, T aspect, T znear, T zfar ) { Matrix4 m; m.SetPerspectiveTan(tan_fov_2,aspect,znear,zfar); return m; }
+	//! Returns the tensor product (outer product) matrix of two vectors
+	static Matrix4 TensorProduct( Vec4<T> const &v0, Vec4<T> const &v1 ) { Matrix4 m; m.SetTensorProduct(v0,v1); return m; }
 
 	//////////////////////////////////////////////////////////////////////////
 };
 
 //-------------------------------------------------------------------------------
 
-template<typename TYPE> inline Matrix2<TYPE> operator & ( const Point2<TYPE> &v0, const Point2<TYPE> &v1 ) { Matrix2<TYPE> r; r.SetTensorProduct(v0,v1); return r; }	//!< tensor product (outer product) of two vectors
-template<typename TYPE> inline Matrix3<TYPE> operator & ( const Point3<TYPE> &v0, const Point3<TYPE> &v1 ) { Matrix3<TYPE> r; r.SetTensorProduct(v0,v1); return r; }	//!< tensor product (outer product) of two vectors
-template<typename TYPE> inline Matrix4<TYPE> operator & ( const Point4<TYPE> &v0, const Point4<TYPE> &v1 ) { Matrix4<TYPE> r; r.SetTensorProduct(v0,v1); return r; }	//!< tensor product (outer product) of two vectors
+template<typename T> inline Matrix2<T> operator & ( Vec2<T> const &v0, Vec2<T> const &v1 ) { Matrix2<T> r; r.SetTensorProduct(v0,v1); return r; }	//!< tensor product (outer product) of two vectors
+template<typename T> inline Matrix3<T> operator & ( Vec3<T> const &v0, Vec3<T> const &v1 ) { Matrix3<T> r; r.SetTensorProduct(v0,v1); return r; }	//!< tensor product (outer product) of two vectors
+template<typename T> inline Matrix4<T> operator & ( Vec4<T> const &v0, Vec4<T> const &v1 ) { Matrix4<T> r; r.SetTensorProduct(v0,v1); return r; }	//!< tensor product (outer product) of two vectors
 
 //-------------------------------------------------------------------------------
 
 // Definitions of the conversion constructors
-template <typename TYPE>  Matrix2 <TYPE>::Matrix2 ( const Matrix3 <TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,2); CY_MEMCOPY(TYPE,data+2,m.data+3,2); }
-template <typename TYPE>  Matrix2 <TYPE>::Matrix2 ( const Matrix34<TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,2); CY_MEMCOPY(TYPE,data+2,m.data+3,2); }
-template <typename TYPE>  Matrix2 <TYPE>::Matrix2 ( const Matrix4 <TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,2); CY_MEMCOPY(TYPE,data+2,m.data+4,2); }
-template <typename TYPE>  Matrix3 <TYPE>::Matrix3 ( const Matrix34<TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,9); }
-template <typename TYPE>  Matrix3 <TYPE>::Matrix3 ( const Matrix4 <TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,3); CY_MEMCOPY(TYPE,data+3,m.data+4,3); CY_MEMCOPY(TYPE,data+6,m.data+8,3); }
-template <typename TYPE>  Matrix34<TYPE>::Matrix34( const Matrix4 <TYPE> &m ) { CY_MEMCOPY(TYPE,data,m.data,3); CY_MEMCOPY(TYPE,data+3,m.data+4,3); CY_MEMCOPY(TYPE,data+6,m.data+8,3); CY_MEMCOPY(TYPE,data+9,m.data+12,3); }
+template <typename T>  Matrix2 <T>::Matrix2 ( Matrix3 <T> const &m ) { MemCopy(cell,m.cell,2); MemCopy(cell+2,m.cell+3,2); }
+template <typename T>  Matrix2 <T>::Matrix2 ( Matrix34<T> const &m ) { MemCopy(cell,m.cell,2); MemCopy(cell+2,m.cell+3,2); }
+template <typename T>  Matrix2 <T>::Matrix2 ( Matrix4 <T> const &m ) { MemCopy(cell,m.cell,2); MemCopy(cell+2,m.cell+4,2); }
+template <typename T>  Matrix3 <T>::Matrix3 ( Matrix34<T> const &m ) { MemCopy(cell,m.cell,9); }
+template <typename T>  Matrix3 <T>::Matrix3 ( Matrix4 <T> const &m ) { MemCopy(cell,m.cell,3); MemCopy(cell+3,m.cell+4,3); MemCopy(cell+6,m.cell+8,3); }
+template <typename T>  Matrix34<T>::Matrix34( Matrix4 <T> const &m ) { MemCopy(cell,m.cell,3); MemCopy(cell+3,m.cell+4,3); MemCopy(cell+6,m.cell+8,3); MemCopy(cell+9,m.cell+12,3); }
 
-template <typename TYPE> inline void Matrix34<TYPE>::GetTranspose( Matrix4<TYPE> &m ) const
+template <typename T> inline void Matrix34<T>::GetTranspose( Matrix4<T> &m ) const
 {
-	m.data[ 0] = data[0];   m.data[ 1] = data[3];   m.data[ 2] = data[ 6];   m.data[ 3] = data[ 9];
-	m.data[ 4] = data[1];   m.data[ 5] = data[4];   m.data[ 6] = data[ 7];   m.data[ 7] = data[10];
-	m.data[ 8] = data[2];   m.data[ 9] = data[5];   m.data[10] = data[ 8];   m.data[11] = data[11];
-	m.data[12] = TYPE(0);   m.data[13] = TYPE(0);   m.data[14] = TYPE(0);    m.data[15] = TYPE(1);
+	m.cell[ 0] = cell[0];   m.cell[ 1] = cell[3];   m.cell[ 2] = cell[ 6];   m.cell[ 3] = cell[ 9];
+	m.cell[ 4] = cell[1];   m.cell[ 5] = cell[4];   m.cell[ 6] = cell[ 7];   m.cell[ 7] = cell[10];
+	m.cell[ 8] = cell[2];   m.cell[ 9] = cell[5];   m.cell[10] = cell[ 8];   m.cell[11] = cell[11];
+	m.cell[12] = T(0);      m.cell[13] = T(0);      m.cell[14] = T(0);       m.cell[15] = T(1);
 }
-template <typename TYPE> inline Matrix4<TYPE> Matrix34<TYPE>::GetTranspose() const { Matrix4<TYPE> t; GetTranspose(t); return t; }
+template <typename T> inline Matrix4<T> Matrix34<T>::GetTranspose() const { Matrix4<T> t; GetTranspose(t); return t; }
 
 //-------------------------------------------------------------------------------
 
@@ -2035,7 +2301,7 @@ typedef Matrix34<double> Matrix34d;	//!< Double precision (double) 3x4 Matrix cl
 typedef Matrix4 <double> Matrix4d;	//!< Double precision (double) 4x4 Matrix class
 
 //-------------------------------------------------------------------------------
-} // namespace cy
+} // namespace hf
 //-------------------------------------------------------------------------------
 
 typedef cy::Matrix2f  cyMatrix2f;	//!< Single precision (float) 2x2 Matrix class

@@ -218,7 +218,7 @@ private:
 		std::uniform_real_distribution<float> distribution;
 		float x = distribution(generator);
 		float y = distribution(generator);
-		if ( y > (cosf(x*cyPi<float>())+1)*0.5f ) x -= 1;
+		if ( y > (cosf(x*Pi<float>())+1)*0.5f ) x -= 1;
 		return x;
 	}
 
@@ -448,9 +448,9 @@ private:
 				if ( levelNodes[i].weight > 0 ) {
 					assert( j < lightCount );
 					thisLevel.colors[j] = levelNodes[i].color;
-					thisLevel.pDev[j].x = sqrtf( levelNodes[i].stdev.x ) * cyPi<float>();
-					thisLevel.pDev[j].y = sqrtf( levelNodes[i].stdev.y ) * cyPi<float>();
-					thisLevel.pDev[j].z = sqrtf( levelNodes[i].stdev.z ) * cyPi<float>();
+					thisLevel.pDev[j].x = sqrtf( levelNodes[i].stdev.x ) * Pi<float>();
+					thisLevel.pDev[j].y = sqrtf( levelNodes[i].stdev.y ) * Pi<float>();
+					thisLevel.pDev[j].z = sqrtf( levelNodes[i].stdev.z ) * Pi<float>();
 					j++;
 				}
 			}

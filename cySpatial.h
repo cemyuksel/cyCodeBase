@@ -43,7 +43,7 @@
 
 //-------------------------------------------------------------------------------
 
-#include "cyPoint.h"
+#include "cyVector.h"
 #include "cyMatrix.h"
 
 //-------------------------------------------------------------------------------
@@ -54,47 +54,47 @@ namespace cy {
 //!
 //! This class is both for spatial motion vectors and spatial force vectors.
 
-template <typename TYPE>
+template <typename T>
 class SpatialVector6
 {
 public:
 
 	//!@name Components
-	Point3<TYPE> a, b;
+	Vec3<T> a, b;
 
 	//!@name Constructors
-	SpatialVector6() {}
-	SpatialVector6( const Point3<TYPE> &p1, const Point3<TYPE> &p2 ) { Set(p1,p2); }
-	SpatialVector6( TYPE a1, TYPE a2, TYPE a3, TYPE b1, TYPE b2, TYPE b3 ) { Set(a1,a2,a3,b1,b2,b3); }
-	SpatialVector6( const SpatialVector6 &v ) { a=v.a; b=v.b; }
+	SpatialVector6() CY_CLASS_FUNCTION_DEFAULT
+	SpatialVector6( Vec3<T> const &p1, Vec3<T> const &p2 ) { Set(p1,p2); }
+	SpatialVector6( T a1, T a2, T a3, T b1, T b2, T b3 ) { Set(a1,a2,a3,b1,b2,b3); }
+	SpatialVector6( SpatialVector6 const &v ) { a=v.a; b=v.b; }
 
 	//!@name Initialization methods
-	void Set( const Point3<TYPE> &p1, const Point3<TYPE> &p2 ) { a = p1; b = p2; }
-	void Set( TYPE a1, TYPE a2, TYPE a3, TYPE b1, TYPE b2, TYPE b3 ) { a.Set(a1,a2,a3); b.Set(b1,b2,b3); }
+	void Set( Vec3<T> const &p1, Vec3<T> const &p2 ) { a = p1; b = p2; }
+	void Set( T a1, T a2, T a3, T b1, T b2, T b3 ) { a.Set(a1,a2,a3); b.Set(b1,b2,b3); }
 	void Zero() { a.Zero(); b.Zero(); }
 
 	//!@name Transpose methods
-	void SetTranspose() { Point3<TYPE> p=a; a=b; b=p; }
+	void SetTranspose() { Vec3<T> p=a; a=b; b=p; }
 	SpatialVector6 Transpose() const { return SpatialVector6( b, a ); }
 
 	//!@name Unary operators
 	SpatialVector6 operator-() const { return SpatialVector6(-a,-b); } 
 
 	//!@name Binary operators
-	SpatialVector6	operator + ( const SpatialVector6 &s ) const { return SpatialVector6(a+s.a, b+s.b); }
-	SpatialVector6	operator - ( const SpatialVector6 &s ) const { return SpatialVector6(a-s.a, b-s.b); }
-	SpatialVector6	operator * ( TYPE t ) const { return SpatialVector6( a*t, b*t ); }
+	SpatialVector6	operator + ( SpatialVector6 const &s ) const { return SpatialVector6(a+s.a, b+s.b); }
+	SpatialVector6	operator - ( SpatialVector6 const &s ) const { return SpatialVector6(a-s.a, b-s.b); }
+	SpatialVector6	operator * ( T              const &t ) const { return SpatialVector6( a*t, b*t ); }
 
 	//! Scalar product of two vectors.
 	//! Note that one of the vectors should be motion vector ant the other should be a force vector.
 	//! Otherwise, scalar product is not defined in spatial vector algebra.
-	TYPE operator * ( const SpatialVector6 &s ) const { return a.Dot(s.a) + b.Dot(s.b); }
+	T operator * ( SpatialVector6 const &s ) const { return a.Dot(s.a) + b.Dot(s.b); }
 
 	//!@name Assignment operators
-	void operator =  ( const SpatialVector6 &v ) { a=v.a; b=v.b; }
-	void operator += ( const SpatialVector6 &s ) { a+=s.a; b+=s.b; }
-	void operator -= ( const SpatialVector6 &s ) { a-=s.a; b-=s.b; }
-	void operator *= ( TYPE t ) { a*=t; b*=t; }
+	void operator =  ( SpatialVector6 const &v ) { a=v.a; b=v.b; }
+	void operator += ( SpatialVector6 const &s ) { a+=s.a; b+=s.b; }
+	void operator -= ( SpatialVector6 const &s ) { a-=s.a; b-=s.b; }
+	void operator *= ( T              const &t ) { a*=t; b*=t; }
 
 };
 
@@ -114,7 +114,7 @@ public:
 //! operations, you have to use SpatialMatrix6.
 //!
 
-template <typename TYPE>
+template <typename T>
 class SpatialTrans6
 {
 public:
@@ -122,16 +122,16 @@ public:
 	// |    R     0 |
 	// | -r x R   R |
 
-	Matrix3<TYPE> R;	//!< Rotation matrix
-	Point3<TYPE> r;	//!< Transformation
+	Matrix3<T> R;	//!< Rotation matrix
+	Vec3<T>    r;	//!< Transformation
 
 	//!@name Constructors
-	SpatialTrans6() {}
-	SpatialTrans6( const SpatialTrans6 &mat ) { R=mat.R; r=mat.r; }
-	SpatialTrans6( const Matrix3<TYPE> &_R, const Point3<TYPE> &_r ) { Set(_R,_r); }
+	SpatialTrans6() CY_CLASS_FUNCTION_DEFAULT
+	SpatialTrans6( SpatialTrans6 const &mat ) { R=mat.R; r=mat.r; }
+	SpatialTrans6( Matrix3<T> const &_R, Vec3<T> const &_r ) { Set(_R,_r); }
 
 	//!@name Initialization methods
-	void Set( const Matrix3<TYPE> &_R, const Point3<TYPE> &_r ) { R=_R; r=_r; }
+	void Set( Matrix3<T> const &_R, Vec3<T> const &_r ) { R=_R; r=_r; }
 	void SetIdentity() { R.SetIdentity(); r.Zero(); }
 
 	//!@name Unary operators
@@ -139,21 +139,21 @@ public:
 
 
 	//!@name Binary operators
-	SpatialVector6<TYPE> operator * ( const SpatialVector6<TYPE> &p ) const { Point3<TYPE> Ra = R*p.a; return SpatialVector6( Ra, Matrix3<TYPE>(-r)*Ra + R*p.b ); }
+	SpatialVector6<T> operator * ( SpatialVector6<T> const &p ) const { Vec3<T> Ra = R*p.a; return SpatialVector6( Ra, Matrix3<T>(-r)*Ra + R*p.b ); }
 
-	SpatialTrans6 operator * ( const SpatialTrans6 &mat ) const { return SpatialTrans6( R*mat.R, r + R*mat.r ); }
-	SpatialTrans6 operator + ( const SpatialTrans6 &mat ) const { return SpatialTrans6( R + mat.R, r + mat.r ); }
-	SpatialTrans6 operator - ( const SpatialTrans6 &mat ) const { return SpatialTrans6( R - mat.R, r - mat.r ); }
+	SpatialTrans6 operator * ( SpatialTrans6 const &mat ) const { return SpatialTrans6( R*mat.R, r + R*mat.r ); }
+	SpatialTrans6 operator + ( SpatialTrans6 const &mat ) const { return SpatialTrans6( R + mat.R, r + mat.r ); }
+	SpatialTrans6 operator - ( SpatialTrans6 const &mat ) const { return SpatialTrans6( R - mat.R, r - mat.r ); }
 
-	SpatialTrans6 operator * ( TYPE t ) const { return SpatialTrans6(R*t,r*t); }
-	SpatialTrans6 operator / ( TYPE t ) const { TYPE d=1.0f/t; return *this * d; }
+	SpatialTrans6 operator * ( T t ) const { return SpatialTrans6(R*t,r*t); }
+	SpatialTrans6 operator / ( T t ) const { T d=1.0f/t; return *this * d; }
 
 
 	//!@name Assignment operators
-	void operator *= ( const SpatialTrans6 &mat ) { *this = *this * mat; }
-	void operator += ( const SpatialTrans6 &mat ) { R+=mat.R; r+=mat.r; }
-	void operator -= ( const SpatialTrans6 &mat ) { R-=mat.R; r-=mat.r; }
-	void operator *= ( TYPE t ) { *this = *this * t; }
+	void operator *= ( SpatialTrans6 const &mat ) { *this = *this * mat; }
+	void operator += ( SpatialTrans6 const &mat ) { R+=mat.R; r+=mat.r; }
+	void operator -= ( SpatialTrans6 const &mat ) { R-=mat.R; r-=mat.r; }
+	void operator *= ( T             const &t   ) { *this = *this * t; }
 
 };
 
@@ -168,7 +168,7 @@ public:
 //! matrix operations that do not correspond to a
 //! coordinate transformation.
 
-template <typename TYPE>
+template <typename T>
 class SpatialMatrix6
 {
 public:
@@ -176,24 +176,24 @@ public:
 	// | m[0]  m[2] |
 	// | m[1]  m[3] |
 
-	Matrix3<TYPE> m[4];	//!< Matrix data in column major order
+	Matrix3<T> m[4];	//!< Matrix data in column major order
 
 
 	//!@name Constructors
-	SpatialMatrix6() {}
-	SpatialMatrix6( const SpatialMatrix6 &mat ) { m[0]=mat.m[0]; m[1]=mat.m[1]; m[2]=mat.m[2]; m[3]=mat.m[3]; }
-	explicit SpatialMatrix6( const Matrix3<TYPE> &_R, const Point3<TYPE> &_r ) { Set(_R,_r); }
-	explicit SpatialMatrix6( const Matrix3<TYPE> &m11, const Matrix3<TYPE> &m21, const Matrix3<TYPE> &m12, const Matrix3<TYPE> &m22 ) { Set(m11,m21,m12,m22); }
-	explicit SpatialMatrix6( const SpatialTrans6<TYPE> &tm ) { Set(tm); }
+	SpatialMatrix6() CY_CLASS_FUNCTION_DEFAULT
+	SpatialMatrix6( SpatialMatrix6 const &mat ) { m[0]=mat.m[0]; m[1]=mat.m[1]; m[2]=mat.m[2]; m[3]=mat.m[3]; }
+	explicit SpatialMatrix6( Matrix3<T> const &_R, Vec3<T> const &_r ) { Set(_R,_r); }
+	explicit SpatialMatrix6( Matrix3<T> const &m11, Matrix3<T> const &m21, Matrix3<T> const &m12, Matrix3<T> const &m22 ) { Set(m11,m21,m12,m22); }
+	explicit SpatialMatrix6( SpatialTrans6<T> const &tm ) { Set(tm); }
 
 
 	//!@name Initialization methods
-	void Set( const Matrix3<TYPE> &_R, const Point3<TYPE> &_r ) { m[0]=m[3]=_R; m[1]=Matrix3<TYPE>(-_r)*_R; m[2].Zero(); }
-	void Set( const Matrix3<TYPE> &m11, const Matrix3<TYPE> &m21, const Matrix3<TYPE> &m12, const Matrix3<TYPE> &m22 ) { m[0]=m11; m[1]=m21; m[2]=m12; m[3]=m22; }
-	void Set( const SpatialTrans6<TYPE> &tm ) { m[0]=m[3]=tm.R; m[1]=Matrix3<TYPE>(-tm.r)*tm.R; m[2].Zero(); }
+	void Set( Matrix3<T> const &_R, Vec3<T> const &_r ) { m[0]=m[3]=_R; m[1]=Matrix3<T>(-_r)*_R; m[2].Zero(); }
+	void Set( Matrix3<T> const &m11, Matrix3<T> const &m21, Matrix3<T> const &m12, Matrix3<T> const &m22 ) { m[0]=m11; m[1]=m21; m[2]=m12; m[3]=m22; }
+	void Set( SpatialTrans6<T> const &tm ) { m[0]=m[3]=tm.R; m[1]=Matrix3<T>(-tm.r)*tm.R; m[2].Zero(); }
 
 	//! Sets the matrix as the outer product of two vectors.
-	void SetTensorProduct( const SpatialVector6<TYPE> &p1, const SpatialVector6<TYPE> &p2 )
+	void SetTensorProduct( SpatialVector6<T> const &p1, SpatialVector6<T> const &p2 )
 	{
 			SetMatrix( m[0], p1.a, p2.a );
 			SetMatrix( m[1], p1.b, p2.a );
@@ -211,21 +211,21 @@ public:
 
 	//!@name Unary operators
 
-	SpatialVector6<TYPE> operator * ( const SpatialVector6<TYPE> &p ) const { return SpatialVector6( m[0]*p.a + m[2]*p.b, m[1]*p.a + m[3]*p.b ); }
+	SpatialVector6<T> operator * ( SpatialVector6<T> const &p ) const { return SpatialVector6( m[0]*p.a + m[2]*p.b, m[1]*p.a + m[3]*p.b ); }
 
-	SpatialMatrix6 operator * ( const SpatialMatrix6 &mat ) const { return SpatialMatrix6( m[0]*mat.m[0]+m[2]*mat.m[1], m[1]*mat.m[0]+m[3]*mat.m[1], m[0]*mat.m[2]+m[2]*mat.m[3], m[1]*mat.m[2]+m[3]*mat.m[3] ); }
-	SpatialMatrix6 operator + ( const SpatialMatrix6 &mat ) const { return SpatialMatrix6( m[0]+mat.m[0], m[1]+mat.m[1], m[2]+mat.m[2], m[3]+mat.m[3] ); }
-	SpatialMatrix6 operator - ( const SpatialMatrix6 &mat ) const { return SpatialMatrix6( m[0]-mat.m[0], m[1]-mat.m[1], m[2]-mat.m[2], m[3]-mat.m[3] ); }
+	SpatialMatrix6 operator * ( SpatialMatrix6 const &mat ) const { return SpatialMatrix6( m[0]*mat.m[0]+m[2]*mat.m[1], m[1]*mat.m[0]+m[3]*mat.m[1], m[0]*mat.m[2]+m[2]*mat.m[3], m[1]*mat.m[2]+m[3]*mat.m[3] ); }
+	SpatialMatrix6 operator + ( SpatialMatrix6 const &mat ) const { return SpatialMatrix6( m[0]+mat.m[0], m[1]+mat.m[1], m[2]+mat.m[2], m[3]+mat.m[3] ); }
+	SpatialMatrix6 operator - ( SpatialMatrix6 const &mat ) const { return SpatialMatrix6( m[0]-mat.m[0], m[1]-mat.m[1], m[2]-mat.m[2], m[3]-mat.m[3] ); }
 
-	SpatialMatrix6 operator * ( TYPE t ) const { return SpatialMatrix6(m[0]*t,m[1]*t,m[2]*t,m[3]*t); }
-	SpatialMatrix6 operator / ( TYPE t ) const { TYPE d=1.0f/t; return *this * d; }
+	SpatialMatrix6 operator * ( T t ) const { return SpatialMatrix6(m[0]*t,m[1]*t,m[2]*t,m[3]*t); }
+	SpatialMatrix6 operator / ( T t ) const { T d=1.0f/t; return *this * d; }
 
 
 	//!@name Assignment operators
-	void	operator *= ( const SpatialMatrix6 &mat ) { *this = *this * mat; }
-	void	operator += ( const SpatialMatrix6 &mat ) { m[0]+=mat.m[0]; m[1]+=mat.m[1]; m[2]+=mat.m[2]; m[3]+=mat.m[3]; }
-	void	operator -= ( const SpatialMatrix6 &mat ) { m[0]-=mat.m[0]; m[1]-=mat.m[1]; m[2]-=mat.m[2]; m[3]-=mat.m[3]; }
-	void	operator *= ( TYPE t ) { *this = *this * t; }
+	void	operator *= ( SpatialMatrix6 const &mat ) { *this = *this * mat; }
+	void	operator += ( SpatialMatrix6 const &mat ) { m[0]+=mat.m[0]; m[1]+=mat.m[1]; m[2]+=mat.m[2]; m[3]+=mat.m[3]; }
+	void	operator -= ( SpatialMatrix6 const &mat ) { m[0]-=mat.m[0]; m[1]-=mat.m[1]; m[2]-=mat.m[2]; m[3]-=mat.m[3]; }
+	void	operator *= ( T t ) { *this = *this * t; }
 
 
 protected:
@@ -233,9 +233,9 @@ protected:
 	//! \internal
 
 	// Sets the given matrix as the outer product of the given two vectors.
-	void SetMatrix( Matrix3<TYPE> &m, const Point3<TYPE> &p1, const Point3<TYPE> &p2 )
+	void SetMatrix( Matrix3<T> &m, Vec3<T> const &p1, Vec3<T> const &p2 )
 	{ 
-		TYPE val[] = {p1.x * p2.x, p1.y * p2.x, p1.z * p2.x,   p1.x * p2.y, p1.y * p2.y, p1.z * p2.y,   p1.x * p2.z, p1.y * p2.z, p1.z * p2.z};
+		T val[] = {p1.x * p2.x, p1.y * p2.x, p1.z * p2.x,   p1.x * p2.y, p1.y * p2.y, p1.z * p2.y,   p1.x * p2.z, p1.y * p2.z, p1.z * p2.z};
 		m.Set( val ); 
 	}
 
@@ -243,7 +243,7 @@ protected:
 
 //-------------------------------------------------------------------------------
 
-template<typename TYPE> inline SpatialMatrix6<TYPE> operator & ( const SpatialVector6<TYPE> &v0, const SpatialVector6<TYPE> &v1 ) { Matrix2<TYPE> buffer; buffer.SetTensorProduct(v0,v1); return buffer; }		//!< tensor product (outer product) of two vectors
+template<typename T> inline SpatialMatrix6<T> operator & ( SpatialVector6<T> const &v0, SpatialVector6<T> const &v1 ) { Matrix2<T> buffer; buffer.SetTensorProduct(v0,v1); return buffer; }		//!< tensor product (outer product) of two vectors
 
 //-------------------------------------------------------------------------------
 

@@ -114,7 +114,7 @@ public:
 	//! This sample mask texture can be used with the original texture for handling alpha-to-coverage.
 	//! The spp parameter is the number of alpha samples that will be used.
 	template <typename SAMPLE_MASK_TYPE=unsigned char>
-	static void GenerateSampleMaskTexture( SAMPLE_MASK_TYPE *sampleMask, const unsigned char *alpha, int width, int height, int spp )
+	static void GenerateSampleMaskTexture( SAMPLE_MASK_TYPE *sampleMask, unsigned char const *alpha, int width, int height, int spp )
 	{
 		GenSampleMaskTexture<1>(sampleMask,alpha,width,height,spp);
 	}
@@ -123,7 +123,7 @@ public:
 	//! This sample mask texture can be used with the original texture for handling alpha-to-coverage.
 	//! The spp parameter is the number of alpha samples that will be used.
 	template <typename SAMPLE_MASK_TYPE=unsigned char>
-	static void GenerateSampleMaskTextureRGBA( SAMPLE_MASK_TYPE *sampleMask, const unsigned char *image, int width, int height, int spp )
+	static void GenerateSampleMaskTextureRGBA( SAMPLE_MASK_TYPE *sampleMask, unsigned char const *image, int width, int height, int spp )
 	{
 		GenSampleMaskTexture<4>(sampleMask,alpha,width,height,spp);
 	}
@@ -266,7 +266,7 @@ private:
 				}
 			}
 		}
-		void Alpha2CountBlock( const int *ix, int n, uint32_t count, int spp )
+		void Alpha2CountBlock( int const *ix, int n, uint32_t count, int spp )
 		{
 			uint32_t sum = 0, remSum = 0;
 			for ( int j=0; j<n; j++ ) { 
@@ -302,7 +302,7 @@ private:
 			}
 			for ( int j=0; j<n; j++ ) alpha[ ix[j] ] >>= 8;
 		}
-		void Alpha2Count( const AlphaPyramidLevel *parent, int spp )
+		void Alpha2Count( AlphaPyramidLevel const *parent, int spp )
 		{
 			int hLim = (height&1) ? height-3 : height;
 			int wLim = (width &1) ? width -3 : width;
@@ -395,7 +395,7 @@ private:
 		}
 		// Step 4: Update texture
 		{
-			auto setImgAlpha = [&]( const int *ix, int n, uint32_t count )
+			auto setImgAlpha = [&]( int const *ix, int n, uint32_t count )
 			{
 				if ( spp > 1 ) {
 					count *= 256/spp;
@@ -495,7 +495,7 @@ private:
 
 
 	template <int NUM_CHANNELS, typename SAMPLE_MASK_TYPE=unsigned char>
-	static void GenSampleMaskTexture( SAMPLE_MASK_TYPE *sampleMask, const unsigned char *image, int width, int height, int spp )
+	static void GenSampleMaskTexture( SAMPLE_MASK_TYPE *sampleMask, unsigned char const *image, int width, int height, int spp )
 	{
 		std::random_device rd;
 		std::mt19937 gen( rd() );

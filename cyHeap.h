@@ -66,7 +66,7 @@ public:
 	void Clear() { ClearData(); ClearHeap(); }
 
 	//! Copies the main data items from an array into the internal storage of this class.
-	void CopyData( const DATA_TYPE *items, SIZE_TYPE itemCount )
+	void CopyData( DATA_TYPE const *items, SIZE_TYPE itemCount )
 	{
 		ClearData();
 		size = itemCount;
@@ -122,11 +122,11 @@ public:
 	//!@name Access and manipulation methods
 
 	//! Returns the item from the main data with the given id.
-	const DATA_TYPE& GetItem( SIZE_TYPE id ) const { assert(id<size); return data[id]; }
+	DATA_TYPE const & GetItem( SIZE_TYPE id ) const { assert(id<size); return data[id]; }
 
 	//! Sets the item with the given id and updates the heap structure accordingly.
 	//! Returns false if the item is not in the heap anymore (removed by Pop) or if its heap position is not changed.
-	bool SetItem( SIZE_TYPE id, const DATA_TYPE &item ) { assert(id<size); data[id]=item; return MoveItem(id); }
+	bool SetItem( SIZE_TYPE id, DATA_TYPE const &item ) { assert(id<size); data[id]=item; return MoveItem(id); }
 
 	//! Moves the item with the given id to the correct position in the heap.
 	//! This method is useful for fixing the heap position after an item is modified externally.
@@ -152,7 +152,7 @@ public:
 	//! Returns the item from the heap with the given heap position.
 	//! Note that items that are removed from the heap appear in the inverse order 
 	//! with which they were removed after the last item in the heap.
-	const DATA_TYPE& GetFromHeap( SIZE_TYPE heapIndex ) const { assert(heapIndex<size); return data[heap[heapIndex+1]]; }
+	DATA_TYPE const & GetFromHeap( SIZE_TYPE heapIndex ) const { assert(heapIndex<size); return data[heap[heapIndex+1]]; }
 
 	//! Returns the id of the item from the heap with the given heap position.
 	//! Note that items that are removed from the heap appear in the inverse order 
@@ -160,7 +160,7 @@ public:
 	SIZE_TYPE GetIDFromHeap( SIZE_TYPE heapIndex ) const { assert(heapIndex<size); return heap[heapIndex+1]; }
 
 	//! Returns the item at the top of the heap.
-	const DATA_TYPE& GetTopItem() const { assert(size>=1); return data[heap[1]]; }
+	DATA_TYPE const & GetTopItem() const { assert(size>=1); return data[heap[1]]; }
 
 	//! Returns the id of the item at the top of the heap.
 	SIZE_TYPE GetTopItemID() const { assert(size>=1); return heap[1]; }
