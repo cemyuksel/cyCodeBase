@@ -186,8 +186,8 @@ public:
 	template <typename S> explicit Vec2( Vec2<S> const &p ) : x(T(p.x)), y(T(p.y)) {}
 	template <typename S> explicit Vec2( Vec3<S> const &p );
 	template <typename S> explicit Vec2( Vec4<S> const &p );
-	template <int N            > explicit Vec2( Vec<T,N> const &p ) { p.CopyData<2>(elem); }
-	template <int N, typename S> explicit Vec2( Vec<S,N> const &p ) { p.ConvertData<T,2>(elem); }
+	template <int N            > explicit Vec2( Vec<T,N> const &p ) { p.template CopyData<2>(elem); }
+	template <int N, typename S> explicit Vec2( Vec<S,N> const &p ) { p.template ConvertData<T,2>(elem); }
 
 	//!@name Set & Get value methods
 	void Zero()            { MemClear(elem,2); }				//!< Sets the coordinates as zero.
@@ -291,8 +291,8 @@ public:
 	template <typename S> explicit Vec3( Vec3<S> const &p )         : x(T(p.x)), y(T(p.y)), z(T(p.z)) {}
 	template <typename S> explicit Vec3( Vec2<S> const &p, T _z=0 ) : x(T(p.x)), y(T(p.y)), z(   _z ) {}
 	template <typename S> explicit Vec3( Vec4<S> const &p );
-	template <int N            > explicit Vec3( Vec<T,N> const &p ) { p.CopyData<3>(elem); }
-	template <int N, typename S> explicit Vec3( Vec<S,N> const &p ) { p.ConvertData<T,3>(elem); }
+	template <int N            > explicit Vec3( Vec<T,N> const &p ) { p.template CopyData<3>(elem); }
+	template <int N, typename S> explicit Vec3( Vec<S,N> const &p ) { p.template ConvertData<T,3>(elem); }
 
 	//!@name Set & Get value methods
 	void Zero()            { MemClear(elem,3); }				//!< Sets the coordinates as zero.
@@ -414,8 +414,8 @@ public:
 	template <typename S> explicit Vec4( Vec2<S> const &p, T _z=0, T _w=1 ) : x(T(p.x)), y(T(p.y)), z(   _z ), w(   _w ) {}
 	template <typename S> explicit Vec4( Vec3<S> const &p,         T _w=1 ) : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(   _w ) {}
 	template <typename S> explicit Vec4( Vec4<S> const &p )                 : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(T(p.w)) {}
-	template <int N            > explicit Vec4( Vec<T,N> const &p ) { p.CopyData<4>(elem); }
-	template <int N, typename S> explicit Vec4( Vec<S,N> const &p ) { p.ConvertData<T,4>(elem); }
+	template <int N            > explicit Vec4( Vec<T,N> const &p ) { p.template CopyData<4>(elem); }
+	template <int N, typename S> explicit Vec4( Vec<S,N> const &p ) { p.template ConvertData<T,4>(elem); }
 
 	//!@name Set & Get value methods
 	void Zero()            { MemClear(elem,4); }								//!< Sets the coordinates as zero
