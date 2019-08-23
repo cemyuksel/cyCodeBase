@@ -45,11 +45,13 @@
 //-------------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include <cmath>
 #include <string.h>
 #include <stdint.h>
-#include <type_traits>
 #include <assert.h>
+#include <emmintrin.h>
+#include <cmath>
+#include <type_traits>
+#include <limits>
 
 //-------------------------------------------------------------------------------
 namespace cy {
