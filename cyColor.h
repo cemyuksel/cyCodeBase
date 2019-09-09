@@ -89,8 +89,8 @@ public:
 
 	//!@name Limit functions
 	void Clamp   ( float limitMin=0.0f, float limitMax=1.0f ) { ClampMin(limitMin); ClampMax(limitMax); }
-	void ClampMin( float limitMin=0.0f ) { r=cy::Min(r,limitMin); g=cy::Min(g,limitMin); b=cy::Min(b,limitMin); }
-	void ClampMax( float limitMax=1.0f ) { r=cy::Max(r,limitMax); g=cy::Max(g,limitMax); b=cy::Max(b,limitMax); }
+	void ClampMin( float limitMin=0.0f ) { r=cy::Max(r,limitMin); g=cy::Max(g,limitMin); b=cy::Max(b,limitMin); }
+	void ClampMax( float limitMax=1.0f ) { r=cy::Min(r,limitMax); g=cy::Min(g,limitMax); b=cy::Min(b,limitMax); }
 	void Abs() { r = std::abs(r); g = std::abs(g); b = std::abs(b); }
 
 	//!@name Unary operators
@@ -172,8 +172,8 @@ public:
 
 	//!@name Limit functions
 	void Clamp   ( float limitMin=0.0f, float limitMax=1.0f ) { ClampMin(limitMin); ClampMax(limitMax); }
-	void ClampMin( float limitMin=0.0f ) { r=cy::Min(r,limitMin); g=cy::Min(g,limitMin); b=cy::Min(b,limitMin); a=cy::Min(a,limitMin); }
-	void ClampMax( float limitMax=1.0f ) { r=cy::Max(r,limitMax); g=cy::Max(g,limitMax); b=cy::Max(b,limitMax); a=cy::Max(a,limitMax); }
+	void ClampMin( float limitMin=0.0f ) { r=cy::Max(r,limitMin); g=cy::Max(g,limitMin); b=cy::Max(b,limitMin); a=cy::Max(a,limitMin); }
+	void ClampMax( float limitMax=1.0f ) { r=cy::Min(r,limitMax); g=cy::Min(g,limitMax); b=cy::Min(b,limitMax); a=cy::Min(a,limitMax); }
 	void Abs() { r = std::abs(r); g = std::abs(g); b = std::abs(b); a = std::abs(a); }
 
 	//!@name Unary operators
@@ -251,8 +251,8 @@ public:
 
 	//!@name Limit functions
 	void Clamp   ( uint8_t limitMin=  0, uint8_t limitMax=255 ) { ClampMin(limitMin); ClampMax(limitMax); }
-	void ClampMin( uint8_t limitMin=  0 ) { r=cy::Min(r,limitMin); g=cy::Min(g,limitMin); b=cy::Min(b,limitMin); }
-	void ClampMax( uint8_t limitMax=255 ) { r=cy::Max(r,limitMax); g=cy::Max(g,limitMax); b=cy::Max(b,limitMax); }
+	void ClampMin( uint8_t limitMin=  0 ) { r=cy::Max(r,limitMin); g=cy::Max(g,limitMin); b=cy::Max(b,limitMin); }
+	void ClampMax( uint8_t limitMax=255 ) { r=cy::Min(r,limitMax); g=cy::Min(g,limitMax); b=cy::Min(b,limitMax); }
 
 	//!@name Test operators
 	bool operator == ( Color24 const &c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) ); }
@@ -310,8 +310,8 @@ public:
 
 	//!@name Limit functions
 	void Clamp   ( uint8_t limitMin=  0, uint8_t limitMax=255 ) { ClampMin(limitMin); ClampMax(limitMax); }
-	void ClampMin( uint8_t limitMin=  0 ) { r=cy::Min(r,limitMin); g=cy::Min(g,limitMin); b=cy::Min(b,limitMin); a=cy::Min(a,limitMin); }
-	void ClampMax( uint8_t limitMax=255 ) { r=cy::Max(r,limitMax); g=cy::Max(g,limitMax); b=cy::Max(b,limitMax); a=cy::Max(a,limitMax); }
+	void ClampMin( uint8_t limitMin=  0 ) { r=cy::Max(r,limitMin); g=cy::Max(g,limitMin); b=cy::Max(b,limitMin); a=cy::Max(a,limitMin); }
+	void ClampMax( uint8_t limitMax=255 ) { r=cy::Min(r,limitMax); g=cy::Min(g,limitMax); b=cy::Min(b,limitMax); a=cy::Min(a,limitMax); }
 
 	//!@name Test operators
 	bool operator == ( Color32 const &c ) const { return ( (c.r==r) && (c.g==g) && (c.b==b) && (c.a==a) ); }
