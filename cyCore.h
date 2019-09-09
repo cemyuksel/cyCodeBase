@@ -133,7 +133,11 @@ static _cy_nullptr_t nullptr;
 #if _CY_COMPILER_VER_MEETS(1900,40800,30000,1500)
 # define CY_ALIGNAS(alignment_size) alignas(alignment_size)
 #else
-# define CY_ALIGNAS(alignment_size)
+# if defined(_MSC_VER)
+#  define HF_ALIGNAS(alignment_size) __declspec(align(alignment_size))
+# else
+#  define HF_ALIGNAS(alignment_size) __attribute__((aligned(alignment_size)))
+# endif
 #endif
 
 // final, override
