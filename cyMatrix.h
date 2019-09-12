@@ -71,10 +71,14 @@ public:
 	//! Elements of the matrix are column-major: \n
 	//! | 0  2 | \n
 	//! | 1  3 | \n
+#ifdef __cpp_unrestricted_unions
 	union {
 		T       cell[4];
 		Vec2<T> column[2];	// column vectors
 	};
+#else
+	T cell[4];
+#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
@@ -101,8 +105,8 @@ public:
 	//!@name Set & Get Methods
 
 	void Zero    ()       { MemClear(cell,4); }										//!< Set all the values as zero
-	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  (); }	//!< Returns true if the matrix is exactly zero
-	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite(); }	//!< Returns true if all components are finite real numbers.
+	bool IsZero  () const { return Column(0).IsZero  () && Column(1).IsZero  (); }	//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return Column(0).IsFinite() && Column(1).IsFinite(); }	//!< Returns true if all components are finite real numbers.
 	void Get( T       *values ) { MemCopy(values,cell,4); }							//!< Copies the matrix cell to the given values array of size 4
 	void Set( T const *values ) { MemCopy(cell,values,4); }							//!< Set Matrix using an array of 4 values
 	void Set( Vec2<T> const &x, Vec2<T> const &y ) { x.Get(cell); y.Get(cell+2); }	//!< Set Matrix using two vectors as columns
@@ -139,8 +143,8 @@ public:
 
 	void SetRow     ( int row, T x, T y )         { cell[row]=x; cell[row+2]=y; }		//!< Sets a row of the matrix
 	void SetRow     ( int row, Vec2<T> const &v ) { SetRow(row,v.x,v.y); }				//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y )         { column[col].Set(x,y); }				//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec2<T> const &v ) { column[col]=v; }					//!< Sets a column of the matrix
+	void SetColumn  ( int col, T x, T y )         { Column(col).Set(x,y); }				//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec2<T> const &v ) { Column(col)=v; }					//!< Sets a column of the matrix
 	void SetDiagonal( T const &xx, T const &yy )  { cell[0]=xx; cell[3]=yy; }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec2<T> const &p )          { SetDiagonal( p.x, p.y ); }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( T const *values )           { SetDiagonal(values[0],values[1]); }	//!< Sets the diagonal values of the matrix
@@ -149,10 +153,21 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-	Vec2<T>  GetRow     ( int row ) const { return Vec2<T>( cell[row], cell[row+2] ); }		//!< Returns a row of the matrix
-	Vec2<T>  GetColumn  ( int col ) const { return column[col]; }							//!< Returns a column of the matrix
-	Vec2<T>  GetDiagonal()          const { return Vec2<T>( cell[0], cell[3] ); }			//!< Returns the diagonal of the matrix
-	Matrix2  GetRotation()          const { Matrix2 s, r; GetComponents(s,r); return r; }	//!< Returns the rotation portion of the transformation
+#ifdef __cpp_unrestricted_unions
+	Vec2<T>       * Columns    ()                { return column; }
+	Vec2<T> const * Columns    ()          const { return column; }
+	Vec2<T>       & Column     ( int col )       { return column[col]; }
+	Vec2<T> const & Column     ( int col ) const { return column[col]; }
+#else
+	Vec2<T>       * Columns    ()                { return ((Vec2<T>*)cell); }
+	Vec2<T> const * Columns    ()          const { return ((Vec2<T>*)cell); }
+	Vec2<T>       & Column     ( int col )       { return Columns()[col]; }
+	Vec2<T> const & Column     ( int col ) const { return Columns()[col]; }
+#endif
+	Vec2<T>         GetRow     ( int row ) const { return Vec2<T>( cell[row], cell[row+2] ); }		//!< Returns a row of the matrix
+	Vec2<T>         GetColumn  ( int col ) const { return Column(col); }							//!< Returns a column of the matrix
+	Vec2<T>         GetDiagonal()          const { return Vec2<T>( cell[0], cell[3] ); }			//!< Returns the diagonal of the matrix
+	Matrix2         GetRotation()          const { Matrix2 s, r; GetComponents(s,r); return r; }	//!< Returns the rotation portion of the transformation
 
 	//! Returns the scale portion of the transformation.
 	//! The returned matrix is symmetric, but not necessarily diagonal, and it can include non-uniform scale.
@@ -226,7 +241,7 @@ public:
 
 	Matrix2 const & operator += ( Matrix2 const &right ) { for ( int i=0; i<4; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
 	Matrix2 const & operator -= ( Matrix2 const &right ) { for ( int i=0; i<4; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix2 from another matrix and modify this matrix
-	Matrix2 const & operator *= ( Matrix2 const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix2 const & operator *= ( Matrix2 const &right ) { *this = operator*(right);                           return *this; }	//!< multiply a matrix with another matrix and modify this matrix
 	Matrix2 const & operator *= ( T       const  value ) { for ( int i=0; i<4; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
 	Matrix2 const & operator /= ( T       const  value ) { for ( int i=0; i<4; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 
@@ -285,21 +300,21 @@ public:
 
 	//! Removes the scale component of the matrix by normalizing each column.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
-	void Normalize() { column[0].Normalize(); column[1].Normalize(); }
+	void Normalize() { Column(0).Normalize(); Column(1).Normalize(); }
 
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		column[0].Normalize();
-		column[1] -= column[0] * (column[1] % column[0]);
-		column[1].Normalize();
+		Column(0).Normalize();
+		Column(1) -= Column(0) * (Column(1) % Column(0));
+		Column(1).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		column[1].Normalize();
-		column[0] -= column[1] * (column[0] % column[1]);
-		column[0].Normalize();
+		Column(1).Normalize();
+		Column(0) -= Column(1) * (Column(0) % Column(1));
+		Column(0).Normalize();
 	}
 
 	//! Returns if the matrix is identity within the given error tollerance.
@@ -332,13 +347,13 @@ public:
 	{
 		Vec2<T> lambda = GetEigenvalues();
 		if ( std::abs(lambda.x - lambda.y) < tollerance ) {
-			evec0 = column[0];
-			evec1 = column[1];
+			evec0 = Column(0);
+			evec1 = Column(1);
 		} else {
 			Matrix2 v0( cell[0]-lambda.y, cell[1], cell[2], cell[3]-lambda.y );
 			Matrix2 v1( cell[0]-lambda.x, cell[1], cell[2], cell[3]-lambda.x );
-			evec0 = v0.column[0] + v0.column[1];
-			evec1 = v1.column[0] + v1.column[1];
+			evec0 = v0.Column(0) + v0.Column(1);
+			evec1 = v1.Column(0) + v1.Column(1);
 		}
 		return lambda;
 	}
@@ -350,11 +365,11 @@ public:
 	void SingularValueDecomposition( Matrix2<T> &U, Vec2<T> &S, Matrix2<T> &V )
 	{
 		Matrix2 AAT = MultSelfTranspose();
-		Vec2<T> lambda = AAT.GetEigenvectors( U.column[0], U.column[1] );
+		Vec2<T> lambda = AAT.GetEigenvectors( U.Column(0), U.Column(1) );
 		S = (lambda.Abs()).Sqrt();
 		U.Normalize();
 		Matrix2 ATA = TransposeMultSelf();
-		AAT.GetEigenvectors( V.column[0], V.column[1] );
+		AAT.GetEigenvectors( V.Column(0), V.Column(1) );
 		V.Normalize();
 	}
 
@@ -400,10 +415,14 @@ public:
 	//! | 0  3  6 | \n
 	//! | 1  4  7 | \n
 	//! | 2  5  8 | \n
+#ifdef __cpp_unrestricted_unions
 	union {
 		T       cell[9];
 		Vec3<T> column[3];	// column vectors
 	};
+#else
+	T cell[9];
+#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
@@ -413,7 +432,7 @@ public:
 	explicit Matrix3( T const *values ) { Set(values); }										//!< Initialize the matrix using an array of 9 values
 	explicit Matrix3( T const  v )      { SetIdentity(v); }										//!< Initialize the matrix as identity scaled by v
 	explicit Matrix3( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { Set(x,y,z); }	//!< Initialize the matrix using x,y,z vectors as columns
-	explicit Matrix3( Matrix2 <T> const &m ) { column[0].Set(m.column[0],0); column[1].Set(m.column[1],0); column[2].Set(0,0,1); }
+	explicit Matrix3( Matrix2 <T> const &m ) { Column(0).Set(m.Column(0),0); Column(1).Set(m.Column(1),0); Column(2).Set(0,0,1); }
 	explicit Matrix3( Matrix34<T> const &m );
 	explicit Matrix3( Matrix4 <T> const &m );
 
@@ -432,11 +451,11 @@ public:
 	//!@name Set & Get Methods
 
 	void Zero    ()       { MemClear(cell,9); }																	//!< Set all the values as zero
-	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  () && column[2].IsZero  (); }		//!< Returns true if the matrix is exactly zero
-	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite() && column[2].IsFinite(); }		//!< Returns true if all components are finite real numbers.
+	bool IsZero  () const { return Column(0).IsZero  () && Column(1).IsZero  () && Column(2).IsZero  (); }		//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return Column(0).IsFinite() && Column(1).IsFinite() && Column(2).IsFinite(); }		//!< Returns true if all components are finite real numbers.
 	void Get( T       *values ) { MemCopy(values,cell,9); }														//!< Copies the matrix cell to the given values array of size 9
 	void Set( T const *values ) { MemCopy(cell,values,9); }														//!< Set matrix using an array of 9 values
-	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { column[0]=x; column[1]=y; column[2]=z; }	//!< Set matrix using x,y,z vectors as columns
+	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { Column(0)=x; Column(1)=y; Column(2)=z; }	//!< Set matrix using x,y,z vectors as columns
 	void SetIdentity()      { *this = Identity(); }																//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }																	//!< Converts the matrix to an identity matrix scaled by a scalar
 	void SetTensorProduct( Vec3<T> const &v0, Vec3<T> const &v1 )												//!< Sets the matrix as the tensor product (outer product) of two vectors
@@ -574,8 +593,8 @@ public:
 
 	void SetRow     ( int row, T x, T y, T z )    { cell[row]=x; cell[row+3]=y; cell[row+6]=z; }	//!< Sets a row of the matrix
 	void SetRow     ( int row, Vec3<T> const &v ) { SetRow(row,v.x,v.y,v.z); }						//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y, T z )    { column[col].Set(x,y,z); }						//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec3<T> const &v ) { column[col]=v; }								//!< Sets a column of the matrix
+	void SetColumn  ( int col, T x, T y, T z )    { Column(col).Set(x,y,z); }						//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec3<T> const &v ) { Column(col)=v; }								//!< Sets a column of the matrix
 	void SetDiagonal( T xx, T yy, T zz )          { cell[0]=xx; cell[4]=yy; cell[8]=zz; }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec3<T> const &p )          { SetDiagonal( p.x, p.y, p.z ); }					//!< Sets the diagonal values of the matrix
 	void SetDiagonal( T const *values )           { SetDiagonal(values[0],values[1],values[2]); }	//!< Sets the diagonal values of the matrix
@@ -584,10 +603,21 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 	
-	Vec3<T>  GetRow     ( int row ) const { return Vec3<T>( cell[row], cell[row+3], cell[row+6] ); }	//!< Returns a row of the matrix
-	Vec3<T>  GetColumn  ( int col ) const { return column[col]; }										//!< Returns a column of the matrix
-	Vec3<T>  GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }				//!< Returns the diagonal of the matrix
-	Matrix3  GetRotation()          const { Matrix3 s, r; GetComponents(s,r); return r; }				//!< Returns the rotation portion of the transformation
+#ifdef __cpp_unrestricted_unions
+	Vec3<T>       * Columns    ()                { return column; }
+	Vec3<T> const * Columns    ()          const { return column; }
+	Vec3<T>       & Column     ( int col )       { return column[col]; }
+	Vec3<T> const & Column     ( int col ) const { return column[col]; }
+#else
+	Vec3<T>       * Columns    ()                { return ((Vec3<T>*)cell); }
+	Vec3<T> const * Columns    ()          const { return ((Vec3<T>*)cell); }
+	Vec3<T>       & Column     ( int col )       { return Columns()[col]; }
+	Vec3<T> const & Column     ( int col ) const { return Columns()[col]; }
+#endif
+	Vec3<T>         GetRow     ( int row ) const { return Vec3<T>( cell[row], cell[row+3], cell[row+6] ); }	//!< Returns a row of the matrix
+	Vec3<T>         GetColumn  ( int col ) const { return Column(col); }									//!< Returns a column of the matrix
+	Vec3<T>         GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }			//!< Returns the diagonal of the matrix
+	Matrix3         GetRotation()          const { Matrix3 s, r; GetComponents(s,r); return r; }			//!< Returns the rotation portion of the transformation
 
 	//! Returns the scale portion of the transformation.
 	//! The returned matrix is symmetric, but not necessarily diagonal, and it can include non-uniform scale.
@@ -764,7 +794,7 @@ public:
 		Matrix3 r;
 		for ( int i=0, k=0; i<3; ++i ) {
 			for ( int j=0; j<3; ++j, ++k ) {
-				r.cell[k] = column[j].Dot( right.column[i] );
+				r.cell[k] = Column(j).Dot( right.Column(i) );
 			}
 		}
 		return r;
@@ -822,37 +852,37 @@ public:
 
 	//! Removes the scale component of the matrix by normalizing each column.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
-	void Normalize() { column[0].Normalize(); column[1].Normalize(); column[2].Normalize(); }
+	void Normalize() { Column(0).Normalize(); Column(1).Normalize(); Column(2).Normalize(); }
 
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		column[0].Normalize();
-		column[1] -= column[0] * (column[1] % column[0]);
-		column[1].Normalize();
-		column[2] -= column[0] * (column[2] % column[0]);
-		column[2] -= column[1] * (column[2] % column[1]);
-		column[2].Normalize();
+		Column(0).Normalize();
+		Column(1) -= Column(0) * (Column(1) % Column(0));
+		Column(1).Normalize();
+		Column(2) -= Column(0) * (Column(2) % Column(0));
+		Column(2) -= Column(1) * (Column(2) % Column(1));
+		Column(2).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		column[1].Normalize();
-		column[0] -= column[1] * (column[0] % column[1]);
-		column[0].Normalize();
-		column[2] -= column[1] * (column[2] % column[1]);
-		column[2] -= column[0] * (column[2] % column[0]);
-		column[2].Normalize();
+		Column(1).Normalize();
+		Column(0) -= Column(1) * (Column(0) % Column(1));
+		Column(0).Normalize();
+		Column(2) -= Column(1) * (Column(2) % Column(1));
+		Column(2) -= Column(0) * (Column(2) % Column(0));
+		Column(2).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the z direction
 	void OrthogonalizeZ()
 	{
-		column[2].Normalize();
-		column[0] -= column[2] * (column[0] % column[2]);
-		column[0].Normalize();
-		column[1] -= column[2] * (column[1] % column[2]);
-		column[1] -= column[0] * (column[1] % column[0]);
-		column[1].Normalize();
+		Column(2).Normalize();
+		Column(0) -= Column(2) * (Column(0) % Column(2));
+		Column(0).Normalize();
+		Column(1) -= Column(2) * (Column(1) % Column(2));
+		Column(1) -= Column(0) * (Column(1) % Column(0));
+		Column(1).Normalize();
 	}
 
 
@@ -903,13 +933,13 @@ public:
 		static auto setVectors = [&]( Vec3<T> &e0, Vec3<T> &e1, Vec3<T> &e2, Matrix3 const &v20, Matrix3 const &v12, Matrix3 const &v01 ) {
 			int i = 0;
 			Matrix3 v2 = v20 * v12;
-			e2 = v2.column[0] + v2.column[1] + v2.column[2];
-			if ( (e2 ^ v01.column[0]).LengthSquared() < tollerance ) {
-				e0 = v01.column[1];
-				e1 = v01.column[2];
+			e2 = v2.Column(0) + v2.Column(1) + v2.Column(2);
+			if ( (e2 ^ v01.Column(0)).LengthSquared() < tollerance ) {
+				e0 = v01.Column(1);
+				e1 = v01.Column(2);
 			} else {
-				e0 = v01.column[0];
-				e1 = v01.column[ ( (e2 ^ v01.column[1]).LengthSquared() < tollerance ) ? 2 : 1 ];
+				e0 = v01.Column(0);
+				e1 = v01.Column( ( (e2 ^ v01.Column(1)).LengthSquared() < tollerance ) ? 2 : 1 );
 			}
 		};
 
@@ -919,9 +949,9 @@ public:
 		bool same02 = std::abs(lambda.x - lambda.z) < tollerance;
 		if ( same01 & same12 ) {
 			// All eigenvalues are the same, so, assuming that the matrix is normal, it must be scaled identity.
-			evec0 = column[0];
-			evec1 = column[1];
-			evec2 = column[2];
+			evec0 = Column(0);
+			evec1 = Column(1);
+			evec2 = Column(2);
 		} else {
 			Matrix3 v12 = AddIdentity( -lambda.x );
 			Matrix3 v20 = AddIdentity( -lambda.y );
@@ -932,9 +962,9 @@ public:
 					Matrix3 v0 = v01 * v20;
 					Matrix3 v1 = v12 * v01;
 					Matrix3 v2 = v20 * v12;
-					evec0 = v0.column[0] + v0.column[1] + v0.column[2];
-					evec1 = v1.column[0] + v1.column[1] + v1.column[2];
-					evec2 = v2.column[0] + v2.column[1] + v2.column[2];
+					evec0 = v0.Column(0) + v0.Column(1) + v0.Column(2);
+					evec1 = v1.Column(0) + v1.Column(1) + v1.Column(2);
+					evec2 = v2.Column(0) + v2.Column(1) + v2.Column(2);
 				}
 				break;
 				case 1: setVectors( evec0, evec1, evec2, v20, v12, v01 ); break;
@@ -953,11 +983,11 @@ public:
 	void SingularValueDecomposition( Matrix3<T> &U, Vec3<T> &S, Matrix3<T> &V, T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) )
 	{
 		Matrix3 AAT = MultSelfTranspose();
-		Vec3<T> lambda = AAT.GetEigenvectors( U.column[0], U.column[1], U.column[2], tollerance );
+		Vec3<T> lambda = AAT.GetEigenvectors( U.Column(0), U.Column(1), U.Column(2), tollerance );
 		S = (lambda.Abs()).Sqrt();
 		U.Normalize();
 		Matrix3 ATA = TransposeMultSelf();
-		AAT.GetEigenvectors( V.column[0], V.column[1], V.column[2], tollerance );
+		AAT.GetEigenvectors( V.Column(0), V.Column(1), V.Column(2), tollerance );
 		V.Normalize();
 	}
 
@@ -1017,10 +1047,14 @@ public:
 	//! | 0   3   6   9 | \n
 	//! | 1   4   7  10 | \n
 	//! | 2   5   8  11 | \n
+#ifdef __cpp_unrestricted_unions
 	union {
 		T       cell[12];
 		Vec3<T> column[4];	// column vectors
 	};
+#else
+	T cell[12];
+#endif
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1031,9 +1065,9 @@ public:
 	explicit Matrix34( T const *values ) { Set(values); }									//!< Initialize the matrix using an array of 9 values
 	explicit Matrix34( T const  v )      { SetIdentity(v); }								//!< Initialize the matrix as identity scaled by v
 	explicit Matrix34( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
-	explicit Matrix34( Matrix3<T> const &m ) { MemCopy(cell,m.cell,9); column[3].Zero(); }
-	explicit Matrix34( Matrix3<T> const &m, Vec3<T> const &pos ) { MemCopy(cell,m.cell,9); column[3]=pos; }
-	explicit Matrix34( Matrix2<T> const &m ) { column[0]=Vec3<T>(m.column[0]); column[1]=Vec3<T>(m.column[1]); column[2].Set(0,0,1); column[3].Zero(); }
+	explicit Matrix34( Matrix3<T> const &m ) { MemCopy(cell,m.cell,9); Column(3).Zero(); }
+	explicit Matrix34( Matrix3<T> const &m, Vec3<T> const &pos ) { MemCopy(cell,m.cell,9); Column(3)=pos; }
+	explicit Matrix34( Matrix2<T> const &m ) { Column(0)=Vec3<T>(m.Column(0)); Column(1)=Vec3<T>(m.Column(1)); Column(2).Set(0,0,1); Column(3).Zero(); }
 	explicit Matrix34( Matrix4<T> const &m );
 
 	//! Constructor using row-major order for initialization
@@ -1050,11 +1084,11 @@ public:
 	//!@name Set & Get Methods
 
 	void Zero    ()       { MemClear(cell,12); }																					//!< Set all the values as zero
-	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  () && column[2].IsZero  () && column[3].IsZero  (); }	//!< Returns true if the matrix is exactly zero
-	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite() && column[2].IsFinite() && column[3].IsFinite(); }	//!< Returns true if all components are finite real numbers.
+	bool IsZero  () const { return Column(0).IsZero  () && Column(1).IsZero  () && Column(2).IsZero  () && Column(3).IsZero  (); }	//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return Column(0).IsFinite() && Column(1).IsFinite() && Column(2).IsFinite() && Column(3).IsFinite(); }	//!< Returns true if all components are finite real numbers.
 	void Get( T       *values ) { MemCopy(values,cell,12); }																		//!< Copies the matrix cell to the given values array of size 12
 	void Set( T const *values ) { MemCopy(cell,values,12); }																		//!< Set Matrix using an array of 12 values
-	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { column[0]=x; column[1]=y; column[2]=z; column[3]=pos; }	//!< Set matrix using x,y,z vectors and coordinate center
+	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Column(0)=x; Column(1)=y; Column(2)=z; Column(3)=pos; }	//!< Set matrix using x,y,z vectors and coordinate center
 	void SetIdentity()      { *this = Identity(); }																					//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }																						//!< Converts the matrix to an identity matrix scaled by a scalar
 
@@ -1160,13 +1194,13 @@ public:
 		}
 	}
 	//! Sets a translation matrix with no rotation or scale
-	void SetTranslation( Vec3<T> const &move ) { column[0].Set(1,0,0); column[1].Set(0,1,0); column[2].Set(0,0,1); column[3]=move; }
+	void SetTranslation( Vec3<T> const &move ) { Column(0).Set(1,0,0); Column(1).Set(0,1,0); Column(2).Set(0,0,1); Column(3)=move; }
 	//! Adds a translation to the matrix
-	void AddTranslation( Vec3<T> const &move ) { column[3] += move; }
+	void AddTranslation( Vec3<T> const &move ) { Column(3) += move; }
 	//! Sets the translation component of the matrix
-	void SetTranslationComponent( Vec3<T> const &move ) { column[3] = move; }
+	void SetTranslationComponent( Vec3<T> const &move ) { Column(3) = move; }
 	//! Sets the translation component of the matrix to zero
-	void SetNoTranslation() { column[3].Set(0,0,0); }
+	void SetNoTranslation() { Column(3).Set(0,0,0); }
 	//! Set view matrix using position, target and approximate up vector
 	void SetView( Vec3<T> const &pos, Vec3<T> const &target, Vec3<T> const &up )
 	{
@@ -1201,8 +1235,8 @@ public:
 
 	void SetRow     ( int row, T x, T y, T z, T w )           { cell[row]=x; cell[row+3]=y; cell[row+6]=z; cell[row+9]=w; }	//!< Sets a row of the matrix
 	void SetRow     ( int row, Vec4<T> const &v )             { SetRow(row,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y, T z )                { column[col].Set(x,y,z); }									//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec3<T> const &v )             { column[col]=v; }											//!< Sets a column of the matrix
+	void SetColumn  ( int col, T x, T y, T z )                { Column(col).Set(x,y,z); }									//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec3<T> const &v )             { Column(col)=v; }											//!< Sets a column of the matrix
 	void SetDiagonal( T const &xx, T const &yy, T const &zz ) { cell[0]=xx; cell[4]=yy; cell[8]=zz; }						//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec3<T> const &p )                      { SetDiagonal( p.x, p.y, p.z ); }								//!< Sets the diagonal values of the matrix
 	void SetDiagonal( T const *values )                       { SetDiagonal(values[0],values[1],values[2]); }				//!< Sets the diagonal values of the matrix
@@ -1211,9 +1245,20 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-	Vec4<T> GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+3], cell[row+6], cell[row+9] ); }	//!< Returns a row of the matrix
-	Vec3<T> GetColumn  ( int col ) const { return column[col]; }													//!< Returns a column of the matrix
-	Vec3<T> GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }							//!< Returns the diagonal of the matrix
+#ifdef __cpp_unrestricted_unions
+	Vec3<T>       * Columns    ()                { return column; }
+	Vec3<T> const * Columns    ()          const { return column; }
+	Vec3<T>       & Column     ( int col )       { return column[col]; }
+	Vec3<T> const & Column     ( int col ) const { return column[col]; }
+#else
+	Vec3<T>       * Columns    ()                { return ((Vec3<T>*)cell); }
+	Vec3<T> const * Columns    ()          const { return ((Vec3<T>*)cell); }
+	Vec3<T>       & Column     ( int col )       { return Columns()[col]; }
+	Vec3<T> const & Column     ( int col ) const { return Columns()[col]; }
+#endif
+	Vec4<T>         GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+3], cell[row+6], cell[row+9] ); }	//!< Returns a row of the matrix
+	Vec3<T>         GetColumn  ( int col ) const { return Column(col); }													//!< Returns a column of the matrix
+	Vec3<T>         GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }							//!< Returns the diagonal of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1227,8 +1272,8 @@ public:
 	Matrix2<T> GetSubMatrix2 ()                const { Matrix2<T> m; GetSubMatrix2(m.cell); return m; }		//!< Returns the 2x2 portion of the matrix
 	void       GetSubMatrix2 ( Matrix2<T> &m ) const { GetSubMatrix2(m.cell); }								//!< Returns the 2x2 portion of the matrix
 	void       GetSubMatrix2 ( T *mdata )      const { MemCopy(mdata,cell,2); MemCopy(mdata+2,cell+3,2); }	//!< Returns the 2x2 portion of the matrix
-	Vec3<T>    GetTranslation()                const { return column[3]; }									//!< Returns the translation component of the matrix
-	void       GetTranslation( Vec3<T> &p )    const { p = column[3]; }										//!< Returns the translation component of the matrix
+	Vec3<T>    GetTranslation()                const { return Column(3); }									//!< Returns the translation component of the matrix
+	void       GetTranslation( Vec3<T> &p )    const { p = Column(3); }										//!< Returns the translation component of the matrix
 	void       GetTranslation( T *trans )      const { MemCopy(trans,cell+9,3); }							//!< Returns the translation component of the matrix
 	Matrix3<T> GetRotation   ()                const { Matrix3<T> m(*this); return m.GetRotation(); }		//!< Returns the rotation portion of the transformation
 	Matrix3<T> GetScale      ()                const { Matrix3<T> m(*this); return m.GetScale   (); }		//!< Returns the scale portion of the transformation.
@@ -1268,8 +1313,8 @@ public:
 	Matrix34 operator - () const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i]=-cell[i]; return r; }	//!< negative matrix
 
 	// Binary operators
-	Matrix34 operator * ( T         const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix34 operator / ( T         const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix34 operator * ( T        const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
+	Matrix34 operator / ( T        const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
 	Matrix34 operator + ( Matrix34 const &right ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
 	Matrix34 operator - ( Matrix34 const &right ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix4 from another
 	Matrix34 operator * ( Matrix34 const &right ) const	//!< multiply a matrix with another
@@ -1356,8 +1401,8 @@ public:
 
 	Matrix34 const & operator += ( Matrix34   const &right ) { for ( int i=0; i<12; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
 	Matrix34 const & operator -= ( Matrix34   const &right ) { for ( int i=0; i<12; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix4 from another matrix and modify this matrix
-	Matrix34 const & operator *= ( Matrix34   const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
-	Matrix34 const & operator *= ( Matrix3<T> const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix34 const & operator *= ( Matrix34   const &right ) { *this = operator*(right);                            return *this; }	//!< multiply a matrix with another matrix and modify this matrix
+	Matrix34 const & operator *= ( Matrix3<T> const &right ) { *this = operator*(right);                            return *this; }	//!< multiply a matrix with another matrix and modify this matrix
 	Matrix34 const & operator *= ( T          const  value ) { for ( int i=0; i<12; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
 	Matrix34 const & operator /= ( T          const  value ) { for ( int i=0; i<12; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 
@@ -1442,37 +1487,37 @@ public:
 
 	//! Removes the scale component of the matrix by normalizing the first three columns.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
-	void Normalize() { column[0].Normalize(); column[1].Normalize(); column[2].Normalize(); }
+	void Normalize() { Column(0).Normalize(); Column(1).Normalize(); Column(2).Normalize(); }
 
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		column[0].Normalize();
-		column[1] -= column[0] * (column[1] % column[0]);
-		column[1].Normalize();
-		column[2] -= column[0] * (column[2] % column[0]);
-		column[2] -= column[1] * (column[2] % column[1]);
-		column[2].Normalize();
+		Column(0).Normalize();
+		Column(1) -= Column(0) * (Column(1) % Column(0));
+		Column(1).Normalize();
+		Column(2) -= Column(0) * (Column(2) % Column(0));
+		Column(2) -= Column(1) * (Column(2) % Column(1));
+		Column(2).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		column[1].Normalize();
-		column[0] -= column[1] * (column[0] % column[1]);
-		column[0].Normalize();
-		column[2] -= column[1] * (column[2] % column[1]);
-		column[2] -= column[0] * (column[2] % column[0]);
-		column[2].Normalize();
+		Column(1).Normalize();
+		Column(0) -= Column(1) * (Column(0) % Column(1));
+		Column(0).Normalize();
+		Column(2) -= Column(1) * (Column(2) % Column(1));
+		Column(2) -= Column(0) * (Column(2) % Column(0));
+		Column(2).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the z direction
 	void OrthogonalizeZ()
 	{
-		column[2].Normalize();
-		column[0] -= column[2] * (column[0] % column[2]);
-		column[0].Normalize();
-		column[1] -= column[2] * (column[1] % column[2]);
-		column[1] -= column[0] * (column[1] % column[0]);
-		column[1].Normalize();
+		Column(2).Normalize();
+		Column(0) -= Column(2) * (Column(0) % Column(2));
+		Column(0).Normalize();
+		Column(1) -= Column(2) * (Column(1) % Column(2));
+		Column(1) -= Column(0) * (Column(1) % Column(0));
+		Column(1).Normalize();
 	}
 
 	//! Returns if the matrix is identity within the given error tollerance.
@@ -1581,7 +1626,8 @@ public:
 	//! | 1   5   9  13 | \n
 	//! | 2   6  10  14 | \n
 	//! | 3   7  11  15 | \n
-	struct Column3 {
+#ifdef __cpp_unrestricted_unions
+	struct ColVec3 {
 		Vec3<T> v;
 		T s;
 		void Set( Vec3<T> const &_v, T _s ) { v=_v; s=_s; }
@@ -1589,23 +1635,26 @@ public:
 	union {
 		T       cell [16];
 		Vec4<T> column[4];	// column vectors
-		Column3 col3  [4];	// column vectors plus scalars
+		ColVec3 col3  [4];	// column vectors plus scalars
 	};
+#else
+	T cell [16];
+#endif
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
 
-	Matrix4() CY_CLASS_FUNCTION_DEFAULT											//!< Default constructor
-	template <typename TT> explicit Matrix4<T>( Matrix4<TT> const &matrix ) { MemConvert(cell,matrix.cell,16); }	//!< Copy constructor for different types
-	explicit Matrix4( T const *values ) { Set(values); }							//!< Initialize the matrix using an array of 9 values
-	explicit Matrix4( T const  v )      { SetIdentity(v); }						//!< Initialize the matrix as identity scaled by v
+	Matrix4() CY_CLASS_FUNCTION_DEFAULT																					//!< Default constructor
+	template <typename TT> explicit Matrix4<T>( Matrix4<TT> const &matrix ) { MemConvert(cell,matrix.cell,16); }		//!< Copy constructor for different types
+	explicit Matrix4( T const *values ) { Set(values); }																//!< Initialize the matrix using an array of 9 values
+	explicit Matrix4( T const  v )      { SetIdentity(v); }																//!< Initialize the matrix as identity scaled by v
 	explicit Matrix4( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
 	explicit Matrix4( Vec4<T> const &x, Vec4<T> const &y, Vec4<T> const &z, Vec4<T> const &w   ) { Set(x,y,z,w);   }	//!< Initialize the matrix using x,y,z vectors as columns
-	explicit Matrix4( Matrix34<T> const &m ) { column[0].Set(m.column[0],T(0)); column[1].Set(m.column[1],T(0)); column[2].Set(m.column[2],T(0)); column[3].Set(m.column[3],T(1)); }
-	explicit Matrix4( Matrix3 <T> const &m ) { column[0].Set(m.column[0],T(0)); column[1].Set(m.column[1],T(0)); column[2].Set(m.column[2],T(0)); column[3].Set(0,0,0,1); }
-	explicit Matrix4( Matrix2 <T> const &m ) { column[0].Set(m.column[0],T(0),T(0)); column[1].Set(m.column[1],T(0),T(0)); column[2].Set(0,0,1,0); column[3].Set(0,0,0,1); }
-	explicit Matrix4( Matrix3 <T> const &m, Vec3<T> const &pos ) { column[0].Set(m.column[0],T(0)); column[1].Set(m.column[1],T(0)); column[2].Set(m.column[2],T(0)); column[3].Set(pos,T(1)); }
+	explicit Matrix4( Matrix34<T> const &m ) { Column(0).Set(m.Column(0),T(0)); Column(1).Set(m.Column(1),T(0)); Column(2).Set(m.Column(2),T(0)); Column(3).Set(m.Column(3),T(1)); }
+	explicit Matrix4( Matrix3 <T> const &m ) { Column(0).Set(m.Column(0),T(0)); Column(1).Set(m.Column(1),T(0)); Column(2).Set(m.Column(2),T(0)); Column(3).Set(0,0,0,1); }
+	explicit Matrix4( Matrix2 <T> const &m ) { Column(0).Set(m.Column(0),T(0),T(0)); Column(1).Set(m.Column(1),T(0),T(0)); Column(2).Set(0,0,1,0); Column(3).Set(0,0,0,1); }
+	explicit Matrix4( Matrix3 <T> const &m, Vec3<T> const &pos ) { Column(0).Set(m.Column(0),T(0)); Column(1).Set(m.Column(1),T(0)); Column(2).Set(m.Column(2),T(0)); Column(3).Set(pos,T(1)); }
 
 	//! Constructor using row-major order for initialization
 	Matrix4( T c00, T c01, T c02, T c03,
@@ -1624,12 +1673,12 @@ public:
 	//!@name Set & Get Methods
 
 	void Zero    ()       { MemClear(cell,16); }																					//!< Set all the values as zero
-	bool IsZero  () const { return column[0].IsZero  () && column[1].IsZero  () && column[2].IsZero  () && column[3].IsZero  (); }	//!< Returns true if the matrix is exactly zero
-	bool IsFinite() const { return column[0].IsFinite() && column[1].IsFinite() && column[2].IsFinite() && column[3].IsFinite(); }	//!< Returns true if all components are finite real numbers.
+	bool IsZero  () const { return Column(0).IsZero  () && Column(1).IsZero  () && Column(2).IsZero  () && Column(3).IsZero  (); }	//!< Returns true if the matrix is exactly zero
+	bool IsFinite() const { return Column(0).IsFinite() && Column(1).IsFinite() && Column(2).IsFinite() && Column(3).IsFinite(); }	//!< Returns true if all components are finite real numbers.
 	void Get( T       *values ) { MemCopy(values,cell,16); }																		//!< Copies the matrix cell to the given values array of size 16
 	void Set( T const *values ) { MemCopy(cell,values,16); }																		//!< Set Matrix using an array of 16 values
-	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { col3[0].Set(x,T(0)); col3[1].Set(y,T(0)); col3[2].Set(z,T(0)); col3[4].Set(pos,T(1)); }	//!< Set matrix using x,y,z column vectors and coordinate center
-	void Set( Vec4<T> const &x, Vec4<T> const &y, Vec4<T> const &z, Vec4<T> const &w ) { column[0]=x; column[1]=y; column[2]=z; column[3]=w; }	//!< Set matrix using x,y,z,w column vectors
+	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Column(0).Set(x,T(0)); Column(1).Set(y,T(0)); Column(2).Set(z,T(0)); Column(3).Set(pos,T(1)); }	//!< Set matrix using x,y,z column vectors and coordinate center
+	void Set( Vec4<T> const &x, Vec4<T> const &y, Vec4<T> const &z, Vec4<T> const &w ) { Column(0)=x; Column(1)=y; Column(2)=z; Column(3)=w; }	//!< Set matrix using x,y,z,w column vectors
 	void SetIdentity()      { *this = Identity(); }																					//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }																						//!< Converts the matrix to an identity matrix scaled by a scalar
 	void SetTensorProduct( Vec4<T> const &v0, Vec4<T> const &v1 )																	//!< Sets the matrix as the tensor product (outer product) of two vectors
@@ -1748,7 +1797,7 @@ public:
 		}
 	}
 	//! Sets a translation matrix with no rotation or scale
-	void SetTranslation( Vec3<T> const &move ) { column[0].Set(1,0,0,0); column[1].Set(0,1,0,0); column[2].Set(0,0,1,0); column[3].Set(move,1); }
+	void SetTranslation( Vec3<T> const &move ) { Column(0).Set(1,0,0,0); Column(1).Set(0,1,0,0); Column(2).Set(0,0,1,0); Column(3).Set(move,1); }
 	//! Adds a translation to the matrix
 	void AddTranslation( Vec3<T> const &move ) { cell[12]+=move.x; cell[13]+=move.y; cell[14]+=move.z; }
 	//! Sets the translation component of the matrix
@@ -1791,10 +1840,10 @@ public:
 		T yScale = T(1) / tan_fov_2;
 		T xScale = yScale / aspect;
 		T zdif = znear - zfar;
-		column[0].Set(xScale,0,0,0);
-		column[1].Set(0,yScale,0,0);
-		column[2].Set(0,0,(zfar+znear)/zdif,-1);
-		column[3].Set(0,0,(2*zfar*znear)/zdif,0);
+		Column(0).Set(xScale,0,0,0);
+		Column(1).Set(0,yScale,0,0);
+		Column(2).Set(0,0,(zfar+znear)/zdif,-1);
+		Column(3).Set(0,0,(2*zfar*znear)/zdif,0);
 	}
 
 
@@ -1803,8 +1852,8 @@ public:
 
 	void SetRow     ( int row, T x, T y, T z, T w ) { cell[row]=x; cell[row+4]=y; cell[row+8]=z; cell[row+12]=w; }	//!< Sets a row of the matrix
 	void SetRow     ( int row, Vec4<T> const &v )   { SetRow(row,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y, T z, T w ) { column[col].Set(x,y,z,w); }									//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec4<T> const &v )   { column[col]=v; }												//!< Sets a column of the matrix
+	void SetColumn  ( int col, T x, T y, T z, T w ) { Column(col).Set(x,y,z,w); }									//!< Sets a column of the matrix
+	void SetColumn  ( int col, Vec4<T> const &v )   { Column(col)=v; }												//!< Sets a column of the matrix
 	void SetDiagonal( T xx, T yy, T zz, T ww=1 )    { cell[0]=xx; cell[5]=yy; cell[10]=zz; cell[15]=ww; }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec4<T> const &p )            { SetDiagonal( p.x, p.y, p.z, p.w ); }							//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec3<T> const &p )            { SetDiagonal( p.x, p.y, p.z, T(1) ); }							//!< Sets the diagonal values of the matrix
@@ -1814,31 +1863,46 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-	Vec4<T> GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+4], cell[row+8], cell[row+12] ); }	//!< Returns a row of the matrix
-	Vec4<T> GetColumn  ( int col ) const { return column[col]; }													//!< Returns a column of the matrix
-	Vec4<T> GetDiagonal()          const { return Vec4<T>( cell[0], cell[5], cell[10], cell[15] ); }				//!< Returns the diagonal of the matrix
+#ifdef __cpp_unrestricted_unions
+	Vec4<T>       * Columns    ()                { return column; }
+	Vec4<T> const * Columns    ()          const { return column; }
+	Vec4<T>       & Column     ( int col )       { return column[col]; }
+	Vec4<T> const & Column     ( int col ) const { return column[col]; }
+	Vec3<T>       & Column3    ( int col )       { return col3[col].v; }
+	Vec3<T> const & Column3    ( int col ) const { return col3[col].v; }
+#else
+	Vec4<T>       * Columns    ()                { return ((Vec4<T>*)cell); }
+	Vec4<T> const * Columns    ()          const { return ((Vec4<T>*)cell); }
+	Vec4<T>       & Column     ( int col )       { return Columns()[col]; }
+	Vec4<T> const & Column     ( int col ) const { return Columns()[col]; }
+	Vec3<T>       & Column3    ( int col )       { return (Vec3<T>       &)cell[col*4]; }
+	Vec3<T> const & Column3    ( int col ) const { return (Vec3<T> const &)cell[col*4]; }
+#endif
+	Vec4<T>         GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+4], cell[row+8], cell[row+12] ); }	//!< Returns a row of the matrix
+	Vec4<T>         GetColumn  ( int col ) const { return Column(col); }													//!< Returns a column of the matrix
+	Vec4<T>         GetDiagonal()          const { return Vec4<T>( cell[0], cell[5], cell[10], cell[15] ); }				//!< Returns the diagonal of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Sub-matrix cell
 
-	void        GetSubMatrix  ( Matrix34<T> &m ) const { GetSubMatrix34(m); }																	//!< Returns the 3x4 portion of the matrix
-	void        GetSubMatrix  ( Matrix3 <T> &m ) const { GetSubMatrix3 (m); }																	//!< Returns the 3x3 portion of the matrix
-	void        GetSubMatrix  ( Matrix2 <T> &m ) const { GetSubMatrix2 (m); }																	//!< Returns the 2x2 portion of the matrix
-	Matrix34<T> GetSubMatrix34()                 const { return Matrix34<T>( col3[0].v, col3[1].v, col3[2].v, col3[3].v ); }					//!< Returns the 3x4 portion of the matrix
-	void        GetSubMatrix34( Matrix34<T> &m ) const { m.Set( col3[0].v, col3[1].v, col3[2].v, col3[3].v ); }									//!< Returns the 3x4 portion of the matrix
+	void        GetSubMatrix  ( Matrix34<T> &m ) const { GetSubMatrix34(m); }															//!< Returns the 3x4 portion of the matrix
+	void        GetSubMatrix  ( Matrix3 <T> &m ) const { GetSubMatrix3 (m); }															//!< Returns the 3x3 portion of the matrix
+	void        GetSubMatrix  ( Matrix2 <T> &m ) const { GetSubMatrix2 (m); }															//!< Returns the 2x2 portion of the matrix
+	Matrix34<T> GetSubMatrix34()                 const { Matrix34<T> m; GetSubMatrix34(m); return m; }									//!< Returns the 3x4 portion of the matrix
+	void        GetSubMatrix34( Matrix34<T> &m ) const { m.Set(Column3(0),Column3(1),Column3(2),Column3(3)); }							//!< Returns the 3x4 portion of the matrix
 	void        GetSubMatrix34( T *mdata )       const { MemCopy(mdata,cell,3); MemCopy(mdata+3,cell+4,3); MemCopy(mdata+6,cell+8,3); MemCopy(mdata+9,cell+12,3); }	//!< Returns the 3x4 portion of the matrix
-	Matrix3<T>  GetSubMatrix3 ()                 const { Matrix3<T> m; GetSubMatrix3(m.cell); return m; }										//!< Returns the 3x3 portion of the matrix
-	void        GetSubMatrix3 ( Matrix3<T> &m )  const { GetSubMatrix3(m.cell); }																//!< Returns the 3x3 portion of the matrix
-	void        GetSubMatrix3 ( T *mdata )       const { MemCopy(mdata,cell,3); MemCopy(mdata+3,cell+4,3); MemCopy(mdata+6,cell+8,3); }			//!< Returns the 3x3 portion of the matrix
-	Matrix2<T>  GetSubMatrix2 ()                 const { Matrix2<T> m; GetSubMatrix2(m.cell); return m; }										//!< Returns the 2x2 portion of the matrix
-	void        GetSubMatrix2 ( Matrix2<T> &m )  const { GetSubMatrix2(m.cell); }																//!< Returns the 2x2 portion of the matrix
-	void        GetSubMatrix2 ( T *mdata )       const { MemCopy(mdata,cell,2); MemCopy(mdata+2,cell+4,2); }									//!< Returns the 2x2 portion of the matrix
-	Vec3<T>     GetTranslation()                 const { return col3[3].v; }																	//!< Returns the translation component of the matrix
-	void        GetTranslation( Vec3<T> &p )     const { p = col3[3].v; }																		//!< Returns the translation component of the matrix
-	void        GetTranslation( T *trans )       const { MemCopy(trans,cell+12,3); }															//!< Returns the translation component of the matrix
-	Matrix3<T>  GetRotation   ()                 const { Matrix3<T> m(*this); return m.GetRotation(); }											//!< Returns the rotation portion of the transformation
-	Matrix3<T>  GetScale      ()                 const { Matrix3<T> m(*this); return m.GetScale   (); }											//!< Returns the scale portion of the transformation.
+	Matrix3<T>  GetSubMatrix3 ()                 const { Matrix3<T> m; GetSubMatrix3(m.cell); return m; }								//!< Returns the 3x3 portion of the matrix
+	void        GetSubMatrix3 ( Matrix3<T> &m )  const { GetSubMatrix3(m.cell); }														//!< Returns the 3x3 portion of the matrix
+	void        GetSubMatrix3 ( T *mdata )       const { MemCopy(mdata,cell,3); MemCopy(mdata+3,cell+4,3); MemCopy(mdata+6,cell+8,3); }	//!< Returns the 3x3 portion of the matrix
+	Matrix2<T>  GetSubMatrix2 ()                 const { Matrix2<T> m; GetSubMatrix2(m.cell); return m; }								//!< Returns the 2x2 portion of the matrix
+	void        GetSubMatrix2 ( Matrix2<T> &m )  const { GetSubMatrix2(m.cell); }														//!< Returns the 2x2 portion of the matrix
+	void        GetSubMatrix2 ( T *mdata )       const { MemCopy(mdata,cell,2); MemCopy(mdata+2,cell+4,2); }							//!< Returns the 2x2 portion of the matrix
+	Vec3<T>     GetTranslation()                 const { Vec3<T> p; GetTranslation(p); return p; }										//!< Returns the translation component of the matrix
+	void        GetTranslation( Vec3<T> &p )     const { p.Set(cell[12],cell[13],cell[14]); }											//!< Returns the translation component of the matrix
+	void        GetTranslation( T *trans )       const { MemCopy(trans,cell+12,3); }													//!< Returns the translation component of the matrix
+	Matrix3<T>  GetRotation   ()                 const { Matrix3<T> m(*this); return m.GetRotation(); }									//!< Returns the rotation portion of the transformation
+	Matrix3<T>  GetScale      ()                 const { Matrix3<T> m(*this); return m.GetScale   (); }									//!< Returns the scale portion of the transformation.
 
 	//! Returns the average scale factor of the 3 by 3 sub-matrix
 	T GetAvrgScale() const 
@@ -1875,8 +1939,8 @@ public:
 	Matrix4 operator - () const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i]=-cell[i]; return r; }	//!< negative matrix
 
 	// Binary operators
-	Matrix4 operator * ( T        const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix4 operator / ( T        const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix4 operator * ( T       const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
+	Matrix4 operator / ( T       const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
 	Matrix4 operator + ( Matrix4 const &right ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
 	Matrix4 operator - ( Matrix4 const &right ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix4 from another
 	Matrix4 operator * ( Matrix4 const &right ) const	//!< multiply a matrix with another
@@ -1980,9 +2044,9 @@ public:
 
 	Matrix4 const & operator += ( Matrix4     const &right ) { for ( int i=0; i<16; ++i ) cell[i] += right.cell[i]; return *this; }	//!< add two Matrices modify this
 	Matrix4 const & operator -= ( Matrix4     const &right ) { for ( int i=0; i<16; ++i ) cell[i] -= right.cell[i]; return *this; }	//!< subtract one Matrix4 from another matrix and modify this matrix
-	Matrix4 const & operator *= ( Matrix4     const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
-	Matrix4 const & operator *= ( Matrix34<T> const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
-	Matrix4 const & operator *= ( Matrix3<T>  const &right ) { *this = operator*(right); return *this; }							//!< multiply a matrix with another matrix and modify this matrix
+	Matrix4 const & operator *= ( Matrix4     const &right ) { *this = operator*(right);                            return *this; }	//!< multiply a matrix with another matrix and modify this matrix
+	Matrix4 const & operator *= ( Matrix34<T> const &right ) { *this = operator*(right);                            return *this; }	//!< multiply a matrix with another matrix and modify this matrix
+	Matrix4 const & operator *= ( Matrix3<T>  const &right ) { *this = operator*(right);                            return *this; }	//!< multiply a matrix with another matrix and modify this matrix
 	Matrix4 const & operator *= ( T           const  value ) { for ( int i=0; i<16; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
 	Matrix4 const & operator /= ( T           const  value ) { for ( int i=0; i<16; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 
@@ -2038,7 +2102,7 @@ public:
 		Matrix4 r;
 		for ( int i=0, k=0; i<3; ++i ) {
 			for ( int j=0; j<3; ++j, ++k ) {
-				r.cell[k] = column[j].Dot( right.column[i] );
+				r.cell[k] = Column(j).Dot( right.Column(i) );
 			}
 		}
 		return r;
@@ -2162,37 +2226,37 @@ public:
 
 	//! Removes the scale component of the matrix by normalizing each column of the 3x3 sub-matrix.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
-	void Normalize() { col3[0].v.Normalize(); col3[1].v.Normalize(); col3[2].v.Normalize(); }
+	void Normalize() { Column3(0).Normalize(); Column3(0).Normalize(); Column3(0).Normalize(); }
 
 	//! Orthogonalizes the matrix and removes the scale component, preserving the x direction
 	void OrthogonalizeX()
 	{
-		col3[0].v.Normalize();
-		col3[1].v -= col3[0].v * (col3[1].v % col3[0].v);
-		col3[1].v.Normalize();
-		col3[2].v -= col3[0].v * (col3[2].v % col3[0].v);
-		col3[2].v -= col3[1].v * (col3[2].v % col3[1].v);
-		col3[2].v.Normalize();
+		Column3(0).Normalize();
+		Column3(1) -= Column3(0) * (Column3(1) % Column3(0));
+		Column3(1).Normalize();
+		Column3(2) -= Column3(0) * (Column3(2) % Column3(0));
+		Column3(2) -= Column3(1) * (Column3(2) % Column3(1));
+		Column3(2).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the y direction
 	void OrthogonalizeY()
 	{
-		col3[1].v.Normalize();
-		col3[0].v -= col3[1].v * (col3[0].v % col3[1].v);
-		col3[0].v.Normalize();
-		col3[2].v -= col3[1].v * (col3[2].v % col3[1].v);
-		col3[2].v -= col3[0].v * (col3[2].v % col3[0].v);
-		col3[2].v.Normalize();
+		Column3(1).Normalize();
+		Column3(0) -= Column3(1) * (Column3(0) % Column3(1));
+		Column3(0).Normalize();
+		Column3(2) -= Column3(1) * (Column3(2) % Column3(1));
+		Column3(2) -= Column3(0) * (Column3(2) % Column3(0));
+		Column3(2).Normalize();
 	}
 	//! Orthogonalizes the matrix and removes the scale component, preserving the z direction
 	void OrthogonalizeZ()
 	{
-		col3[2].v.Normalize();
-		col3[0].v -= col3[2].v * (col3[0].v % col3[2].v);
-		col3[0].v.Normalize();
-		col3[1].v -= col3[2].v * (col3[1].v % col3[2].v);
-		col3[1].v -= col3[0].v * (col3[1].v % col3[0].v);
-		col3[1].v.Normalize();
+		Column3(2).Normalize();
+		Column3(0) -= Column3(2) * (Column3(0) % Column3(2));
+		Column3(0).Normalize();
+		Column3(1) -= Column3(2) * (Column3(1) % Column3(2));
+		Column3(1) -= Column3(0) * (Column3(1) % Column3(0));
+		Column3(1).Normalize();
 	}
 
 	//! Returns if the matrix is identity within the given error tollerance.

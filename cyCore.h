@@ -118,25 +118,23 @@ static _cy_nullptr_t nullptr;
 
 // restrict
 #if defined(__INTEL_COMPILER)
-# define CY_RESTRICT restrict
+//# define restrict restrict
 #elif defined(__clang__)
-# define CY_RESTRICT __restrict__
+# define restrict __restrict__
 #elif defined(_MSC_VER)
-# define CY_RESTRICT __restrict
+# define restrict __restrict
 #elif __GNUC__
-# define CY_RESTRICT __restrict__
+# define restrict __restrict__
 #else
-# define CY_RESTRICT
+# define restrict
 #endif
 
 // alignment
-#if _CY_COMPILER_VER_MEETS(1900,40800,30000,1500)
-# define CY_ALIGNAS(alignment_size) alignas(alignment_size)
-#else
+#if _CY_COMPILER_VER_BELOW(1900,40800,30000,1500)
 # if defined(_MSC_VER)
-#  define HF_ALIGNAS(alignment_size) __declspec(align(alignment_size))
+#  define alignas(alignment_size) __declspec(align(alignment_size))
 # else
-#  define HF_ALIGNAS(alignment_size) __attribute__((aligned(alignment_size)))
+#  define alignas(alignment_size) __attribute__((aligned(alignment_size)))
 # endif
 #endif
 
@@ -153,6 +151,13 @@ static _cy_nullptr_t nullptr;
 // static_assert
 #if _CY_COMPILER_VER_BELOW(1900,60000,20500,1800)
 # define static_assert(condition,message) assert(condition && message)
+#endif
+
+// unrestricted unions
+#ifndef __cpp_unrestricted_unions
+# if _CY_COMPILER_VER_MEETS(1900,40600,30000,1400)
+#  define __cpp_unrestricted_unions
+# endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -214,7 +219,7 @@ template <typename T> bool IsFinite( T const &v ) { return std::numeric_limits<T
 //////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-void MemCopy( T * CY_RESTRICT dest, T const * CY_RESTRICT src, size_t count )
+void MemCopy( T * restrict dest, T const * restrict src, size_t count )
 {
 #ifdef _cy_std_is_trivially_copyable
 	if ( std::is_trivially_copyable<T>() ) {
@@ -225,7 +230,7 @@ void MemCopy( T * CY_RESTRICT dest, T const * CY_RESTRICT src, size_t count )
 }
 
 template <typename T, typename S>
-void MemConvert( T * CY_RESTRICT dest, S const * CY_RESTRICT src, size_t count )
+void MemConvert( T * restrict dest, S const * restrict src, size_t count )
 {
 	for ( size_t i=0; i<count; ++i ) dest[i] = reinterpret_cast<T>(src[i]);
 }
