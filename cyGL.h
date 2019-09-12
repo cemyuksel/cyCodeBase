@@ -949,25 +949,25 @@ public:
 #endif
 
 #ifdef _CY_MATRIX_H_INCLUDED_
-	void SetUniform(int index, Matrix2 <float>  const &m)              { glUniformMatrix2fv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix3 <float>  const &m)              { glUniformMatrix3fv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix4 <float>  const &m)              { glUniformMatrix4fv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix2 <float>  const *m, int count=1) { glUniformMatrix2fv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, Matrix3 <float>  const *m, int count=1) { glUniformMatrix3fv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, Matrix4 <float>  const *m, int count=1) { glUniformMatrix4fv  (params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix2 <float>  const &m)              { glUniformMatrix2fv  (params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix3 <float>  const &m)              { glUniformMatrix3fv  (params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix4 <float>  const &m)              { glUniformMatrix4fv  (params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix2 <float>  const *m, int count=1) { glUniformMatrix2fv  (params[index],count,GL_FALSE,m->cell); }
+	void SetUniform(int index, Matrix3 <float>  const *m, int count=1) { glUniformMatrix3fv  (params[index],count,GL_FALSE,m->cell); }
+	void SetUniform(int index, Matrix4 <float>  const *m, int count=1) { glUniformMatrix4fv  (params[index],count,GL_FALSE,m->cell); }
 # ifdef GL_VERSION_2_1
-	void SetUniform(int index, Matrix34<float>  const &m)              { glUniformMatrix3x4fv(params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix34<float>  const *m, int count=1) { glUniformMatrix3x4fv(params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix34<float>  const &m)              { glUniformMatrix3x4fv(params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix34<float>  const *m, int count=1) { glUniformMatrix3x4fv(params[index],count,GL_FALSE,m->cell); }
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(int index, Matrix2 <double> const &m)              { glUniformMatrix2dv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix3 <double> const &m)              { glUniformMatrix3dv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix4 <double> const &m)              { glUniformMatrix4dv  (params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix34<double> const &m)              { glUniformMatrix3x4dv(params[index],1,    GL_FALSE,m.data ); }
-	void SetUniform(int index, Matrix2 <double> const *m, int count=1) { glUniformMatrix2dv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, Matrix3 <double> const *m, int count=1) { glUniformMatrix3dv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, Matrix4 <double> const *m, int count=1) { glUniformMatrix4dv  (params[index],count,GL_FALSE,m->data); }
-	void SetUniform(int index, Matrix34<double> const *m, int count=1) { glUniformMatrix3x4dv(params[index],count,GL_FALSE,m->data); }
+	void SetUniform(int index, Matrix2 <double> const &m)              { glUniformMatrix2dv  (params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix3 <double> const &m)              { glUniformMatrix3dv  (params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix4 <double> const &m)              { glUniformMatrix4dv  (params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix34<double> const &m)              { glUniformMatrix3x4dv(params[index],1,    GL_FALSE,m.cell ); }
+	void SetUniform(int index, Matrix2 <double> const *m, int count=1) { glUniformMatrix2dv  (params[index],count,GL_FALSE,m->cell); }
+	void SetUniform(int index, Matrix3 <double> const *m, int count=1) { glUniformMatrix3dv  (params[index],count,GL_FALSE,m->cell); }
+	void SetUniform(int index, Matrix4 <double> const *m, int count=1) { glUniformMatrix4dv  (params[index],count,GL_FALSE,m->cell); }
+	void SetUniform(int index, Matrix34<double> const *m, int count=1) { glUniformMatrix3x4dv(params[index],count,GL_FALSE,m->cell); }
 # endif
 #endif
 	//!@}
@@ -1086,25 +1086,25 @@ public:
 #endif
 
 #ifdef _CY_MATRIX_H_INCLUDED_
-	void SetUniform(char const *name, Matrix2 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix3 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix4 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix2 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(char const *name, Matrix3 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(char const *name, Matrix4 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix2 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix3 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix4 <float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix2 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,GL_FALSE,m->cell); }
+	void SetUniform(char const *name, Matrix3 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3fv  (id,count,GL_FALSE,m->cell); }
+	void SetUniform(char const *name, Matrix4 <float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4fv  (id,count,GL_FALSE,m->cell); }
 # ifdef GL_VERSION_2_1
-	void SetUniform(char const *name, Matrix34<float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix34<float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix34<float>  const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix34<float>  const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4fv(id,count,GL_FALSE,m->cell); }
 # endif
 # ifdef GL_VERSION_4_0
-	void SetUniform(char const *name, Matrix2 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix3 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix4 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix34<double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,1,    GL_FALSE,m.data ); }
-	void SetUniform(char const *name, Matrix2 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(char const *name, Matrix3 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(char const *name, Matrix4 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,count,GL_FALSE,m->data); }
-	void SetUniform(char const *name, Matrix34<double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,count,GL_FALSE,m->data); }
+	void SetUniform(char const *name, Matrix2 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix3 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix4 <double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix34<double> const &m)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,1,    GL_FALSE,m.cell ); }
+	void SetUniform(char const *name, Matrix2 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2dv  (id,count,GL_FALSE,m->cell); }
+	void SetUniform(char const *name, Matrix3 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3dv  (id,count,GL_FALSE,m->cell); }
+	void SetUniform(char const *name, Matrix4 <double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix4dv  (id,count,GL_FALSE,m->cell); }
+	void SetUniform(char const *name, Matrix34<double> const *m, int count=1) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix3x4dv(id,count,GL_FALSE,m->cell); }
 # endif
 #endif
 	//!@}
