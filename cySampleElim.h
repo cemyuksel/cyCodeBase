@@ -250,17 +250,17 @@ public:
 			Eliminate( inputPoints, inputSize, outputPoints, outputSize, progressive, d_max, dimensions,
 				[d_min, alpha] (PointType const &, PointType const &, FType d2, FType d_max)
 				{
-					FType d = cySqrt(d2);
+					FType d = Sqrt(d2);
 					if ( d < d_min ) d = d_min;
-					return cyPow( FType(1) - d/d_max, alpha );
+					return std::pow( FType(1) - d/d_max, alpha );
 				}
 			);
 		} else {
 			Eliminate( inputPoints, inputSize, outputPoints, outputSize, progressive, d_max, dimensions,
 				[alpha] (PointType const &, PointType const &, FType d2, FType d_max)
 				{
-					FType d = cySqrt(d2);
-					return cyPow( FType(1) - d/d_max, alpha );
+					FType d = Sqrt(d2);
+					return std::pow( FType(1) - d/d_max, alpha );
 				}
 			);
 		}
@@ -280,15 +280,15 @@ public:
 		FType sampleArea = domainSize / (FType) sampleCount;
 		FType r_max;
 		switch ( dimensions ) {
-		case 2: r_max = cySqrt( sampleArea / ( FType(2) * cySqrt(FType(3)) ) ); break;
-		case 3: r_max = cyPow ( sampleArea / ( FType(4) * cySqrt(FType(2)) ), FType(1)/FType(3) ); break;
+		case 2: r_max = Sqrt( sampleArea / ( FType(2) * Sqrt(FType(3)) ) ); break;
+		case 3: r_max = std::pow ( sampleArea / ( FType(4) * Sqrt(FType(2)) ), FType(1)/FType(3) ); break;
 		default:
 			FType c;
 			int d_start;
 			if ( (dimensions & 1) ) { c = FType(2);      d_start = 3; }
-			else                    { c = cyPi<FType>(); d_start = 4; }
-			for ( int d=d_start; d<=dimensions; d+=2 ) c *= FType(2) * cyPi<FType>() / FType(d);
-			r_max = cyPow( sampleArea / c, FType(1)/FType(dimensions) );
+			else                    { c = Pi<FType>(); d_start = 4; }
+			for ( int d=d_start; d<=dimensions; d+=2 ) c *= FType(2) * Pi<FType>() / FType(d);
+			r_max = std::pow( sampleArea / c, FType(1)/FType(dimensions) );
 			break;
 		}
 		return r_max;
@@ -393,13 +393,13 @@ private:
 	}
 
 	// Returns the change in weight function radius using half of the number of samples. It is used for progressive sampling.
-	float ProgressiveRadiusMultiplier(int dimensions) const { return dimensions==2 ? cySqrt(FType(2)) : cyPow(FType(2), FType(1)/FType(dimensions)); }
+	float ProgressiveRadiusMultiplier(int dimensions) const { return dimensions==2 ? Sqrt(FType(2)) : std::pow(FType(2), FType(1)/FType(dimensions)); }
 
 	// Returns the minimum radius fraction used by the default weight function.
 	FType GetWeightLimitFraction( SIZE_TYPE inputSize, SIZE_TYPE outputSize ) const
 	{
 		FType ratio = FType(outputSize) / FType(inputSize);
-		return ( 1 - cyPow( ratio, gamma ) ) * beta;
+		return ( 1 - std::pow( ratio, gamma ) ) * beta;
 	}
 };
 
