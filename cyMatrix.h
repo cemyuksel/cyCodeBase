@@ -64,6 +64,8 @@ template <typename T>
 class Matrix2
 {
 	friend Matrix2 operator * ( T const value, Matrix2 const &right ) { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = value * right.cell[i]; return r; }	//!< multiply matrix by a value
+	friend Matrix2 operator + ( T const value, Matrix2 const &right ) { return Matrix2(value+right.cell[0], right.cell[2], right.cell[1],value+right.cell[3]); }	//!< add a value times identity matrix to a matrix
+	friend Matrix2 operator - ( T const value, Matrix2 const &right ) { return Matrix2(value-right.cell[0],-right.cell[2],-right.cell[1],value-right.cell[3]); }	//!< subtract matrix from a value times identity matrix
 	friend Matrix2 Inverse( Matrix2 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 public:
@@ -94,7 +96,7 @@ public:
 
 	//! Constructor using row-major order for initialization
 	Matrix2( T c00, T c01,
-		      T c10, T c11 )
+		     T c10, T c11 )
 	{
 		cell[0] = c00;   cell[2] = c01;
 		cell[1] = c10;   cell[3] = c11;
@@ -221,7 +223,7 @@ public:
 
 	// Binary operators
 	Matrix2 operator * ( T       const  value ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix2 operator / ( T       const  value ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix2 operator / ( T       const  value ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value
 	Matrix2 operator + ( Matrix2 const &right ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
 	Matrix2 operator - ( Matrix2 const &right ) const { Matrix2 r; for ( int i=0; i<4; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix2 from another
 	Matrix2 operator * ( Matrix2 const &right ) const	//!< multiply a matrix with another
@@ -235,6 +237,9 @@ public:
 	}
 	Vec2<T> operator * ( Vec2<T> const &p ) const { return Vec2<T>( p.x*cell[0] + p.y*cell[2], p.x*cell[1] + p.y*cell[3] ); }
 
+	Matrix2 operator + ( T       const  value ) const { Matrix2 r=*this; r.cell[0]+=value; r.cell[3]+=value; return r; }	//!< add a value times identity matrix
+	Matrix2 operator - ( T       const  value ) const { Matrix2 r=*this; r.cell[0]-=value; r.cell[3]-=value; return r; }	//!< subtract a value times identity matrix
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
@@ -244,6 +249,8 @@ public:
 	Matrix2 const & operator *= ( Matrix2 const &right ) { *this = operator*(right);                           return *this; }	//!< multiply a matrix with another matrix and modify this matrix
 	Matrix2 const & operator *= ( T       const  value ) { for ( int i=0; i<4; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
 	Matrix2 const & operator /= ( T       const  value ) { for ( int i=0; i<4; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix2 const & operator += ( T       const  value ) { cell[0]+=value; cell[3]+=value;                     return *this; }	//!< add a value times identity matrix
+	Matrix2 const & operator -= ( T       const  value ) { cell[0]-=value; cell[3]-=value;                     return *this; }	//!< subtract a value times identity matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -407,6 +414,8 @@ class Matrix3
 #else
 	friend Matrix3 operator * ( T const value, Matrix3 const &right ) { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = value * right.cell[i]; r.cell[8] = value * right.cell[8]; return r; }	//!< multiply matrix by a value
 #endif
+	friend Matrix3 operator + ( T const value, Matrix3 const &right ) { Matrix3 r= right; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< add a value times identity matrix to a matrix
+	friend Matrix3 operator - ( T const value, Matrix3 const &right ) { Matrix3 r=-right; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< subtract a matrix from a value times identity matrix
 	friend Matrix3 Inverse( Matrix3 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 public:
@@ -438,8 +447,8 @@ public:
 
 	//! Constructor using row-major order for initialization
 	Matrix3( T c00, T c01, T c02,
-		      T c10, T c11, T c12,
-		      T c20, T c21, T c22 )
+		     T c10, T c11, T c12,
+		     T c20, T c21, T c22 )
 	{
 		cell[0] = c00;   cell[3] = c01;   cell[6] = c02;
 		cell[1] = c10;   cell[4] = c11;   cell[7] = c12;
@@ -688,12 +697,12 @@ public:
 	// Binary operators
 #ifdef CY_NONVECTORIZED_MATRIX3
 	Matrix3 operator * ( T       const  value ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix3 operator / ( T       const  value ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix3 operator / ( T       const  value ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value
 	Matrix3 operator + ( Matrix3 const &right ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
 	Matrix3 operator - ( Matrix3 const &right ) const { Matrix3 r; for ( int i=0; i<9; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix3 from another
 #else
 	Matrix3 operator * ( T       const  value ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] * value;         r.cell[8] = cell[8] * value;         return r; }	//!< multiply matrix by a value
-	Matrix3 operator / ( T       const  value ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] / value;         r.cell[8] = cell[8] / value;         return r; }	//!< divide matrix by a value;
+	Matrix3 operator / ( T       const  value ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] / value;         r.cell[8] = cell[8] / value;         return r; }	//!< divide matrix by a value
 	Matrix3 operator + ( Matrix3 const &right ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] + right.cell[i]; r.cell[8] = cell[8] + right.cell[8]; return r; }	//!< add two Matrices
 	Matrix3 operator - ( Matrix3 const &right ) const { Matrix3 r; _CY_IVDEP_FOR ( int i=0; i<8; ++i ) r.cell[i] = cell[i] - right.cell[i]; r.cell[8] = cell[8] - right.cell[8]; return r; }	//!< subtract one Matrix3 from another
 #endif
@@ -725,6 +734,9 @@ public:
 		//return rr;
 	}
 
+	Matrix3 operator + ( T const  value ) const { Matrix3 r=*this; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< add a value times identity matrix
+	Matrix3 operator - ( T const  value ) const { Matrix3 r=*this; r.cell[0]-=value; r.cell[4]-=value; r.cell[8]-=value; return r; }	//!< subtract a value times identity matrix
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
@@ -741,6 +753,8 @@ public:
 	Matrix3 const & operator *= ( T       const  value ) { _CY_IVDEP_FOR ( int i=0; i<8; ++i ) cell[i] *= value;         cell[8] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
 	Matrix3 const & operator /= ( T       const  value ) { _CY_IVDEP_FOR ( int i=0; i<8; ++i ) cell[i] /= value;         cell[8] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
 #endif
+	Matrix3 const & operator += ( T       const  value ) { cell[0]+=value; cell[4]+=value; cell[8]+=value;     return *this; }	//!< add a value times identity matrix
+	Matrix3 const & operator -= ( T       const  value ) { cell[0]-=value; cell[4]-=value; cell[8]-=value;     return *this; }	//!< subtract a value times identity matrix
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Other Methods
@@ -1039,6 +1053,8 @@ template <typename T>
 class Matrix34
 {
 	friend Matrix34 operator * ( T const value, Matrix34 const &right ) { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = value * right.cell[i]; return r; }	//!< multiply matrix by a value
+	friend Matrix34 operator + ( T const value, Matrix34 const &right ) { Matrix34 r= right; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< add a value times identity matrix to a matrix
+	friend Matrix34 operator - ( T const value, Matrix34 const &right ) { Matrix34 r=-right; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< subtract a matrix from a value times identity matrix
 	friend Matrix34 Inverse( Matrix34 const &m ) { return m.GetInverse(); }	//!< return the inverse of the matrix
 
 public:
@@ -1072,8 +1088,8 @@ public:
 
 	//! Constructor using row-major order for initialization
 	Matrix34( T c00, T c01, T c02, T c03,
-		       T c10, T c11, T c12, T c13,
-		       T c20, T c21, T c22, T c23 )
+		      T c10, T c11, T c12, T c13,
+		      T c20, T c21, T c22, T c23 )
 	{
 		cell[ 0] = c00;   cell[ 3] = c01;   cell[ 6] = c02;   cell[ 9] = c03;
 		cell[ 1] = c10;   cell[ 4] = c11;   cell[ 7] = c12;   cell[10] = c13;
@@ -1314,7 +1330,7 @@ public:
 
 	// Binary operators
 	Matrix34 operator * ( T        const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix34 operator / ( T        const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix34 operator / ( T        const  value ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value
 	Matrix34 operator + ( Matrix34 const &right ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
 	Matrix34 operator - ( Matrix34 const &right ) const { Matrix34 r; for ( int i=0; i<12; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix4 from another
 	Matrix34 operator * ( Matrix34 const &right ) const	//!< multiply a matrix with another
@@ -1376,6 +1392,9 @@ public:
 		return rr;
 	}
 
+	Matrix34 operator + ( T const  value ) const { Matrix34 r=*this; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< add a value times identity matrix
+	Matrix34 operator - ( T const  value ) const { Matrix34 r=*this; r.cell[0]-=value; r.cell[4]-=value; r.cell[8]-=value; return r; }	//!< subtract a value times identity matrix
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name 3D Vector Transform Methods
@@ -1405,6 +1424,8 @@ public:
 	Matrix34 const & operator *= ( Matrix3<T> const &right ) { *this = operator*(right);                            return *this; }	//!< multiply a matrix with another matrix and modify this matrix
 	Matrix34 const & operator *= ( T          const  value ) { for ( int i=0; i<12; ++i ) cell[i] *= value;         return *this; }	//!< multiply a matrix with a value modify this matrix
 	Matrix34 const & operator /= ( T          const  value ) { for ( int i=0; i<12; ++i ) cell[i] /= value;         return *this; }	//!< divide the matrix by a value modify the this matrix
+	Matrix34 const & operator += ( T          const  value ) { cell[0]+=value; cell[4]+=value; cell[8]+=value;      return *this; }	//!< add a value times identity matrix
+	Matrix34 const & operator -= ( T          const  value ) { cell[0]-=value; cell[4]-=value; cell[8]-=value;      return *this; }	//!< subtract a value times identity matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1658,9 +1679,9 @@ public:
 
 	//! Constructor using row-major order for initialization
 	Matrix4( T c00, T c01, T c02, T c03,
-		      T c10, T c11, T c12, T c13,
-		      T c20, T c21, T c22, T c23,
-		      T c30, T c31, T c32, T c33 )
+		     T c10, T c11, T c12, T c13,
+		     T c20, T c21, T c22, T c23,
+		     T c30, T c31, T c32, T c33 )
 	{
 		cell[ 0] = c00;   cell[ 4] = c01;   cell[ 8] = c02;   cell[12] = c03;
 		cell[ 1] = c10;   cell[ 5] = c11;   cell[ 9] = c12;   cell[13] = c13;
@@ -1940,7 +1961,7 @@ public:
 
 	// Binary operators
 	Matrix4 operator * ( T       const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] * value;         return r; }	//!< multiply matrix by a value
-	Matrix4 operator / ( T       const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value;
+	Matrix4 operator / ( T       const  value ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] / value;         return r; }	//!< divide matrix by a value
 	Matrix4 operator + ( Matrix4 const &right ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] + right.cell[i]; return r; }	//!< add two Matrices
 	Matrix4 operator - ( Matrix4 const &right ) const { Matrix4 r; for ( int i=0; i<16; ++i ) r.cell[i] = cell[i] - right.cell[i]; return r; }	//!< subtract one Matrix4 from another
 	Matrix4 operator * ( Matrix4 const &right ) const	//!< multiply a matrix with another
