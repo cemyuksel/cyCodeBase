@@ -346,14 +346,14 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 	};
 	MtlList mtlList;
 
-	std::vector<Vec3f>	_v;		// vertices
-	std::vector<TriFace>	_f;		// faces
-	std::vector<Vec3f>	_vn;	// vertex normal
-	std::vector<TriFace>	_fn;	// normal faces
-	std::vector<Vec3f>	_vt;	// texture vertices
-	std::vector<TriFace>	_ft;	// texture faces
+	std::vector<Vec3f>      _v;		// vertices
+	std::vector<TriFace>    _f;		// faces
+	std::vector<Vec3f>      _vn;	// vertex normal
+	std::vector<TriFace>    _fn;	// normal faces
+	std::vector<Vec3f>      _vt;	// texture vertices
+	std::vector<TriFace>    _ft;	// texture faces
 	std::vector<MtlLibName> mtlFiles;
-	std::vector<int> faceMtlIndex;
+	std::vector<int>        faceMtlIndex;
 
 	int currentMtlIndex = -1;
 	bool hasTextures=false, hasNormals=false;
