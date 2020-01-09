@@ -437,7 +437,7 @@ private:
 			PointType const pos = p.Pos();
 			int axis = p.Plane();
 			float dist1 = position[axis] - pos[axis];
-			uint32_t child = 2*nodeID;
+			SIZE_TYPE child = 2*nodeID;
 			nodeID = dist1 < 0 ? child : child + 1;
 		}
 		// Now we are at a leaf node, do the test
