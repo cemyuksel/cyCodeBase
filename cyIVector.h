@@ -465,7 +465,7 @@ public:
 
 	//!@name Length and Normalize methods
 	T    Sum   () const { return x+y+z+w; }										//!< Returns the sum of its components
-	bool IsZero() const { return x==T(0) && y==T(0) && z==T(0); && w==T(0); }	//!< Returns true if all components are exactly zero
+	bool IsZero() const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
 	T    Min   () const { T   mxy = x<y ? x : y; T   mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }
 	T    Max   () const { T   mxy = x>y ? x : y; T   mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }
 	int  MinID () const { int ixy = x<y ? 0 : 1; int izw = z<w ? 2 : 3; return data[ixy]<data[izw] ? ixy : izw; }
