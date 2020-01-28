@@ -63,23 +63,23 @@ class IVec
 public:
 
 	//!@name Components of the vector
-	T data[N];
+	T elem[N];
 
 	//!@name Constructors
 	IVec() CY_CLASS_FUNCTION_DEFAULT
-	IVec( IVec const &p )     { MemCopy(data,p.data,N); }
-	explicit IVec( const T *p ) { MemCopy(data,p,N); }
-	explicit IVec( const T &v ) { for ( int i=0; i<N; ++i ) data[i]=v; }
-	template <typename S> explicit IVec( IVec<S,N> const &p ) { MemConvert(data,p.data,N); }
+	IVec( IVec const &p )     { MemCopy(elem,p.elem,N); }
+	explicit IVec( const T *p ) { MemCopy(elem,p,N); }
+	explicit IVec( const T &v ) { for ( int i=0; i<N; ++i ) elem[i]=v; }
+	template <typename S> explicit IVec( IVec<S,N> const &p ) { MemConvert(elem,p.elem,N); }
 	template <int M> explicit IVec( IVec<T,M> const &p )
 	{
-		if ( N <= M ) { MemCopy(data,p.data,N); }
-		else          { MemCopy(data,p.data,M); MemClear(data,N-M); }
+		if ( N <= M ) { MemCopy(elem,p.elem,N); }
+		else          { MemCopy(elem,p.elem,M); MemClear(elem,N-M); }
 	}
 	template <typename S, int M> explicit IVec( IVec<S,M> const &p )
 	{
-		if ( N <= M ) { MemConvert(data,p.data,N); }
-		else          { MemConvert(data,p.data,M); MemClear(data,N-M); }
+		if ( N <= M ) { MemConvert(elem,p.elem,N); }
+		else          { MemConvert(elem,p.elem,M); MemClear(elem,N-M); }
 	}
 	explicit IVec( IVec2<T> const &p );
 	explicit IVec( IVec3<T> const &p );
@@ -87,84 +87,84 @@ public:
 	template <typename S> explicit IVec( const IVec2<S> &p );
 	template <typename S> explicit IVec( const IVec3<S> &p );
 	template <typename S> explicit IVec( const IVec4<S> &p );
-	template <typename P> explicit IVec( const P &p ) { for ( int i=0; i<N; ++i ) data[i]=(T)p[i]; }
+	template <typename P> explicit IVec( const P &p ) { for ( int i=0; i<N; ++i ) elem[i]=(T)p[i]; }
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(data,N); }			//!< Sets the coordinates as zero
-	void Get( T *p ) const { MemCopy(p,data,N); }			//!< Puts the coordinate values into the array
-	void Set( T const *p ) { MemCopy(data,p,N); }			//!< Sets the coordinates using the values in the given array
-	void Set( T v ) { for ( int i=0; i<N; ++i ) data[i] = v; }	//!< Sets all coordinates using the given value
-	template <int M> void CopyData( T *p ) { if ( M <= N ) { MemCopy(p,data,M); } else { MemCopy(p,data,N); MemClear(p+N,M-N); }	}
-	template <typename S, int M> void ConvertData( S *p ) { if ( M <= N ) { MemConvert(p,data,M); } else { MemConvert(p,data,N); MemClear(p+N,M-N); }	}
+	void Zero()            { MemClear(elem,N); }			//!< Sets the coordinates as zero
+	void Get( T *p ) const { MemCopy(p,elem,N); }			//!< Puts the coordinate values into the array
+	void Set( T const *p ) { MemCopy(elem,p,N); }			//!< Sets the coordinates using the values in the given array
+	void Set( T v ) { for ( int i=0; i<N; ++i ) elem[i] = v; }	//!< Sets all coordinates using the given value
+	template <int M> void CopyData( T *p ) { if ( M <= N ) { MemCopy(p,elem,M); } else { MemCopy(p,elem,N); MemClear(p+N,M-N); }	}
+	template <typename S, int M> void ConvertData( S *p ) { if ( M <= N ) { MemConvert(p,elem,M); } else { MemConvert(p,elem,N); MemClear(p+N,M-N); }	}
 
 	//!@name General methods
-	T    Sum   () const { T v=data[0]; for ( int i=1; i<N; ++i ) v+=data[i]; return v; }		//!< Returns the sum of its components
-	bool IsZero() const { for ( int i=0; i<N; ++i ) if ( data[i] != T(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
-	T    Min   () const { T m = data[0]; for ( int i=1; i<N; ++i ) if ( m > data[i] ) m = data[i]; return m; }
-	T    Max   () const { T m = data[0]; for ( int i=1; i<N; ++i ) if ( m < data[i] ) m = data[i]; return m; }
-	int  MinID () const { T m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > data[i] ) { m = data[i]; ix = i; } return ix; }
-	int  MaxID () const { T m = data[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < data[i] ) { m = data[i]; ix = i; } return ix; }
+	T    Sum   () const { T v=elem[0]; for ( int i=1; i<N; ++i ) v+=elem[i]; return v; }		//!< Returns the sum of its components
+	bool IsZero() const { for ( int i=0; i<N; ++i ) if ( elem[i] != T(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
+	T    Min   () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) m = elem[i]; return m; }
+	T    Max   () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) m = elem[i]; return m; }
+	int  MinID () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) { m = elem[i]; ix = i; } return ix; }
+	int  MaxID () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) { m = elem[i]; ix = i; } return ix; }
 
 	//!@name Limit methods
 	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
-	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) data[i] = (data[i]<v) ? v : data[i]; }
-	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) data[i] = (data[i]>v) ? v : data[i]; }
-	void Abs() { for ( int i=0; i<N; i++ ) data[i] = Abs(data[i]); }	//!< Converts all negative components to positive values
+	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]<v) ? v : elem[i]; }
+	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]>v) ? v : elem[i]; }
+	void Abs() { for ( int i=0; i<N; i++ ) elem[i] = Abs(elem[i]); }	//!< Converts all negative components to positive values
 
 	//!@name Unary operators
-	IVec operator - () const { IVec r; for ( int i=0; i<N; ++i ) r.data[i]=-data[i]; return r; } 
+	IVec operator - () const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i]=-elem[i]; return r; } 
 
 	//!@name Binary operators
-	IVec operator + ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] + p.data[i]; return r; }
-	IVec operator - ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] - p.data[i]; return r; }
-	IVec operator * ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] * p.data[i]; return r; }
-	IVec operator / ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] / p.data[i]; return r; }
-	IVec operator + ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] + v; return r; }
-	IVec operator - ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] - v; return r; }
-	IVec operator * ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] * v; return r; }
-	IVec operator / ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] / v; return r; }
+	IVec operator + ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] + p.elem[i]; return r; }
+	IVec operator - ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] - p.elem[i]; return r; }
+	IVec operator * ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] * p.elem[i]; return r; }
+	IVec operator / ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] / p.elem[i]; return r; }
+	IVec operator + ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] + v; return r; }
+	IVec operator - ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] - v; return r; }
+	IVec operator * ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] * v; return r; }
+	IVec operator / ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] / v; return r; }
 
 	//!@name Assignment operators
-	const IVec& operator += ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i] += p.data[i]; return *this; }
-	const IVec& operator -= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i] -= p.data[i]; return *this; }
-	const IVec& operator *= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i] *= p.data[i]; return *this; }
-	const IVec& operator /= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i] /= p.data[i]; return *this; }
-	const IVec& operator += ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i] += v; return *this; }
-	const IVec& operator -= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i] -= v; return *this; }
-	const IVec& operator *= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i] *= v; return *this; }
-	const IVec& operator /= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i] /= v; return *this; }
+	const IVec& operator += ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] += p.elem[i]; return *this; }
+	const IVec& operator -= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] -= p.elem[i]; return *this; }
+	const IVec& operator *= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] *= p.elem[i]; return *this; }
+	const IVec& operator /= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] /= p.elem[i]; return *this; }
+	const IVec& operator += ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] += v; return *this; }
+	const IVec& operator -= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] -= v; return *this; }
+	const IVec& operator *= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] *= v; return *this; }
+	const IVec& operator /= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] /= v; return *this; }
 
 	//!@name Bitwise operators
-	IVec operator << ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] << p.data[i]; return r; }
-	IVec operator >> ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] >> p.data[i]; return r; }
-	IVec operator  & ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i]  & p.data[i]; return r; }
-	IVec operator  | ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i]  | p.data[i]; return r; }
-	IVec operator  ^ ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i]  ^ p.data[i]; return r; }
-	IVec operator << ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] << v; return r; }
-	IVec operator >> ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i] >> v; return r; }
-	IVec operator  & ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i]  & v; return r; }
-	IVec operator  | ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i]  | v; return r; }
-	IVec operator  ^ ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.data[i] = data[i]  ^ v; return r; }
+	IVec operator << ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] << p.elem[i]; return r; }
+	IVec operator >> ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] >> p.elem[i]; return r; }
+	IVec operator  & ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  & p.elem[i]; return r; }
+	IVec operator  | ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  | p.elem[i]; return r; }
+	IVec operator  ^ ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  ^ p.elem[i]; return r; }
+	IVec operator << ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] << v; return r; }
+	IVec operator >> ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] >> v; return r; }
+	IVec operator  & ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  & v; return r; }
+	IVec operator  | ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  | v; return r; }
+	IVec operator  ^ ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  ^ v; return r; }
 
 	//!@name Bitwise Assignment operators
-	const IVec& operator <<= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i] <<= p.data[i]; return *this; }
-	const IVec& operator >>= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i] >>= p.data[i]; return *this; }
-	const IVec& operator  &= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i]  &= p.data[i]; return *this; }
-	const IVec& operator  |= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i]  |= p.data[i]; return *this; }
-	const IVec& operator  ^= ( IVec const &p ) { for ( int i=0; i<N; ++i ) data[i]  ^= p.data[i]; return *this; }
-	const IVec& operator <<= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i] <<= v; return *this; }
-	const IVec& operator >>= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i] >>= v; return *this; }
-	const IVec& operator  &= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i]  &= v; return *this; }
-	const IVec& operator  |= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i]  |= v; return *this; }
-	const IVec& operator  ^= ( T    const  v ) { for ( int i=0; i<N; ++i ) data[i]  ^= v; return *this; }
+	const IVec& operator <<= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] <<= p.elem[i]; return *this; }
+	const IVec& operator >>= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] >>= p.elem[i]; return *this; }
+	const IVec& operator  &= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i]  &= p.elem[i]; return *this; }
+	const IVec& operator  |= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i]  |= p.elem[i]; return *this; }
+	const IVec& operator  ^= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i]  ^= p.elem[i]; return *this; }
+	const IVec& operator <<= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] <<= v; return *this; }
+	const IVec& operator >>= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] >>= v; return *this; }
+	const IVec& operator  &= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i]  &= v; return *this; }
+	const IVec& operator  |= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i]  |= v; return *this; }
+	const IVec& operator  ^= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i]  ^= v; return *this; }
 
 	//!@name Test operators
-	bool operator == ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( data[i] != p.data[i] ) return false; return true; }
-	bool operator != ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( data[i] != p.data[i] ) return true; return false; }
+	bool operator == ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( elem[i] != p.elem[i] ) return false; return true; }
+	bool operator != ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( elem[i] != p.elem[i] ) return true; return false; }
 
 	//!@name Access operators
-	T& operator [] ( int i )       { return data[i]; }
-	T  operator [] ( int i ) const { return data[i]; }
+	T& operator [] ( int i )       { return elem[i]; }
+	T  operator [] ( int i ) const { return elem[i]; }
 
 	//!@name Dot product
 	T Dot        ( IVec const &p ) const { IVec r=operator*(p); return r.Sum(); }	//!< Dot product
@@ -187,7 +187,7 @@ public:
 	//!@name Components of the vector
 	union {
 		struct { T x, y; };
-		T data[2];
+		T elem[2];
 	};
 
 	//!@name Constructors
@@ -200,8 +200,8 @@ public:
 	template <typename S> explicit IVec2( const IVec2<S> &p ) : x(T(p.x)), y(T(p.y)) {}
 	template <typename S> explicit IVec2( const IVec3<S> &p );
 	template <typename S> explicit IVec2( const IVec4<S> &p );
-	template <            int M> explicit IVec2( const IVec<T,M> &p ) { p.CopyData<2>(data); }
-	template <typename S, int M> explicit IVec2( const IVec<S,M> &p ) { p.ConvertData<T,2>(data); }
+	template <            int M> explicit IVec2( const IVec<T,M> &p ) { p.CopyData<2>(elem); }
+	template <typename S, int M> explicit IVec2( const IVec<S,M> &p ) { p.ConvertData<T,2>(elem); }
 	template <typename P> explicit IVec2( const P &p ) : x(T(p[0])), y(T(p[1])) {}
 
 	//!@name Conversion
@@ -210,7 +210,7 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(data,2); }				//!< Sets the coordinates as zero.
+	void Zero()            { MemClear(elem,2); }				//!< Sets the coordinates as zero.
 	void Get( T *p ) const { ((IVec2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
 	void Set( const T *p ) { operator=(*((IVec2*)p)); }			//!< Sets the coordinates using the values in the given array.
 	void Set( const T &v ) { x=v; y=v; }						//!< Sets all coordinates using the given value
@@ -284,10 +284,10 @@ public:
 	//!@name Access operators
 	T&       operator [] ( int i )       { return Element(i); }
 	T const& operator [] ( int i ) const { return Element(i); }
-	T&       Element     ( int i )       { return data[i]; }
-	T const& Element     ( int i ) const { return data[i]; }
-	T*       Data        ()              { return data; }
-	T const* Data        ()        const { return data; }
+	T&       Element     ( int i )       { return elem[i]; }
+	T const& Element     ( int i ) const { return elem[i]; }
+	T*       Data        ()              { return elem; }
+	T const* Data        ()        const { return elem; }
 
 	//!@name Cross product and dot product
 	T Dot        ( IVec2 const &p ) const { IVec2 r=operator*(p); return r.Sum(); }	//!< Dot product
@@ -310,7 +310,7 @@ public:
 	//!@name Components of the vector
 	union {
 		struct { T x, y, z; };
-		T data[3];
+		T elem[3];
 	};
 
 	//!@name Constructors
@@ -322,8 +322,8 @@ public:
 	template <typename S> explicit IVec3( IVec3<S> const &p )         : x(T(p.x)), y(T(p.y)), z(T(p.z)) {}
 	template <typename S> explicit IVec3( IVec2<S> const &p, T _z=0 ) : x(T(p.x)), y(T(p.y)), z(   _z ) {}
 	template <typename S> explicit IVec3( IVec4<S> const &p );
-	template <            int M> explicit IVec3( IVec<T,M> const &p ) { p.CopyData<3>(data); }
-	template <typename S, int M> explicit IVec3( IVec<S,M> const &p ) { p.ConvertData<T,3>(data); }
+	template <            int M> explicit IVec3( IVec<T,M> const &p ) { p.CopyData<3>(elem); }
+	template <typename S, int M> explicit IVec3( IVec<S,M> const &p ) { p.ConvertData<T,3>(elem); }
 	template <typename P> explicit IVec3( P const &p ) : x((T)p[0]), y((T)p[1]), z((T)p[2]) {}
 
 	//!@name Conversion
@@ -332,7 +332,7 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(data,3); }				//!< Sets the coordinates as zero
+	void Zero()            { MemClear(elem,3); }				//!< Sets the coordinates as zero
 	void Get( T *p ) const { ((IVec3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
 	void Set( T const *p ) { operator=(*((IVec3*)p)); }			//!< Sets the coordinates using the values in the given array
 	void Set( T v )        { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value
@@ -406,10 +406,10 @@ public:
 	//!@name Access operators
 	T&       operator [] ( int i )       { return Element(i); }
 	T const& operator [] ( int i ) const { return Element(i); }
-	T&       Element     ( int i )       { return data[i]; }
-	T const& Element     ( int i ) const { return data[i]; }
-	T*       Data        ()              { return data; }
-	T const* Data        ()        const { return data; }
+	T&       Element     ( int i )       { return elem[i]; }
+	T const& Element     ( int i ) const { return elem[i]; }
+	T*       Data        ()              { return elem; }
+	T const* Data        ()        const { return elem; }
 
 	//!@name Cross product and dot product
 	T   Dot        ( IVec3 const &p ) const { IVec3 r=operator*(p); return r.Sum(); }	//!< Dot product
@@ -435,7 +435,7 @@ public:
 	//!@name Components of the vector
 	union {
 		struct { T x, y, z, w; };
-		T data[4];
+		T elem[4];
 	};
 
 	//!@name Constructors
@@ -447,8 +447,8 @@ public:
 	template <typename S> explicit IVec4( IVec4<S> const &p )                  : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(T(p.w)) {}
 	template <typename S> explicit IVec4( IVec3<S> const &p,         T _w=0 )  : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(   _w ) {}
 	template <typename S> explicit IVec4( IVec2<S> const &p, T _z=0, T _w=0 )  : x(T(p.x)), y(T(p.y)), z(   _z ), z(   _w ) {}
-	template <            int M> explicit IVec4( IVec<T,M> const &p ) { p.CopyData<3>(data); }
-	template <typename S, int M> explicit IVec4( IVec<S,M> const &p ) { p.ConvertData<T,3>(data); }
+	template <            int M> explicit IVec4( IVec<T,M> const &p ) { p.CopyData<3>(elem); }
+	template <typename S, int M> explicit IVec4( IVec<S,M> const &p ) { p.ConvertData<T,3>(elem); }
 	template <typename P> explicit IVec4( P const &p ) : x((T)p[0]), y((T)p[1]), z((T)p[2]) {}
 
 	//!@name Conversion
@@ -457,7 +457,7 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(data,4); }						//!< Sets the coordinates as zero
+	void Zero()            { MemClear(elem,4); }						//!< Sets the coordinates as zero
 	void Get( T *p ) const { ((IVec4*)p)->operator=(*this); }			//!< Puts the coordinate values into the array
 	void Set( T const *p ) { operator=(*((IVec4*)p)); }					//!< Sets the coordinates using the values in the given array
 	void Set( T v )        { x=v; y=v; z=v; w=v; }						//!< Sets all coordinates using the given value
@@ -468,8 +468,8 @@ public:
 	bool IsZero() const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
 	T    Min   () const { T   mxy = x<y ? x : y; T   mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }
 	T    Max   () const { T   mxy = x>y ? x : y; T   mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }
-	int  MinID () const { int ixy = x<y ? 0 : 1; int izw = z<w ? 2 : 3; return data[ixy]<data[izw] ? ixy : izw; }
-	int  MaxID () const { int ixy = x>y ? 0 : 1; int izw = z>w ? 2 : 3; return data[ixy]>data[izw] ? ixy : izw; }
+	int  MinID () const { int ixy = x<y ? 0 : 1; int izw = z<w ? 2 : 3; return elem[ixy]<elem[izw] ? ixy : izw; }
+	int  MaxID () const { int ixy = x>y ? 0 : 1; int izw = z>w ? 2 : 3; return elem[ixy]>elem[izw] ? ixy : izw; }
 
 	//!@name Limit methods
 	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
@@ -531,10 +531,10 @@ public:
 	//!@name Access operators
 	T&       operator [] ( int i )       { return Element(i); }
 	T const& operator [] ( int i ) const { return Element(i); }
-	T&       Element     ( int i )       { return data[i]; }
-	T const& Element     ( int i ) const { return data[i]; }
-	T*       Data        ()              { return data; }
-	T const* Data        ()        const { return data; }
+	T&       Element     ( int i )       { return elem[i]; }
+	T const& Element     ( int i ) const { return elem[i]; }
+	T*       Data        ()              { return elem; }
+	T const* Data        ()        const { return elem; }
 
 	//!@name Cross product and dot product
 	T   Dot        ( IVec4 const &p ) const { IVec4 r=operator*(p); return r.Sum(); }	//!< Dot product
@@ -548,12 +548,12 @@ public:
 //-------------------------------------------------------------------------------
 
 // Definitions of the conversion constructors
-template <typename T, int N>                       IVec<T,N>::IVec( IVec2<T> const &p ) { if ( N <= 2 ) { MemCopy   (data,&p.x,N); } else { MemCopy   (data,&p.x,2); MemClear(data,N-2); } }
-template <typename T, int N>                       IVec<T,N>::IVec( IVec3<T> const &p ) { if ( N <= 3 ) { MemCopy   (data,&p.x,N); } else { MemCopy   (data,&p.x,3); MemClear(data,N-3); } }
-template <typename T, int N>                       IVec<T,N>::IVec( IVec4<T> const &p ) { if ( N <= 4 ) { MemCopy   (data,&p.x,N); } else { MemCopy   (data,&p.x,4); MemClear(data,N-4); } }
-template <typename T, int N> template <typename S> IVec<T,N>::IVec( IVec2<S> const &p ) { if ( N <= 2 ) { MemConvert(data,&p.x,N); } else { MemConvert(data,&p.x,2); MemClear(data,N-2); } }
-template <typename T, int N> template <typename S> IVec<T,N>::IVec( IVec3<S> const &p ) { if ( N <= 3 ) { MemConvert(data,&p.x,N); } else { MemConvert(data,&p.x,3); MemClear(data,N-3); } }
-template <typename T, int N> template <typename S> IVec<T,N>::IVec( IVec4<S> const &p ) { if ( N <= 4 ) { MemConvert(data,&p.x,N); } else { MemConvert(data,&p.x,4); MemClear(data,N-4); } }
+template <typename T, int N>                       IVec<T,N>::IVec( IVec2<T> const &p ) { if ( N <= 2 ) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,2); MemClear(elem,N-2); } }
+template <typename T, int N>                       IVec<T,N>::IVec( IVec3<T> const &p ) { if ( N <= 3 ) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,3); MemClear(elem,N-3); } }
+template <typename T, int N>                       IVec<T,N>::IVec( IVec4<T> const &p ) { if ( N <= 4 ) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,4); MemClear(elem,N-4); } }
+template <typename T, int N> template <typename S> IVec<T,N>::IVec( IVec2<S> const &p ) { if ( N <= 2 ) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,2); MemClear(elem,N-2); } }
+template <typename T, int N> template <typename S> IVec<T,N>::IVec( IVec3<S> const &p ) { if ( N <= 3 ) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,3); MemClear(elem,N-3); } }
+template <typename T, int N> template <typename S> IVec<T,N>::IVec( IVec4<S> const &p ) { if ( N <= 4 ) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,4); MemClear(elem,N-4); } }
 template <typename T>                              IVec2<T>::IVec2( IVec3<T> const &p ) : x(  p.x ), y(  p.y )            {}
 template <typename T>                              IVec2<T>::IVec2( IVec4<T> const &p ) : x(  p.x ), y(  p.y )            {}
 template <typename T>                              IVec3<T>::IVec3( IVec4<T> const &p ) : x(  p.x ), y(  p.y ), z(  p.z ) {}
