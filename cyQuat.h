@@ -79,8 +79,8 @@ public:
 	T    Length       () const { return (T) sqrt(LengthSquared()); }
 
 	//!@name Matrix conversion functions
-	void       ToMatrix3( Matrix3<T> &m ) const { FillMatrix( m.data, &m.data[3], &m.data[6] ); }
-	void       ToMatrix4( Matrix4<T> &m ) const { FillMatrix( m.data, &m.data[4], &m.data[8] ); m.data[3]=m.data[7]=m.data[11]=m.data[12]=m.data[13]=m.data[14]=0; m.data[15]=1; }
+	void       ToMatrix3( Matrix3<T> &m ) const { FillMatrix( m.cell, &m.cell[3], &m.cell[6] ); }
+	void       ToMatrix4( Matrix4<T> &m ) const { FillMatrix( m.cell, &m.cell[4], &m.cell[8] ); m.cell[3]=m.cell[7]=m.cell[11]=m.cell[12]=m.cell[13]=m.cell[14]=0; m.cell[15]=1; }
 	Matrix3<T> ToMatrix3() const { Matrix3<T> m; ToMatrix3(m); return m; }
 	Matrix4<T> ToMatrix4() const { Matrix4<T> m; ToMatrix4(m); return m; }
 
