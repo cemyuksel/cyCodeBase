@@ -112,7 +112,7 @@ public:
 	void Get( T       *values ) { MemCopy(values,cell,4); }							//!< Copies the matrix cell to the given values array of size 4
 	void Set( T const *values ) { MemCopy(cell,values,4); }							//!< Set Matrix using an array of 4 values
 	void Set( Vec2<T> const &x, Vec2<T> const &y ) { x.Get(cell); y.Get(cell+2); }	//!< Set Matrix using two vectors as columns
-	void SetIdentity()      { *this = Identity(); }									//!< Converts the matrix to an identity matrix
+	void SetIdentity()      { SetIdentity(T(1)); }									//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }										//!< Converts the matrix to an identity matrix scaled by a scalar
 	void SetTensorProduct( Vec2<T> const &v0, Vec2<T> const &v1 )					//!< Sets the matrix as the tensor product (outer product) of two vectors
 	{
@@ -465,7 +465,7 @@ public:
 	void Get( T       *values ) { MemCopy(values,cell,9); }														//!< Copies the matrix cell to the given values array of size 9
 	void Set( T const *values ) { MemCopy(cell,values,9); }														//!< Set matrix using an array of 9 values
 	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { Column(0)=x; Column(1)=y; Column(2)=z; }	//!< Set matrix using x,y,z vectors as columns
-	void SetIdentity()      { *this = Identity(); }																//!< Converts the matrix to an identity matrix
+	void SetIdentity()      { SetIdentity(T(1)); }																//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }																	//!< Converts the matrix to an identity matrix scaled by a scalar
 	void SetTensorProduct( Vec3<T> const &v0, Vec3<T> const &v1 )												//!< Sets the matrix as the tensor product (outer product) of two vectors
 	{
@@ -1105,7 +1105,7 @@ public:
 	void Get( T       *values ) { MemCopy(values,cell,12); }																		//!< Copies the matrix cell to the given values array of size 12
 	void Set( T const *values ) { MemCopy(cell,values,12); }																		//!< Set Matrix using an array of 12 values
 	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Column(0)=x; Column(1)=y; Column(2)=z; Column(3)=pos; }	//!< Set matrix using x,y,z vectors and coordinate center
-	void SetIdentity()      { *this = Identity(); }																					//!< Converts the matrix to an identity matrix
+	void SetIdentity()      { SetIdentity(T(1)); }																					//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }																						//!< Converts the matrix to an identity matrix scaled by a scalar
 
 
@@ -1700,7 +1700,7 @@ public:
 	void Set( T const *values ) { MemCopy(cell,values,16); }																		//!< Set Matrix using an array of 16 values
 	void Set( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Column(0).Set(x,T(0)); Column(1).Set(y,T(0)); Column(2).Set(z,T(0)); Column(3).Set(pos,T(1)); }	//!< Set matrix using x,y,z column vectors and coordinate center
 	void Set( Vec4<T> const &x, Vec4<T> const &y, Vec4<T> const &z, Vec4<T> const &w ) { Column(0)=x; Column(1)=y; Column(2)=z; Column(3)=w; }	//!< Set matrix using x,y,z,w column vectors
-	void SetIdentity()      { *this = Identity(); }																					//!< Converts the matrix to an identity matrix
+	void SetIdentity()      { SetIdentity(T(1)); }																					//!< Converts the matrix to an identity matrix
 	void SetIdentity( T v ) { SetScale(v); }																						//!< Converts the matrix to an identity matrix scaled by a scalar
 	void SetTensorProduct( Vec4<T> const &v0, Vec4<T> const &v1 )																	//!< Sets the matrix as the tensor product (outer product) of two vectors
 	{
