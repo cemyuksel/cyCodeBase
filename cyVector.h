@@ -261,6 +261,12 @@ public:
 	T operator ^ ( Vec2 const &p ) const { return Cross(p); }				//!< Cross product operator
 	T Dot        ( Vec2 const &p ) const { return x*p.x + y*p.y; }			//!< Dot product
 	T operator % ( Vec2 const &p ) const { return Dot(p); }					//!< Dot product operator
+
+	//!@name Conversion Methods
+	Vec2<T> XX() const { return Vec2<T>(x,x); }
+	Vec2<T> XY() const { return *this; }
+	Vec2<T> YX() const { return Vec2<T>(y,x); }
+	Vec2<T> YY() const { return Vec2<T>(y,y); }
 };
 
 //-------------------------------------------------------------------------------
@@ -383,7 +389,45 @@ public:
 	T    operator % ( Vec3 const &p ) const { return Dot(p); }										//!< Dot product
 
 	//!@name Conversion Methods
+	Vec2<T> XX() const { return Vec2<T>(x,x); }
 	Vec2<T> XY() const { return Vec2<T>(*this); }
+	Vec2<T> XZ() const { return Vec2<T>(x,z); }
+	Vec2<T> YX() const { return Vec2<T>(y,x); }
+	Vec2<T> YY() const { return Vec2<T>(y,y); }
+	Vec2<T> YZ() const { return Vec2<T>(y,z); }
+	Vec2<T> ZX() const { return Vec2<T>(z,x); }
+	Vec2<T> ZY() const { return Vec2<T>(z,y); }
+	Vec2<T> ZZ() const { return Vec2<T>(z,z); }
+
+	Vec3<T> XXX() const { return Vec3<T>(x,x,x); }
+	Vec3<T> XXY() const { return Vec3<T>(x,x,y); }
+	Vec3<T> XXZ() const { return Vec3<T>(x,x,z); }
+	Vec3<T> XYX() const { return Vec3<T>(x,y,x); }
+	Vec3<T> XYY() const { return Vec3<T>(x,y,y); }
+	Vec3<T> XYZ() const { return *this; }
+	Vec3<T> XZX() const { return Vec3<T>(x,z,x); }
+	Vec3<T> XZY() const { return Vec3<T>(x,z,y); }
+	Vec3<T> XZZ() const { return Vec3<T>(x,z,z); }
+
+	Vec3<T> YXX() const { return Vec3<T>(y,x,x); }
+	Vec3<T> YXY() const { return Vec3<T>(y,x,y); }
+	Vec3<T> YXZ() const { return Vec3<T>(y,x,z); }
+	Vec3<T> YYX() const { return Vec3<T>(y,y,x); }
+	Vec3<T> YYY() const { return Vec3<T>(y,y,y); }
+	Vec3<T> YYZ() const { return Vec3<T>(y,y,z); }
+	Vec3<T> YZX() const { return Vec3<T>(y,z,x); }
+	Vec3<T> YZY() const { return Vec3<T>(y,z,y); }
+	Vec3<T> YZZ() const { return Vec3<T>(y,z,z); }
+
+	Vec3<T> ZXX() const { return Vec3<T>(z,x,x); }
+	Vec3<T> ZXY() const { return Vec3<T>(z,x,y); }
+	Vec3<T> ZXZ() const { return Vec3<T>(z,x,z); }
+	Vec3<T> ZYX() const { return Vec3<T>(z,y,x); }
+	Vec3<T> ZYY() const { return Vec3<T>(z,y,y); }
+	Vec3<T> ZYZ() const { return Vec3<T>(z,y,z); }
+	Vec3<T> ZZX() const { return Vec3<T>(z,z,x); }
+	Vec3<T> ZZY() const { return Vec3<T>(z,z,y); }
+	Vec3<T> ZZZ() const { return Vec3<T>(z,z,z); }
 };
 
 //-------------------------------------------------------------------------------
@@ -490,8 +534,46 @@ public:
 	T operator % ( Vec4 const &p ) const { return Dot(p); }							//!< Dot product
 
 	//!@name Conversion Methods
-	Vec2<T> XY () const { return Vec2<T>(*this); }
+	Vec2<T> XX() const { return Vec2<T>(x,x); }
+	Vec2<T> XY() const { return Vec2<T>(*this); }
+	Vec2<T> XZ() const { return Vec2<T>(x,z); }
+	Vec2<T> YX() const { return Vec2<T>(y,x); }
+	Vec2<T> YY() const { return Vec2<T>(y,y); }
+	Vec2<T> YZ() const { return Vec2<T>(y,z); }
+	Vec2<T> ZX() const { return Vec2<T>(z,x); }
+	Vec2<T> ZY() const { return Vec2<T>(z,y); }
+	Vec2<T> ZZ() const { return Vec2<T>(z,z); }
+
+	Vec3<T> XXX() const { return Vec3<T>(x,x,x); }
+	Vec3<T> XXY() const { return Vec3<T>(x,x,y); }
+	Vec3<T> XXZ() const { return Vec3<T>(x,x,z); }
+	Vec3<T> XYX() const { return Vec3<T>(x,y,x); }
+	Vec3<T> XYY() const { return Vec3<T>(x,y,y); }
 	Vec3<T> XYZ() const { return Vec3<T>(*this); }
+	Vec3<T> XZX() const { return Vec3<T>(x,z,x); }
+	Vec3<T> XZY() const { return Vec3<T>(x,z,y); }
+	Vec3<T> XZZ() const { return Vec3<T>(x,z,z); }
+
+	Vec3<T> YXX() const { return Vec3<T>(y,x,x); }
+	Vec3<T> YXY() const { return Vec3<T>(y,x,y); }
+	Vec3<T> YXZ() const { return Vec3<T>(y,x,z); }
+	Vec3<T> YYX() const { return Vec3<T>(y,y,x); }
+	Vec3<T> YYY() const { return Vec3<T>(y,y,y); }
+	Vec3<T> YYZ() const { return Vec3<T>(y,y,z); }
+	Vec3<T> YZX() const { return Vec3<T>(y,z,x); }
+	Vec3<T> YZY() const { return Vec3<T>(y,z,y); }
+	Vec3<T> YZZ() const { return Vec3<T>(y,z,z); }
+
+	Vec3<T> ZXX() const { return Vec3<T>(z,x,x); }
+	Vec3<T> ZXY() const { return Vec3<T>(z,x,y); }
+	Vec3<T> ZXZ() const { return Vec3<T>(z,x,z); }
+	Vec3<T> ZYX() const { return Vec3<T>(z,y,x); }
+	Vec3<T> ZYY() const { return Vec3<T>(z,y,y); }
+	Vec3<T> ZYZ() const { return Vec3<T>(z,y,z); }
+	Vec3<T> ZZX() const { return Vec3<T>(z,z,x); }
+	Vec3<T> ZZY() const { return Vec3<T>(z,z,y); }
+	Vec3<T> ZZZ() const { return Vec3<T>(z,z,z); }
+
 	Vec3<T> GetNonHomogeneous() const { return Vec3<T>(*this)/w; }
 };
 
