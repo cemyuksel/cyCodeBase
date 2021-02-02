@@ -1121,6 +1121,18 @@ public:
 	};
 
 	Param operator [] ( char const *name ) { return Param(*this,name); }
+
+
+	GLint AttribLocation( char const *name ) const { return glGetAttribLocation( programID, name ); }
+	void SetAttribBuffer( char const *name, GLint arrayBufferID, int dimensions, GLenum type=GL_FLOAT )
+	{
+		glBindBuffer( GL_ARRAY_BUFFER, arrayBufferID );
+		GLint a = AttribLocation(name);
+		glVertexAttribPointer( a, dimensions, type, GL_FALSE, 0, 0 );
+		glEnableVertexAttribArray(a);
+	}
+	void EnableAttrib ( char const *name ) { glEnableVertexAttribArray ( AttribLocation(name) ); }
+	void DisableAttrib( char const *name ) { glDisableVertexAttribArray( AttribLocation(name) ); }
 };
 
 //-------------------------------------------------------------------------------
