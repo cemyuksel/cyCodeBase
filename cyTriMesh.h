@@ -33,6 +33,7 @@
 
 #ifndef _CY_TRIMESH_H_INCLUDED_
 #define _CY_TRIMESH_H_INCLUDED_
+_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 
@@ -602,5 +603,6 @@ typedef cy::TriMesh cyTriMesh;	//!< Triangular Mesh Class
 
 //-------------------------------------------------------------------------------
 
+_CY_CRT_SECURE_RESUME_WARNINGS
 #endif
 

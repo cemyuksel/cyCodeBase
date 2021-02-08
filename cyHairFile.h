@@ -33,6 +33,7 @@
 
 #ifndef _CY_HAIR_FILE_H_INCLUDED_
 #define _CY_HAIR_FILE_H_INCLUDED_
+_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 
@@ -414,4 +415,5 @@ typedef cy::HairFile cyHairFile;	//!< HAIR file class
 
 //-------------------------------------------------------------------------------
 
+_CY_CRT_SECURE_RESUME_WARNINGS
 #endif

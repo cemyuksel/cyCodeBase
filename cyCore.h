@@ -188,6 +188,18 @@ static _cy_nullptr_t nullptr;
 #define _CY_IVDEP_FOR _CY_IVDEP for
 
 //////////////////////////////////////////////////////////////////////////
+// Disabling MSVC's non-standard depreciation warnings
+//////////////////////////////////////////////////////////////////////////
+
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+# define _CY_CRT_SECURE_NO_WARNINGS     __pragma( warning(push) ) __pragma( warning(disable:4996) )
+# define _CY_CRT_SECURE_RESUME_WARNINGS __pragma( warning(pop)  )
+#else
+# define _CY_CRT_SECURE_NO_WARNINGS
+# define _CY_CRT_SECURE_RESUME_WARNINGS
+#endif
+
+//////////////////////////////////////////////////////////////////////////
 // Math functions
 //////////////////////////////////////////////////////////////////////////
 

@@ -35,6 +35,7 @@
 
 #ifndef _CY_STRING_H_INCLUDED_
 #define _CY_STRING_H_INCLUDED_
+_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 
@@ -1054,4 +1055,5 @@ typedef cy::String cyString;	//!< String class for char arrays.
 
 //-------------------------------------------------------------------------------
 
+_CY_CRT_SECURE_RESUME_WARNINGS
 #endif
