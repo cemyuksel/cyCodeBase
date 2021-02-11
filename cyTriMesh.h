@@ -33,7 +33,6 @@
 
 #ifndef _CY_TRIMESH_H_INCLUDED_
 #define _CY_TRIMESH_H_INCLUDED_
-_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 
@@ -43,6 +42,10 @@ _CY_CRT_SECURE_NO_WARNINGS
 #include <string>
 #include <vector>
 #include <iostream>
+
+//-------------------------------------------------------------------------------
+
+_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 namespace cy {

@@ -33,13 +33,17 @@
 
 #ifndef _CY_HAIR_FILE_H_INCLUDED_
 #define _CY_HAIR_FILE_H_INCLUDED_
-_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include "cyCore.h"
+
+//-------------------------------------------------------------------------------
+
+_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 namespace cy {

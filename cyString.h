@@ -35,7 +35,6 @@
 
 #ifndef _CY_STRING_H_INCLUDED_
 #define _CY_STRING_H_INCLUDED_
-_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 
@@ -43,6 +42,11 @@ _CY_CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include "cyCore.h"
+
+//-------------------------------------------------------------------------------
+
+_CY_CRT_SECURE_NO_WARNINGS
 
 //-------------------------------------------------------------------------------
 namespace cy {
