@@ -467,6 +467,18 @@ public:
 
 //-------------------------------------------------------------------------------
 
+//! Sides of a cube map
+enum GLTextureCubeMapSide {
+	POSITIVE_X=0,
+	NEGATIVE_X,
+	POSITIVE_Y,
+	NEGATIVE_Y,
+	POSITIVE_Z,
+	NEGATIVE_Z
+};
+
+//-------------------------------------------------------------------------------
+
 //! OpenGL cube map texture class.
 //!
 //! This class provides a convenient interface for handling cube map texture
@@ -477,15 +489,7 @@ public:
 class GLTextureCubeMap : public GLTexture<GL_TEXTURE_CUBE_MAP>
 {
 public:
-	//! Sides of the cube map.
-	enum Side {
-		POSITIVE_X=0,
-		NEGATIVE_X,
-		POSITIVE_Y,
-		NEGATIVE_Y,
-		POSITIVE_Z,
-		NEGATIVE_Z
-	};
+	typedef GLTextureCubeMapSide Side;	//!< Sides of the cube map
 
 	//! Sets the texture image using the given texture format, data format, and data type.
 	void SetImage( Side side, GLenum textureFormat, GLenum dataFormat, GLenum dataType, void const *data, GLsizei width, GLsizei height, int level=0 ) { GLTexture<GL_TEXTURE_CUBE_MAP>::Bind(); glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+side,level,textureFormat,width,height,0,dataFormat,dataType,data); }
@@ -634,6 +638,42 @@ public:
 	//! Initializes or changes the size of the render buffer.
 	//! Returns true if the buffer is complete.
 	bool Resize( GLsizei width, GLsizei height, GLenum depthFormat=GL_DEPTH_COMPONENT );
+};
+
+//-------------------------------------------------------------------------------
+
+//! OpenGL render buffer with a cube map texture
+//!
+//! This class provides a convenient interface for texture rendering in OpenGL with a cube map texture buffer.
+template <GLenum ATTACHMENT_TYPE, typename BASE>
+class GLRenderTextureCubeBase : public BASE
+{
+public:
+	//! Set the render target to the given side.
+	//! Should be called after binding the render texture.
+	void SetTarget( GLTextureCubeMapSide side )
+	{
+		glFramebufferTexture2D( GL_FRAMEBUFFER, ATTACHMENT_TYPE, GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, GLRenderBuffer<GL_TEXTURE_CUBE_MAP>::GetTextureID(), 0 );
+	}
+
+#ifdef _CY_MATRIX_H_INCLUDED_
+	//! Returns the rotation matrix for the given side.
+	static Matrix3f GetRotation( GLTextureCubeMapSide side )
+	{
+		static Matrix3f m[] = {
+			Matrix3f(  0, 0,-1,   0,-1, 0,  -1, 0, 0 ),
+			Matrix3f(  0, 0, 1,   0,-1, 0,   1, 0, 0 ),
+			Matrix3f(  1, 0, 0,   0, 0, 1,   0,-1, 0 ),
+			Matrix3f(  1, 0, 0,   0, 0,-1,   0, 1, 0 ),
+			Matrix3f(  1, 0, 0,   0,-1, 0,   0, 0,-1 ),
+			Matrix3f( -1, 0, 0,   0,-1, 0,   0, 0, 1 )
+		};
+		return m[side];
+	}
+
+	//! Returns the perspective projection matrix to be used by all sides.
+	static Matrix4f GetProjection( float znear, float zfar ) { return Matrix4f::Perspective( Pi<float>()/2, 1, znear, zfar ); }
+#endif
 };
 
 //-------------------------------------------------------------------------------
@@ -1390,7 +1430,9 @@ inline bool GLRenderTexture<TEXTURE_TYPE>::Initialize( bool useDepthBuffer )
 		glBindRenderbuffer(GL_RENDERBUFFER, this->depthbufferID);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->depthbufferID);
 	}
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GLRenderBuffer<TEXTURE_TYPE>::GetTextureID(), 0);
+	if ( TEXTURE_TYPE != GL_TEXTURE_CUBE_MAP ) {
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GLRenderBuffer<TEXTURE_TYPE>::GetTextureID(), 0);
+	}
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	return GLRenderBuffer<TEXTURE_TYPE>::IsReady();
@@ -1399,7 +1441,14 @@ inline bool GLRenderTexture<TEXTURE_TYPE>::Initialize( bool useDepthBuffer )
 template <GLenum TEXTURE_TYPE>
 inline bool GLRenderTexture<TEXTURE_TYPE>::Resize( int numChannels, GLsizei width, GLsizei height, GL::Type type )
 {
-	this->texture.SetImage(GL::TextureFormat(type,numChannels),GL_RGBA,GL_UNSIGNED_BYTE,nullptr,width,height);
+	GLenum textureFormat = GL::TextureFormat(type,numChannels);
+	if ( TEXTURE_TYPE == GL_TEXTURE_CUBE_MAP ) {
+		for ( int i=0; i<6; ++i ) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,textureFormat,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+		}
+	} else {
+		this->texture.SetImage(textureFormat,GL_RGBA,GL_UNSIGNED_BYTE,nullptr,width,height);
+	}
 	if ( this->depthbufferID != CY_GL_INVALID_ID ) {
 		glBindRenderbuffer(GL_RENDERBUFFER, this->depthbufferID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
@@ -1418,7 +1467,9 @@ inline bool GLRenderDepth<TEXTURE_TYPE>::Initialize( bool depthComparisonTexture
 		glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	}
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GLRenderBuffer<TEXTURE_TYPE>::GetTextureID(), 0);
+	if ( TEXTURE_TYPE != GL_TEXTURE_CUBE_MAP ) {
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GLRenderBuffer<TEXTURE_TYPE>::GetTextureID(), 0);
+	}
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
@@ -1428,7 +1479,13 @@ inline bool GLRenderDepth<TEXTURE_TYPE>::Initialize( bool depthComparisonTexture
 template <GLenum TEXTURE_TYPE>
 inline bool GLRenderDepth<TEXTURE_TYPE>::Resize( GLsizei width, GLsizei height, GLenum depthFormat )
 {
-	this->texture.SetImage(depthFormat,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr,width,height);
+	if ( TEXTURE_TYPE == GL_TEXTURE_CUBE_MAP ) {
+		for ( int i=0; i<6; ++i ) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,depthFormat,width,height,0,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr);
+		}
+	} else {
+		this->texture.SetImage(depthFormat,GL_DEPTH_COMPONENT,GL_FLOAT,nullptr,width,height);
+	}
 	GLRenderBuffer<TEXTURE_TYPE>::SetSize(width,height);
 	return GLRenderBuffer<TEXTURE_TYPE>::IsComplete();
 }
@@ -1674,9 +1731,13 @@ typedef GLTexture1<GL_TEXTURE_BUFFER   >     GLTextureBuffer;		//!< OpenGL Buffe
 #endif
 
 typedef GLRenderTexture<GL_TEXTURE_2D>        GLRenderTexture2D;	//!< OpenGL render color buffer with a 2D texture
-typedef GLRenderTexture<GL_TEXTURE_RECTANGLE> GLRenderTextureRect;	//!< OpenGL render color buffer with a rectangle texture
 typedef GLRenderDepth  <GL_TEXTURE_2D>        GLRenderDepth2D;		//!< OpenGL render depth buffer with a 2D texture
+#ifdef GL_TEXTURE_RECTANGLE
+typedef GLRenderTexture<GL_TEXTURE_RECTANGLE> GLRenderTextureRect;	//!< OpenGL render color buffer with a rectangle texture
 typedef GLRenderDepth  <GL_TEXTURE_RECTANGLE> GLRenderDepthRect;	//!< OpenGL render depth buffer with a rectangle texture
+#endif
+typedef GLRenderTextureCubeBase< GL_COLOR_ATTACHMENT0, GLRenderTexture<GL_TEXTURE_CUBE_MAP> > GLRenderTextureCube;	//!< OpenGL render color buffer with a cube map texture
+typedef GLRenderTextureCubeBase< GL_DEPTH_ATTACHMENT,  GLRenderDepth  <GL_TEXTURE_CUBE_MAP> > GLRenderDepthCube;	//!< OpenGL render depth buffer with a cube map texture
 
 //-------------------------------------------------------------------------------
 } // namespace cy
@@ -1687,6 +1748,8 @@ typedef cy::GL cyGL;									//!< General OpenGL queries
 #ifdef GL_KHR_debug
 typedef cy::GLDebugCallback    cyGLDebugCallback;		//!< OpenGL debug callback class
 #endif
+
+typedef cy::GLTextureCubeMapSide cyGLTextureCubeMapSide;	//! Sides of a cube map
 
 typedef cy::GLTexture1D        cyGLTexture1D;			//!< OpenGL 1D Texture
 typedef cy::GLTexture2D        cyGLTexture2D;			//!< OpenGL 2D Texture
@@ -1703,9 +1766,14 @@ typedef cy::GLTextureBuffer    cyGLTextureBuffer;		//!< OpenGL Buffer Texture
 #endif
 
 typedef cy::GLRenderTexture2D   cyGLRenderTexture2D;	//!< OpenGL render color buffer with a 2D texture
-typedef cy::GLRenderTextureRect cyGLRenderTextureRect;	//!< OpenGL render color buffer with a rectangle texture
 typedef cy::GLRenderDepth2D     cyGLRenderDepth2D;		//!< OpenGL render depth buffer with a 2D texture
+#ifdef GL_TEXTURE_RECTANGLE
+typedef cy::GLRenderTextureRect cyGLRenderTextureRect;	//!< OpenGL render color buffer with a rectangle texture
 typedef cy::GLRenderDepthRect   cyGLRenderDepthRect;	//!< OpenGL render depth buffer with a rectangle texture
+#endif
+typedef cy::GLRenderTextureCube cyGLRenderTextureCube;	//!< OpenGL render color buffer with a cube map texture
+typedef cy::GLRenderDepthCube   cyGLRenderDepthCube;	//!< OpenGL render depth buffer with a cube map texture
+
 
 typedef cy::GLSLShader         cyGLSLShader;			//!< GLSL shader class
 typedef cy::GLSLProgram        cyGLSLProgram;			//!< GLSL program class
