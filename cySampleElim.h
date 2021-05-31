@@ -63,6 +63,7 @@
 #include "cyCore.h"
 #include "cyHeap.h"
 #include "cyPointCloud.h"
+#include <vector>
 
 //-------------------------------------------------------------------------------
 namespace cy {
