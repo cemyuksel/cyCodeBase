@@ -139,7 +139,7 @@ public:
 
 
 	//!@name Binary operators
-	SpatialVector6<T> operator * ( SpatialVector6<T> const &p ) const { Vec3<T> Ra = R*p.a; return SpatialVector6( Ra, Matrix3<T>(-r)*Ra + R*p.b ); }
+	SpatialVector6<T> operator * ( SpatialVector6<T> const &p ) const { Vec3<T> Ra = R*p.a; return SpatialVector6<T>( Ra, Matrix3<T>::Scale(-r)*Ra + R*p.b ); }
 
 	SpatialTrans6 operator * ( SpatialTrans6 const &mat ) const { return SpatialTrans6( R*mat.R, r + R*mat.r ); }
 	SpatialTrans6 operator + ( SpatialTrans6 const &mat ) const { return SpatialTrans6( R + mat.R, r + mat.r ); }
@@ -188,9 +188,9 @@ public:
 
 
 	//!@name Initialization methods
-	void Set( Matrix3<T> const &_R, Vec3<T> const &_r ) { m[0]=m[3]=_R; m[1]=Matrix3<T>(-_r)*_R; m[2].Zero(); }
+	void Set( Matrix3<T> const &_R, Vec3<T> const &_r ) { m[0]=m[3]=_R; m[1]=Matrix3<T>::Scale(-_r)*_R; m[2].Zero(); }
 	void Set( Matrix3<T> const &m11, Matrix3<T> const &m21, Matrix3<T> const &m12, Matrix3<T> const &m22 ) { m[0]=m11; m[1]=m21; m[2]=m12; m[3]=m22; }
-	void Set( SpatialTrans6<T> const &tm ) { m[0]=m[3]=tm.R; m[1]=Matrix3<T>(-tm.r)*tm.R; m[2].Zero(); }
+	void Set( SpatialTrans6<T> const &tm ) { m[0]=m[3]=tm.R; m[1]=Matrix3<T>::Scale(-tm.r)*tm.R; m[2].Zero(); }
 
 	//! Sets the matrix as the outer product of two vectors.
 	void SetTensorProduct( SpatialVector6<T> const &p1, SpatialVector6<T> const &p2 )
@@ -211,7 +211,7 @@ public:
 
 	//!@name Unary operators
 
-	SpatialVector6<T> operator * ( SpatialVector6<T> const &p ) const { return SpatialVector6( m[0]*p.a + m[2]*p.b, m[1]*p.a + m[3]*p.b ); }
+	SpatialVector6<T> operator * ( SpatialVector6<T> const &p ) const { return SpatialVector6<T>( m[0]*p.a + m[2]*p.b, m[1]*p.a + m[3]*p.b ); }
 
 	SpatialMatrix6 operator * ( SpatialMatrix6 const &mat ) const { return SpatialMatrix6( m[0]*mat.m[0]+m[2]*mat.m[1], m[1]*mat.m[0]+m[3]*mat.m[1], m[0]*mat.m[2]+m[2]*mat.m[3], m[1]*mat.m[2]+m[3]*mat.m[3] ); }
 	SpatialMatrix6 operator + ( SpatialMatrix6 const &mat ) const { return SpatialMatrix6( m[0]+mat.m[0], m[1]+mat.m[1], m[2]+mat.m[2], m[3]+mat.m[3] ); }

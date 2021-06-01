@@ -63,9 +63,9 @@
 
 //-------------------------------------------------------------------------------
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 
 //-------------------------------------------------------------------------------
 namespace cy {
@@ -414,7 +414,7 @@ private:
 			PointData const &p = points[nodeID];
 			PointType const pos = p.Pos();
 			int axis = p.Plane();
-			float dist1 = position[axis] - pos[axis];
+			FType dist1 = position[axis] - pos[axis];
 			if ( dist1*dist1 < dist2 ) {
 				// check its point
 				FType d2 = (position - pos).LengthSquared();
@@ -436,7 +436,7 @@ private:
 			PointData const &p = points[nodeID];
 			PointType const pos = p.Pos();
 			int axis = p.Plane();
-			float dist1 = position[axis] - pos[axis];
+			FType dist1 = position[axis] - pos[axis];
 			SIZE_TYPE child = 2*nodeID;
 			nodeID = dist1 < 0 ? child : child + 1;
 		}

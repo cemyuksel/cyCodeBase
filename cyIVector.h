@@ -109,7 +109,7 @@ public:
 	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]<v) ? v : elem[i]; }
 	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]>v) ? v : elem[i]; }
-	void Abs() { for ( int i=0; i<N; i++ ) elem[i] = Abs(elem[i]); }	//!< Converts all negative components to positive values
+	void Abs() { for ( int i=0; i<N; i++ ) elem[i] = std::abs(elem[i]); }	//!< Converts all negative components to positive values
 
 	//!@name Unary operators
 	IVec operator - () const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i]=-elem[i]; return r; } 
@@ -205,7 +205,7 @@ public:
 	template <typename P> explicit IVec2( const P &p ) : x(T(p[0])), y(T(p[1])) {}
 
 	//!@name Conversion
-#ifdef _CY_IVECTOR_H_INCLUDED_
+#ifdef _CY_VECTOR_H_INCLUDED_
 	template <typename T> explicit operator Vec2<T> () const { return Vec2<T>(T(x),T(y)); }
 #endif
 
@@ -228,7 +228,7 @@ public:
 	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; }
 	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; }
-	void Abs() { x=Abs(x); y=Abs(y); }	//!< Converts all negative components to positive values
+	void Abs() { x=std::abs(x); y=std::abs(y); }	//!< Converts all negative components to positive values
 
 	//!@name Unary operators
 	IVec2 operator - () const { IVec2 r; r.x=-x; r.y=-y; return r; } 
@@ -327,7 +327,7 @@ public:
 	template <typename P> explicit IVec3( P const &p ) : x((T)p[0]), y((T)p[1]), z((T)p[2]) {}
 
 	//!@name Conversion
-#ifdef _CY_IVECTOR_H_INCLUDED_
+#ifdef _CY_VECTOR_H_INCLUDED_
 	template <typename T> explicit operator Vec3<T> () const { return Vec3<T>(T(x),T(y),T(z)); }
 #endif
 
@@ -350,7 +350,7 @@ public:
 	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; }
 	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; }
-	void Abs() { x=Abs(x); y=Abs(y); z=Abs(z); }	//!< Converts all negative components to positive values
+	void Abs() { x=std::abs(x); y=std::abs(y); z=std::abs(z); }	//!< Converts all negative components to positive values
 
 	//!@name Unary operators
 	IVec3 operator - () const { IVec3 r; r.x=-x; r.y=-y; r.z=-z; return r; } 
@@ -452,7 +452,7 @@ public:
 	template <typename P> explicit IVec4( P const &p ) : x((T)p[0]), y((T)p[1]), z((T)p[2]) {}
 
 	//!@name Conversion
-#ifdef _CY_IVECTOR_H_INCLUDED_
+#ifdef _CY_VECTOR_H_INCLUDED_
 	template <typename T> explicit operator Vec4<T> () const { return Vec4<T>(T(x),T(y),T(z),T(w)); }
 #endif
 
@@ -475,7 +475,7 @@ public:
 	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
 	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; w=(w<v)?v:w; }
 	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; w=(w>v)?v:w; }
-	void Abs() { x=Abs(x); y=Abs(y); z=Abs(z); w=Abs(w); }	//!< Converts all negative components to positive values
+	void Abs() { x=std::abs(x); y=std::abs(y); z=std::abs(z); w=std::abs(w); }	//!< Converts all negative components to positive values
 
 	//!@name Unary operators
 	IVec4 operator - () const { IVec4 r; r.x=-x; r.y=-y; r.z=-z; r.w=-w; return r; } 

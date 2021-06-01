@@ -44,14 +44,17 @@
 
 //-------------------------------------------------------------------------------
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <assert.h>
-#include <emmintrin.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
+#include <cassert>
 #include <cmath>
 #include <type_traits>
 #include <limits>
+
+#ifndef CY_NO_EMMINTRIN_H
+# include <emmintrin.h>
+#endif
 
 //-------------------------------------------------------------------------------
 namespace cy {
@@ -216,11 +219,12 @@ template <typename T> inline T ASinSafe ( T const &v ) { return (T) std::asin(Cl
 template <typename T> inline T Sqrt     ( T const &v ) { return (T) std::sqrt(v); }
 template <typename T> inline T SqrtSafe ( T const &v ) { return (T) std::sqrt(Max(v,T(0))); }
 
-//template<> inline float  Sqrt<float> ( float  const &v ) { return std::sqrtf(v); }
+#ifndef CY_NO_EMMINTRIN_H
 template<> inline float  Sqrt    <float> ( float  const &v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(v))); }
 template<> inline float  SqrtSafe<float> ( float  const &v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(Max(v,0.0f)))); }
 template<> inline double Sqrt    <double>( double const &v ) { __m128d t=_mm_set1_pd(v);          return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
 template<> inline double SqrtSafe<double>( double const &v ) { __m128d t=_mm_set1_pd(Max(v,0.0)); return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+#endif
 
 template<typename T> inline T Pi  () { return T(3.141592653589793238462643383279502884197169); }
 

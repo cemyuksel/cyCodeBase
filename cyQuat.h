@@ -68,7 +68,7 @@ public:
 	void    Set( T *array ) { s=array[0]; v.Set(&array[1]); }
 	void    SetRotation( T angle, Vec3<T> const &axis ) { s=cos(angle*0.5f); v=(T)sin(angle*0.5f)*(axis.GetNormalized()); }
 	void    SetRotation( T angle, T axisX, T axisY, T axisZ ) { SetRotation( angle, Vec3<T>(axisX,axisY,axisZ) );	}
-	void    GetValue( T *array ) { array[0]=s; v.GetValue(&array[1]); }
+	void    Get( T *array ) { array[0]=s; v.Get(&array[1]); }
 	T       GetRotationAngle() { return 2.0f*(T)acos(s); }	//!< Returns rotation angle in radiants
 	Vec3<T> GetRotationAxis () { return v.GetNormalized(); }
 

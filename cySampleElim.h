@@ -63,6 +63,7 @@
 #include "cyCore.h"
 #include "cyHeap.h"
 #include "cyPointCloud.h"
+#include <vector>
 
 //-------------------------------------------------------------------------------
 namespace cy {
@@ -393,7 +394,7 @@ private:
 	}
 
 	// Returns the change in weight function radius using half of the number of samples. It is used for progressive sampling.
-	float ProgressiveRadiusMultiplier(int dimensions) const { return dimensions==2 ? Sqrt(FType(2)) : std::pow(FType(2), FType(1)/FType(dimensions)); }
+	FType ProgressiveRadiusMultiplier(int dimensions) const { return dimensions==2 ? Sqrt(FType(2)) : std::pow(FType(2), FType(1)/FType(dimensions)); }
 
 	// Returns the minimum radius fraction used by the default weight function.
 	FType GetWeightLimitFraction( SIZE_TYPE inputSize, SIZE_TYPE outputSize ) const
@@ -404,7 +405,47 @@ private:
 };
 
 //-------------------------------------------------------------------------------
+
+#ifdef _CY_VECTOR_H_INCLUDED_
+template <typename T> _CY_TEMPLATE_ALIAS( WeightedSampleElimination2, (WeightedSampleElimination<Vec2<T>,T,2>) );	//!< Weighted sample elimination in 2D
+template <typename T> _CY_TEMPLATE_ALIAS( WeightedSampleElimination3, (WeightedSampleElimination<Vec3<T>,T,3>) );	//!< Weighted sample elimination in 3D
+template <typename T> _CY_TEMPLATE_ALIAS( WeightedSampleElimination4, (WeightedSampleElimination<Vec4<T>,T,4>) );	//!< Weighted sample elimination in 4D
+
+typedef WeightedSampleElimination<Vec2f,float,2>  WeightedSampleElimination2f;	//!< Weighted sample elimination in 2D with float  type elements
+typedef WeightedSampleElimination<Vec3f,float,3>  WeightedSampleElimination3f;	//!< Weighted sample elimination in 3D with float  type elements
+typedef WeightedSampleElimination<Vec4f,float,4>  WeightedSampleElimination4f;	//!< Weighted sample elimination in 4D with float  type elements
+
+typedef WeightedSampleElimination<Vec2d,double,2> WeightedSampleElimination2d;	//!< Weighted sample elimination in 2D with double type elements
+typedef WeightedSampleElimination<Vec3d,double,3> WeightedSampleElimination3d;	//!< Weighted sample elimination in 3D with double type elements
+typedef WeightedSampleElimination<Vec4d,double,4> WeightedSampleElimination4d;	//!< Weighted sample elimination in 4D with double type elements
+
+template <typename T, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( WeightedSampleEliminationN, (WeightedSampleElimination<Vec<T,DIMENSIONS>,T,DIMENSIONS>) );	//!< Weighted sample elimination in N dimensions
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( WeightedSampleEliminationNf , (WeightedSampleEliminationN<float,   DIMENSIONS>) );	//!< Weighted sample elimination in N dimensions with single precision (float)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( WeightedSampleEliminationNd , (WeightedSampleEliminationN<double,  DIMENSIONS>) );	//!< Weighted sample elimination in N dimensions with double precision (double)
+#endif
+
+//-------------------------------------------------------------------------------
 } // namespace cy
+//-------------------------------------------------------------------------------
+
+#ifdef _CY_VECTOR_H_INCLUDED_
+template <typename T> _CY_TEMPLATE_ALIAS( cyWeightedSampleElimination2, (cy::WeightedSampleElimination<cy::Vec2<T>,T,2>) );	//!< Weighted sample elimination in 2D
+template <typename T> _CY_TEMPLATE_ALIAS( cyWeightedSampleElimination3, (cy::WeightedSampleElimination<cy::Vec3<T>,T,3>) );	//!< Weighted sample elimination in 3D
+template <typename T> _CY_TEMPLATE_ALIAS( cyWeightedSampleElimination4, (cy::WeightedSampleElimination<cy::Vec4<T>,T,4>) );	//!< Weighted sample elimination in 4D
+
+typedef cy::WeightedSampleElimination<cy::Vec2f,float,2>  cyWeightedSampleElimination2f;	//!< Weighted sample elimination in 2D with float  type elements
+typedef cy::WeightedSampleElimination<cy::Vec3f,float,3>  cyWeightedSampleElimination3f;	//!< Weighted sample elimination in 3D with float  type elements
+typedef cy::WeightedSampleElimination<cy::Vec4f,float,4>  cyWeightedSampleElimination4f;	//!< Weighted sample elimination in 4D with float  type elements
+
+typedef cy::WeightedSampleElimination<cy::Vec2d,double,2> cyWeightedSampleElimination2d;	//!< Weighted sample elimination in 2D with double type elements
+typedef cy::WeightedSampleElimination<cy::Vec3d,double,3> cyWeightedSampleElimination3d;	//!< Weighted sample elimination in 3D with double type elements
+typedef cy::WeightedSampleElimination<cy::Vec4d,double,4> cyWeightedSampleElimination4d;	//!< Weighted sample elimination in 4D with double type elements
+
+template <typename T, uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyWeightedSampleEliminationN, (cy::WeightedSampleElimination<cy::Vec<T,DIMENSIONS>,T,DIMENSIONS>) );	//!< Weighted sample elimination in N dimensions
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyWeightedSampleEliminationNf , (cyWeightedSampleEliminationN<float,   DIMENSIONS>) );	//!< Weighted sample elimination in N dimensions with single precision (float)
+template <uint32_t DIMENSIONS> _CY_TEMPLATE_ALIAS( cyWeightedSampleEliminationNd , (cyWeightedSampleEliminationN<double,  DIMENSIONS>) );	//!< Weighted sample elimination in N dimensions with double precision (double)
+#endif
+
 //-------------------------------------------------------------------------------
 
 #endif

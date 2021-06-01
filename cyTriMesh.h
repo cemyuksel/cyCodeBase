@@ -37,9 +37,6 @@
 //-------------------------------------------------------------------------------
 
 #include "cyVector.h"
-#include <stdio.h>
-#include <ctype.h>
-#include <string>
 #include <vector>
 #include <iostream>
 

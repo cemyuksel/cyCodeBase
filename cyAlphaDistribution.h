@@ -56,7 +56,7 @@
 
 #include <vector>
 #include <random>
-#include <assert.h>
+#include <cassert>
 
 //-------------------------------------------------------------------------------
 namespace cy {
