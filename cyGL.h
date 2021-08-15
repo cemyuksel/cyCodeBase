@@ -1164,11 +1164,11 @@ public:
 
 
 	GLint AttribLocation( char const *name ) const { return glGetAttribLocation( programID, name ); }
-	void SetAttribBuffer( char const *name, GLint arrayBufferID, int dimensions, GLenum type=GL_FLOAT )
+	void SetAttribBuffer( char const *name, GLint arrayBufferID, int dimensions, GLenum type=GL_FLOAT, GLboolean normalized=GL_FALSE, GLsizei stride=0, size_t offset=0 )
 	{
 		glBindBuffer( GL_ARRAY_BUFFER, arrayBufferID );
 		GLint a = AttribLocation(name);
-		glVertexAttribPointer( a, dimensions, type, GL_FALSE, 0, 0 );
+		glVertexAttribPointer( a, dimensions, type, normalized, stride, (const void*)offset );
 		glEnableVertexAttribArray(a);
 	}
 	void EnableAttrib ( char const *name ) { glEnableVertexAttribArray ( AttribLocation(name) ); }
