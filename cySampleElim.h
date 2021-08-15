@@ -362,7 +362,7 @@ private:
 		for ( SIZE_TYPE i=0; i<inputSize; i++ ) AddWeights( i, inputPoints[i] );
 
 		// Build a heap for the samples using their weights
-		Heap<FType,SIZE_TYPE> heap;
+		MaxHeap<FType,SIZE_TYPE> heap;
 		heap.SetDataPointer( w.data(), inputSize );
 		heap.Build();
 

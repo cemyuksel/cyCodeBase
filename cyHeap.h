@@ -40,26 +40,27 @@
 
 #include <cassert>
 #include <cstdint>
+#include "cyCore.h"
 
 //-------------------------------------------------------------------------------
 namespace cy {
 //-------------------------------------------------------------------------------
 
-//! A general-purpose max-heap structure that allows random access and updates.
+//! A general-purpose heap structure that allows random access and updates.
 //!
 //! The main data can be kept in an external array or within the Heap class.
 
-template <typename DATA_TYPE, typename SIZE_TYPE=size_t> 
+template <bool MAX_HEAP, typename DATA_TYPE, typename SIZE_TYPE=size_t> 
 class Heap
 {
 public:
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Constructor and Destructor
 
 	Heap() : size(0), heapItemCount(0), data(nullptr), heap(nullptr), heapPos(nullptr), deleteData(false) {}
 	~Heap() { Clear(); }
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Initialization methods
 
 	//! Deletes all data owned by the class.
@@ -112,13 +113,13 @@ public:
 		heapItemCount = size;
 		heap    = new SIZE_TYPE[ size + 1 ];
 		heapPos = new SIZE_TYPE[ size ];
-		for ( SIZE_TYPE i=0; i< heapItemCount; i++ ) heapPos[i] = i+1;
-		for ( SIZE_TYPE i=1; i<=heapItemCount; i++ ) heap   [i] = i-1;
+		for ( SIZE_TYPE i=SIZE_TYPE(0); i< heapItemCount; i++ ) heapPos[i] = i+1;
+		for ( SIZE_TYPE i=SIZE_TYPE(1); i<=heapItemCount; i++ ) heap   [i] = i-1;
 		if ( heapItemCount <= 1 ) return;
 		for ( SIZE_TYPE ix = heapItemCount/2; ix>0; ix-- ) HeapMoveDown(ix);
 	}
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Access and manipulation methods
 
 	//! Returns the item from the main data with the given id.
@@ -148,7 +149,13 @@ public:
 
 	//! Returns the number of items in the heap.
 	SIZE_TYPE NumItemsInHeap() const { return heapItemCount; }
-	
+
+	//! Returns false if there are no items in the heap.
+	bool IsEmpty() const { return heapItemCount==0; }
+
+	//! Returns true if there is any item in the heap.
+	bool NotEmpty() const { return heapItemCount>0; }
+
 	//! Returns the item from the heap with the given heap position.
 	//! Note that items that are removed from the heap appear in the inverse order 
 	//! with which they were removed after the last item in the heap.
@@ -168,24 +175,26 @@ public:
 	//! Removes and returns the item at the top of the heap.
 	//! The removed item is not deleted, but it is removed from the heap
 	//! by placing it right after the last item in the heap.
-	void Pop( DATA_TYPE &item )
+	SIZE_TYPE Pop( DATA_TYPE &item )
 	{
-		Pop();
-		item = data[ heap[heapItemCount] ];
+		item = data[ heap[1] ];
+		return Pop();
 	}
 
 	//! Removes the item at the top of the heap.
 	//! The removed item is not deleted, but it is removed from the heap
 	//! by placing it right after the last item in the heap.
-	void Pop()
+	SIZE_TYPE Pop()
 	{
-		SwapItems( 1, heapItemCount );
+		SIZE_TYPE top = heap[1];
+		SwapItems( SIZE_TYPE(1), heapItemCount );
 		heapItemCount--;
-		HeapMoveDown(1);
+		HeapMoveDown(SIZE_TYPE(1));
+		return top;
 	}
 
 private:
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Internal structures and methods
 
 	DATA_TYPE *data;			// The main data pointer.
@@ -201,7 +210,7 @@ private:
 		if ( deleteData ) delete [] data;
 		data = nullptr;
 		deleteData = false;
-		size = 0;
+		size = SIZE_TYPE(0);
 	}
 
 	// Clears the heap structure.
@@ -209,7 +218,7 @@ private:
 	{
 		delete [] heap;    heap    = nullptr;
 		delete [] heapPos; heapPos = nullptr;
-		heapItemCount = 0;
+		heapItemCount = SIZE_TYPE(0);
 	}
 
 	// Checks if the item should be moved.
@@ -227,7 +236,7 @@ private:
 		SIZE_TYPE org = ix;
 		while ( ix >= 2 ) {
 			SIZE_TYPE parent = ix / 2;
-			if ( ! IsSmaller(parent,ix) ) break;
+			if ( ! NotInOrder(parent,ix) ) break;
 			SwapItems(parent,ix);
 			ix = parent;
 		}
@@ -240,15 +249,15 @@ private:
 		SIZE_TYPE org = ix;
 		SIZE_TYPE child = ix * 2;
 		while ( child+1 <= heapItemCount ) {
-			if ( IsSmaller(child,child+1) ) child++;
-			if ( ! IsSmaller(ix,child) ) return ix!=org;
+			if ( NotInOrder(child,child+1) ) child++;
+			if ( ! NotInOrder(ix,child) ) return ix!=org;
 			SwapItems(ix,child);
 			ix = child;
 			child = ix * 2;
 		}
 		// Check the very last item as well
 		if ( child <= heapItemCount ) {
-			if ( IsSmaller(ix,child) ) {
+			if ( NotInOrder(ix,child) ) {
 				SwapItems(ix,child);
 				return true;
 			}
@@ -256,8 +265,9 @@ private:
 		return ix!=org;
 	}
 
-	// Returns if the item at ix1 is smaller than the one at ix2.
-	bool IsSmaller( SIZE_TYPE ix1, SIZE_TYPE ix2 ) { return data[heap[ix1]] < data[heap[ix2]]; }
+	// If max-heap, returns if the item at ix1 is smaller than the one at ix2.
+	// If min-heap, returns if the item at ix1 is greater than the one at ix2.
+	bool NotInOrder( SIZE_TYPE ix1, SIZE_TYPE ix2 ) { return MAX_HEAP ? ( data[heap[ix1]] < data[heap[ix2]] ) : ( data[heap[ix1]] > data[heap[ix2]] ); }
 
 	// Swaps the heap positions of items at ix1 and ix2.
 	void SwapItems( SIZE_TYPE ix1, SIZE_TYPE ix2 )
@@ -269,11 +279,22 @@ private:
 		heapPos[ heap[ix2] ] = ix2;
 	}
 
-	//////////////////////////////////////////////////////////////////////////!//!//!
+	/////////////////////////////////////////////////////////////////////////////////
 };
 
 //-------------------------------------------------------------------------------
+
+template <typename DATA_TYPE, typename SIZE_TYPE=size_t> _CY_TEMPLATE_ALIAS( MaxHeap, (Heap<true, DATA_TYPE,SIZE_TYPE>) );	//!< A general-purpose max-heap structure that allows random access and updates.
+template <typename DATA_TYPE, typename SIZE_TYPE=size_t> _CY_TEMPLATE_ALIAS( MinHeap, (Heap<false,DATA_TYPE,SIZE_TYPE>) );	//!< A general-purpose min-heap structure that allows random access and updates.
+
+//-------------------------------------------------------------------------------
 } // namespace cy
+//-------------------------------------------------------------------------------
+
+template <bool MAX_HEAP, typename DATA_TYPE, typename SIZE_TYPE=size_t> _CY_TEMPLATE_ALIAS( cyHeap,    (cy::Heap<MAX_HEAP,DATA_TYPE,SIZE_TYPE>) );	//!< A general-purpose heap structure that allows random access and updates.
+template <               typename DATA_TYPE, typename SIZE_TYPE=size_t> _CY_TEMPLATE_ALIAS( cyMaxHeap, (cy::Heap<true,    DATA_TYPE,SIZE_TYPE>) );	//!< A general-purpose max-heap structure that allows random access and updates.
+template <               typename DATA_TYPE, typename SIZE_TYPE=size_t> _CY_TEMPLATE_ALIAS( cyMinHeap, (cy::Heap<false,   DATA_TYPE,SIZE_TYPE>) );	//!< A general-purpose min-heap structure that allows random access and updates.
+
 //-------------------------------------------------------------------------------
 
 #endif
