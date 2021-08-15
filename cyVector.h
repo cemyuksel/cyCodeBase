@@ -105,8 +105,8 @@ public:
 	bool IsZero       () const { for ( int i=0; i<N; ++i ) if ( elem[i] != T(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
 	T    Min          () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) m = elem[i]; return m; }							//!< Returns the minimum component of the vector.
 	T    Max          () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) m = elem[i]; return m; }							//!< Returns the maximum component of the vector.
-	int  MinID        () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) { m = elem[i]; ix = i; } return ix; }	//!< Returns the index of the minimum component of the vector.
-	int  MaxID        () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) { m = elem[i]; ix = i; } return ix; }	//!< Returns the index of the maximum component of the vector.
+	int  MinComp      () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) { m = elem[i]; ix = i; } return ix; }	//!< Returns the index of the minimum component of the vector.
+	int  MaxComp      () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) { m = elem[i]; ix = i; } return ix; }	//!< Returns the index of the maximum component of the vector.
 	bool IsFinite     () const { for ( int i=0; i<N; ++i ) if ( ! cy::IsFinite(elem[i]) ) return false; return true; }							//!< Returns true if all components are finite real numbers.
 	bool IsUnit       () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }															//!< Returns true if the length of the vector is close to 1.
 	Vec  Sqrt         () const { Vec v; for ( int i=0; i<N; ++i ) v.elem[i] = cy::Sqrt(elem[i]); return v; }									//!< Returns the square root of the vector.
@@ -203,10 +203,10 @@ public:
 	T    Length          () const { return cy::Sqrt(LengthSquared()); }					//!< Returns the length of the vector.
 	T    Sum             () const { return x+y; }										//!< Returns the sum of its components
 	bool IsZero          () const { return x==T(0) && y==T(0); }						//!< Returns true if all components are exactly zero
-	T    Min             () const { return x<y ? x : y; }								//!< Returns the minimum component of the vector.
-	T    Max             () const { return x>y ? x : y; }								//!< Returns the maximum component of the vector.
-	int  MinID           () const { return x<y ? 0 : 1; }								//!< Returns the index of the minimum component of the vector.
-	int  MaxID           () const { return x>y ? 0 : 1; }								//!< Returns the index of the maximum component of the vector.
+	T    Min             () const { return elem[MinComp()]; }							//!< Returns the minimum component of the vector.
+	T    Max             () const { return elem[MaxComp()]; }							//!< Returns the maximum component of the vector.
+	int  MinComp         () const { return x>y; }										//!< Returns the index of the minimum component of the vector.
+	int  MaxComp         () const { return x<y; }										//!< Returns the index of the maximum component of the vector.
 	bool IsFinite        () const { return cy::IsFinite(x) && cy::IsFinite(y); }		//!< Returns true if all components are finite real numbers.
 	bool IsUnit          () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }	//!< Returns true if the length of the vector is close to 1.
 	Vec2 Sqrt            () const { return Vec2(cy::Sqrt(x),cy::Sqrt(y)); }				//!< Returns the square root of the vector.
@@ -262,7 +262,7 @@ public:
 	T Dot        ( Vec2 const &p ) const { return x*p.x + y*p.y; }			//!< Dot product
 	T operator % ( Vec2 const &p ) const { return Dot(p); }					//!< Dot product operator
 
-	//!@name Conversion Methods
+	//!@name Swizzling Methods
 	Vec2<T> XX() const { return Vec2<T>(x,x); }
 	Vec2<T> XY() const { return *this; }
 	Vec2<T> YX() const { return Vec2<T>(y,x); }
@@ -315,10 +315,10 @@ public:
 	T    Length          () const { return cy::Sqrt(LengthSquared()); }					//!< Returns the length of the vector.
 	T    Sum             () const { return x+y+z; }										//!< Returns the sum of its components.
 	bool IsZero          () const { return x==T(0) && y==T(0) && z==T(0); }				//!< Returns true if all components are exactly zero.
-	T    Min             () const { return x<y ? (x<z ? x : z) : (y<z ? y : z); }		//!< Returns the minimum component of the vector.
-	T    Max             () const { return x>y ? (x>z ? x : z) : (y>z ? y : z); }		//!< Returns the maximum component of the vector.
-	int  MinIndex        () const { return x<y ? (x<z ? 0 : 2) : (y<z ? 1 : 2); }		//!< Returns the index of the minimum component of the vector.
-	int  MaxIndex        () const { return x>y ? (x>z ? 0 : 2) : (y>z ? 1 : 2); }		//!< Returns the index of the maximum component of the vector.
+	T    Min             () const { return elem[MinComp()]; }							//!< Returns the minimum component of the vector.
+	T    Max             () const { return elem[MaxComp()]; }							//!< Returns the maximum component of the vector.
+	int  MinComp         () const { int yx=y<x; int zx=z<x; int zy=z<y; return (yx|zx)+(zx&zy); }	//!< Returns the index of the minimum component of the vector.
+	int  MaxComp         () const { int xy=x<y; int xz=x<z; int yz=y<z; return (xy|xz)+(xz&yz); }	//!< Returns the index of the maximum component of the vector.
 	bool IsFinite        () const { return cy::IsFinite(x) && cy::IsFinite(y) && cy::IsFinite(z); }	//!< Returns true if all components are finite real numbers.
 	bool IsUnit          () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }	//!< Returns true if the length of the vector is close to 1.
 	Vec3 Sqrt            () const { return Vec3(cy::Sqrt(x),cy::Sqrt(y),cy::Sqrt(z)); }	//!< Returns the square root of the vector.
@@ -388,7 +388,7 @@ public:
 	T    Dot        ( Vec3 const &p ) const { return x*p.x + y*p.y + z*p.z; }						//!< Dot product
 	T    operator % ( Vec3 const &p ) const { return Dot(p); }										//!< Dot product
 
-	//!@name Conversion Methods
+	//!@name Swizzling Methods
 	Vec2<T> XX() const { return Vec2<T>(x,x); }
 	Vec2<T> XY() const { return Vec2<T>(*this); }
 	Vec2<T> XZ() const { return Vec2<T>(x,z); }
@@ -477,14 +477,14 @@ public:
 	T    Length       () const { return cy::Sqrt(LengthSquared()); }				//!< Returns the length of the vector.
 	T    Sum          () const { return x+y+z+w; }									//!< Returns the sum of its components
 	bool IsZero       () const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
-	T    Min          () const { T mxy = x<y ? x : y; T mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }					//!< Returns the minimum component of the vector.
-	T    Max          () const { T mxy = x>y ? x : y; T mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }					//!< Returns the maximum component of the vector.
-	int  MinID        () const { int  ixy = x<y ? 0 : 1; int  izw = z<w ? 2 : 3; return elem[ixy]<elem[izw] ? ixy : izw; }	//!< Returns the index of the minimum component of the vector.
-	int  MaxID        () const { int  ixy = x>y ? 0 : 1; int  izw = z>w ? 2 : 3; return elem[ixy]>elem[izw] ? ixy : izw; }	//!< Returns the index of the maximum component of the vector.
-	bool IsFinite     () const { return cy::IsFinite(x) && cy::IsFinite(y) && cy::IsFinite(z) && cy::IsFinite(w); }			//!< Returns true if all components are finite real numbers.
-	bool IsUnit       () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }										//!< Returns true if the length of the vector is close to 1.
-	Vec4 Sqrt         () const { return Vec4(cy::Sqrt(x),cy::Sqrt(y),cy::Sqrt(z),cy::Sqrt(w)); }		//!< Returns the square root of the vector.
-	Vec4 Abs          () const { return Vec4(std::abs(x),std::abs(y),std::abs(z),std::abs(w)); }		//!< Returns a vector containing the absolute values of all components.
+	T    Min          () const { return elem[MaxComp()]; }							//!< Returns the minimum component of the vector.
+	T    Max          () const { return elem[MaxComp()]; }							//!< Returns the maximum component of the vector.
+	int  MinComp      () const { int xy=x>y; int zw=(z>w)+2; return elem[xy]<elem[zw]?xy:zw; }	//!< Returns the index of the minimum component of the vector.
+	int  MaxComp      () const { int xy=x<y; int zw=(z<w)+2; return elem[xy]>elem[zw]?xy:zw; }	//!< Returns the index of the maximum component of the vector.
+	bool IsFinite     () const { return cy::IsFinite(x) && cy::IsFinite(y) && cy::IsFinite(z) && cy::IsFinite(w); }	//!< Returns true if all components are finite real numbers.
+	bool IsUnit       () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }								//!< Returns true if the length of the vector is close to 1.
+	Vec4 Sqrt         () const { return Vec4(cy::Sqrt(x),cy::Sqrt(y),cy::Sqrt(z),cy::Sqrt(w)); }	//!< Returns the square root of the vector.
+	Vec4 Abs          () const { return Vec4(std::abs(x),std::abs(y),std::abs(z),std::abs(w)); }	//!< Returns a vector containing the absolute values of all components.
 	Vec4 SortDesc     () const { Vec4 v=*this; if(v.x<v.y)Swap(v.x,v.y); if(v.z<v.w)Swap(v.z,v.w); if(v.y<v.z){ Swap(v.y,v.z); if(v.x<v.y)Swap(v.x,v.y); if(v.z<v.w)Swap(v.z,v.w); } return v; }	//!< Returns a vector with components sorted in descending order.
 	Vec4 SortAsc      () const { Vec4 v=*this; if(v.x>v.y)Swap(v.x,v.y); if(v.z>v.w)Swap(v.z,v.w); if(v.y>v.z){ Swap(v.y,v.z); if(v.x>v.y)Swap(v.x,v.y); if(v.z>v.w)Swap(v.z,v.w); } return v; }	//!< Returns a vector with components sorted in descending order.
 
@@ -533,7 +533,7 @@ public:
 	T Dot		 ( Vec4 const &p ) const { return x*p.x + y*p.y + z*p.z + w*p.w; }	//!< Dot product
 	T operator % ( Vec4 const &p ) const { return Dot(p); }							//!< Dot product
 
-	//!@name Conversion Methods
+	//!@name Swizzling Methods
 	Vec2<T> XX() const { return Vec2<T>(x,x); }
 	Vec2<T> XY() const { return Vec2<T>(*this); }
 	Vec2<T> XZ() const { return Vec2<T>(x,z); }
@@ -580,12 +580,12 @@ public:
 //-------------------------------------------------------------------------------
 
 // Definitions of the conversion constructors
-template <typename T, int N>                       Vec<T,N>::Vec( Vec2<T> const &p ) { if ( N <= 2 ) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,2); MemClear(elem,N-2); } }
-template <typename T, int N>                       Vec<T,N>::Vec( Vec3<T> const &p ) { if ( N <= 3 ) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,3); MemClear(elem,N-3); } }
-template <typename T, int N>                       Vec<T,N>::Vec( Vec4<T> const &p ) { if ( N <= 4 ) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,4); MemClear(elem,N-4); } }
-template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec2<S> const &p ) { if ( N <= 2 ) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,2); MemClear(elem,N-2); } }
-template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec3<S> const &p ) { if ( N <= 3 ) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,3); MemClear(elem,N-3); } }
-template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec4<S> const &p ) { if ( N <= 4 ) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,4); MemClear(elem,N-4); } }
+template <typename T, int N>                       Vec<T,N>::Vec( Vec2<T> const &p ) { if (N<=2) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,2); MemClear(elem,N-2); } }
+template <typename T, int N>                       Vec<T,N>::Vec( Vec3<T> const &p ) { if (N<=3) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,3); MemClear(elem,N-3); } }
+template <typename T, int N>                       Vec<T,N>::Vec( Vec4<T> const &p ) { if (N<=4) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,4); MemClear(elem,N-4); } }
+template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec2<S> const &p ) { if (N<=2) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,2); MemClear(elem,N-2); } }
+template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec3<S> const &p ) { if (N<=3) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,3); MemClear(elem,N-3); } }
+template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec4<S> const &p ) { if (N<=4) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,4); MemClear(elem,N-4); } }
 template <typename T>                              Vec2<T>::Vec2( Vec3<T> const &p ) : x(  p.x ), y(  p.y )            {}
 template <typename T>                              Vec2<T>::Vec2( Vec4<T> const &p ) : x(  p.x ), y(  p.y )            {}
 template <typename T>                              Vec3<T>::Vec3( Vec4<T> const &p ) : x(  p.x ), y(  p.y ), z(  p.z ) {}
