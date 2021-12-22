@@ -163,6 +163,22 @@ static _cy_nullptr_t nullptr;
 # endif
 #endif
 
+// nodiscard
+#if _CY_COMPILER_VER_MEETS(1900,40800,30000,1500)
+# define CY_NODISCARD [[nodiscard]]
+#else
+# define CY_NODISCARD
+#endif
+
+// default and deleted class member functions
+#if _CY_COMPILER_VER_MEETS(1800,40400,30000,1200)
+# define CY_CLASS_FUNCTION_DEFAULT = default;
+# define CY_CLASS_FUNCTION_DELETE  = delete;
+#else
+# define CY_CLASS_FUNCTION_DEFAULT {}
+# define CY_CLASS_FUNCTION_DELETE  { static_assert(false,"Calling deleted method."); }
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 // Auto Vectorization
 //////////////////////////////////////////////////////////////////////////
@@ -261,16 +277,50 @@ template <typename T> inline void Swap     ( T &v1, T &v2 ) { if ( std::is_trivi
 template <typename T> inline void SwapBytes( T &v1, T &v2 ) { char t[sizeof(T)]; memcpy(&t,&v1,sizeof(T)); memcpy(&v1,&v2,sizeof(T)); memcpy(&v2,&t,sizeof(T)); }
 
 /////////////////////////////////////////////////////////////////////////////////
-// Defaulted and Deleted Functions
+// Sorting functions
 /////////////////////////////////////////////////////////////////////////////////
 
-#if _CY_COMPILER_VER_MEETS(1800,40400,30000,1200)
-# define CY_CLASS_FUNCTION_DEFAULT = default;
-# define CY_CLASS_FUNCTION_DELETE  = delete;
-#else
-# define CY_CLASS_FUNCTION_DEFAULT {}
-# define CY_CLASS_FUNCTION_DELETE  { static_assert(false,"Calling deleted method."); }
-#endif
+template <bool ascending, typename T>
+inline void Sort2( T r[2], T const v[2] )
+{
+	if ( ascending ) {
+		r[0] = Min( v[0], v[1] );
+		r[1] = Max( v[1], v[0] );
+	} else {
+		r[0] = Max( v[0], v[1] );
+		r[1] = Min( v[1], v[0] );
+	}
+}
+
+template <bool ascending, typename T>
+void Sort3( T r[3], T const v[3] ) noexcept
+{
+	T n01   = Min( v[1], v[0] );
+	T x01   = Max( v[0], v[1] );
+	T n2x01 = Min( v[2], x01  );
+	T r2    = Max( x01,  v[2] );
+	T r0    = Min( n2x01, n01 );
+	T r1    = Max( n01, n2x01 );
+	if ( ascending ) { r[0]=r0; r[1]=r1; r[2]=r2;  }
+	else             { r[0]=r2; r[1]=r1; r[2]=r0; }
+}
+
+template <bool ascending, typename T>
+inline void Sort4( T r[4], T const v[4] )
+{
+	T n01 = Min( v[1], v[0] );
+	T x01 = Max( v[0], v[1] );
+	T n23 = Min( v[2], v[3] );
+	T x23 = Max( v[3], v[2] );
+	T r0  = Min( n01, n23 );
+	T x02 = Max( n23, n01 );
+	T n13 = Min( x01, x23 );
+	T r3  = Max( x23, x01 );
+	T r1  = Min( x02, n13 );
+	T r2  = Max( n13, x02 );
+	if ( ascending ) { r[0]=r0; r[1]=r1; r[2]=r2; r[3]=r3; }
+	else             { r[0]=r3; r[1]=r2; r[2]=r1; r[3]=r0; }
+}
 
 //////////////////////////////////////////////////////////////////////////
 

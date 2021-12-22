@@ -56,9 +56,9 @@ template <typename T> class IVec4;
 template <typename T, int N>
 class IVec
 {
-	friend IVec operator + ( T const v, IVec const &p ) { return   p+v; }	//!< Addition with a constant
-	friend IVec operator - ( T const v, IVec const &p ) { return -(p-v); }	//!< Subtraction from a constant
-	friend IVec operator * ( T const v, IVec const &p ) { return   p*v; }	//!< Multiplication with a constant
+	CY_NODISCARD friend IVec operator - ( T v, IVec const &p ) { return IVec<T,N>(v)-p; }	//!< Subtraction from a constant
+	CY_NODISCARD friend IVec operator + ( T v, IVec const &p ) { return p+v; }				//!< Addition with a constant
+	CY_NODISCARD friend IVec operator * ( T v, IVec const &p ) { return p*v; }				//!< Multiplication with a constant
 
 public:
 
@@ -67,9 +67,8 @@ public:
 
 	//!@name Constructors
 	IVec() CY_CLASS_FUNCTION_DEFAULT
-	IVec( IVec const &p )     { MemCopy(elem,p.elem,N); }
-	explicit IVec( const T *p ) { MemCopy(elem,p,N); }
-	explicit IVec( const T &v ) { for ( int i=0; i<N; ++i ) elem[i]=v; }
+	explicit IVec( T const * restrict p ) { MemCopy(elem,p,N); }
+	explicit IVec( T v ) { for ( int i=0; i<N; ++i ) elem[i]=v; }
 	template <typename S> explicit IVec( IVec<S,N> const &p ) { MemConvert(elem,p.elem,N); }
 	template <int M> explicit IVec( IVec<T,M> const &p )
 	{
@@ -84,45 +83,45 @@ public:
 	explicit IVec( IVec2<T> const &p );
 	explicit IVec( IVec3<T> const &p );
 	explicit IVec( IVec4<T> const &p );
-	template <typename S> explicit IVec( const IVec2<S> &p );
-	template <typename S> explicit IVec( const IVec3<S> &p );
-	template <typename S> explicit IVec( const IVec4<S> &p );
-	template <typename P> explicit IVec( const P &p ) { for ( int i=0; i<N; ++i ) elem[i]=(T)p[i]; }
+	template <typename S> explicit IVec( IVec2<S> const &p );
+	template <typename S> explicit IVec( IVec3<S> const &p );
+	template <typename S> explicit IVec( IVec4<S> const &p );
+	template <typename P> explicit IVec( P const &p ) { for ( int i=0; i<N; ++i ) elem[i]=(T)p[i]; }
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(elem,N); }			//!< Sets the coordinates as zero
-	void Get( T *p ) const { MemCopy(p,elem,N); }			//!< Puts the coordinate values into the array
-	void Set( T const *p ) { MemCopy(elem,p,N); }			//!< Sets the coordinates using the values in the given array
-	void Set( T v ) { for ( int i=0; i<N; ++i ) elem[i] = v; }	//!< Sets all coordinates using the given value
-	template <int M> void CopyData( T *p ) { if ( M <= N ) { MemCopy(p,elem,M); } else { MemCopy(p,elem,N); MemClear(p+N,M-N); }	}
-	template <typename S, int M> void ConvertData( S *p ) { if ( M <= N ) { MemConvert(p,elem,M); } else { MemConvert(p,elem,N); MemClear(p+N,M-N); }	}
+	void Zero()                      { MemClear(elem,N); }						//!< Sets the coordinates as zero
+	void Get( T * restrict p ) const { MemCopy(p,elem,N); }						//!< Puts the coordinate values into the array
+	void Set( T const * restrict p ) { MemCopy(elem,p,N); }						//!< Sets the coordinates using the values in the given array
+	void Set( T v )                  { for ( int i=0; i<N; ++i ) elem[i] = v; }	//!< Sets all coordinates using the given value
+	template <int M> void CopyData( T * restrict p ) { if ( M <= N ) { MemCopy(p,elem,M); } else { MemCopy(p,elem,N); MemClear(p+N,M-N); }	}
+	template <typename S, int M> void ConvertData( S * restrict p ) { if ( M <= N ) { MemConvert(p,elem,M); } else { MemConvert(p,elem,N); MemClear(p+N,M-N); }	}
 
 	//!@name General methods
-	T    Sum   () const { T v=elem[0]; for ( int i=1; i<N; ++i ) v+=elem[i]; return v; }		//!< Returns the sum of its components
-	bool IsZero() const { for ( int i=0; i<N; ++i ) if ( elem[i] != T(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
-	T    Min   () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) m = elem[i]; return m; }
-	T    Max   () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) m = elem[i]; return m; }
-	int  MinID () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) { m = elem[i]; ix = i; } return ix; }
-	int  MaxID () const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) { m = elem[i]; ix = i; } return ix; }
+	CY_NODISCARD T    Sum    () const { T v=elem[0]; for ( int i=1; i<N; ++i ) v+=elem[i]; return v; }		//!< Returns the sum of its components
+	CY_NODISCARD bool IsZero () const { for ( int i=0; i<N; ++i ) if ( elem[i] != T(0) ) return false; return true; }	//!< Returns true if all components are exactly zero
+	CY_NODISCARD T    Min    () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) m = elem[i]; return m; }
+	CY_NODISCARD T    Max    () const { T m = elem[0]; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) m = elem[i]; return m; }
+	CY_NODISCARD int  MinComp() const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m > elem[i] ) { m = elem[i]; ix = i; } return ix; }
+	CY_NODISCARD int  MaxComp() const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) { m = elem[i]; ix = i; } return ix; }
 
 	//!@name Limit methods
-	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
-	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]<v) ? v : elem[i]; }
-	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]>v) ? v : elem[i]; }
-	void Abs() { for ( int i=0; i<N; i++ ) elem[i] = std::abs(elem[i]); }	//!< Converts all negative components to positive values
+	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }		//!< Ensures that all components of the vector are within the given limits.
+	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]<v) ? v : elem[i]; }	//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]>v) ? v : elem[i]; }	//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void SetAbs  ()      { for ( int i=0; i<N; i++ ) elem[i] = std::abs(elem[i]); }			//!< Converts all negative components to positive values
 
 	//!@name Unary operators
-	IVec operator - () const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i]=-elem[i]; return r; } 
+	CY_NODISCARD IVec operator - () const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i]=-elem[i]; return r; } 
 
 	//!@name Binary operators
-	IVec operator + ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] + p.elem[i]; return r; }
-	IVec operator - ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] - p.elem[i]; return r; }
-	IVec operator * ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] * p.elem[i]; return r; }
-	IVec operator / ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] / p.elem[i]; return r; }
-	IVec operator + ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] + v; return r; }
-	IVec operator - ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] - v; return r; }
-	IVec operator * ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] * v; return r; }
-	IVec operator / ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] / v; return r; }
+	CY_NODISCARD IVec operator + ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] + p.elem[i]; return r; }
+	CY_NODISCARD IVec operator - ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] - p.elem[i]; return r; }
+	CY_NODISCARD IVec operator * ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] * p.elem[i]; return r; }
+	CY_NODISCARD IVec operator / ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] / p.elem[i]; return r; }
+	CY_NODISCARD IVec operator + ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] + v; return r; }
+	CY_NODISCARD IVec operator - ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] - v; return r; }
+	CY_NODISCARD IVec operator * ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] * v; return r; }
+	CY_NODISCARD IVec operator / ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] / v; return r; }
 
 	//!@name Assignment operators
 	const IVec& operator += ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] += p.elem[i]; return *this; }
@@ -135,16 +134,16 @@ public:
 	const IVec& operator /= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i] /= v; return *this; }
 
 	//!@name Bitwise operators
-	IVec operator << ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] << p.elem[i]; return r; }
-	IVec operator >> ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] >> p.elem[i]; return r; }
-	IVec operator  & ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  & p.elem[i]; return r; }
-	IVec operator  | ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  | p.elem[i]; return r; }
-	IVec operator  ^ ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  ^ p.elem[i]; return r; }
-	IVec operator << ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] << v; return r; }
-	IVec operator >> ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] >> v; return r; }
-	IVec operator  & ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  & v; return r; }
-	IVec operator  | ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  | v; return r; }
-	IVec operator  ^ ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  ^ v; return r; }
+	CY_NODISCARD IVec operator << ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] << p.elem[i]; return r; }
+	CY_NODISCARD IVec operator >> ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] >> p.elem[i]; return r; }
+	CY_NODISCARD IVec operator  & ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  & p.elem[i]; return r; }
+	CY_NODISCARD IVec operator  | ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  | p.elem[i]; return r; }
+	CY_NODISCARD IVec operator  ^ ( IVec const &p ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  ^ p.elem[i]; return r; }
+	CY_NODISCARD IVec operator << ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] << v; return r; }
+	CY_NODISCARD IVec operator >> ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i] >> v; return r; }
+	CY_NODISCARD IVec operator  & ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  & v; return r; }
+	CY_NODISCARD IVec operator  | ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  | v; return r; }
+	CY_NODISCARD IVec operator  ^ ( T    const  v ) const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i] = elem[i]  ^ v; return r; }
 
 	//!@name Bitwise Assignment operators
 	const IVec& operator <<= ( IVec const &p ) { for ( int i=0; i<N; ++i ) elem[i] <<= p.elem[i]; return *this; }
@@ -159,16 +158,16 @@ public:
 	const IVec& operator  ^= ( T    const  v ) { for ( int i=0; i<N; ++i ) elem[i]  ^= v; return *this; }
 
 	//!@name Test operators
-	bool operator == ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( elem[i] != p.elem[i] ) return false; return true; }
-	bool operator != ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( elem[i] != p.elem[i] ) return true; return false; }
+	CY_NODISCARD bool operator == ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( elem[i] != p.elem[i] ) return false; return true; }
+	CY_NODISCARD bool operator != ( IVec const &p ) const { for ( int i=0; i<N; ++i ) if ( elem[i] != p.elem[i] ) return true; return false; }
 
 	//!@name Access operators
-	T& operator [] ( int i )       { return elem[i]; }
-	T  operator [] ( int i ) const { return elem[i]; }
+	CY_NODISCARD T& operator [] ( int i )       { return elem[i]; }
+	CY_NODISCARD T  operator [] ( int i ) const { return elem[i]; }
 
 	//!@name Dot product
-	T Dot        ( IVec const &p ) const { IVec r=operator*(p); return r.Sum(); }	//!< Dot product
-	T operator % ( IVec const &p ) const { return Dot(p); }							//!< Dot product operator
+	CY_NODISCARD T Dot        ( IVec const &p ) const { IVec r=operator*(p); return r.Sum(); }	//!< Dot product
+	CY_NODISCARD T operator % ( IVec const &p ) const { return Dot(p); }						//!< Dot product operator
 };
 
 //-------------------------------------------------------------------------------
@@ -178,9 +177,9 @@ public:
 template <typename T>
 class IVec2
 {
-	friend IVec2 operator + ( const T v, const IVec2 &p ) { return   p+v;  }	//!< Addition with a constant
-	friend IVec2 operator - ( const T v, const IVec2 &p ) { return -(p-v); }	//!< Subtraction from a constant
-	friend IVec2 operator * ( const T v, const IVec2 &p ) { return   p*v;  }	//!< Multiplication with a constant
+	CY_NODISCARD friend IVec2 operator - ( T v, IVec2 const &p ) { return IVec2<T>(v)-p; }	//!< Subtraction from a constant
+	CY_NODISCARD friend IVec2 operator + ( T v, IVec2 const &p ) { return p+v; }			//!< Addition with a constant
+	CY_NODISCARD friend IVec2 operator * ( T v, IVec2 const &p ) { return p*v; }			//!< Multiplication with a constant
 
 public:
 
@@ -193,16 +192,17 @@ public:
 	//!@name Constructors
 	IVec2() CY_CLASS_FUNCTION_DEFAULT
 
-	IVec2( T _x, T _y )     : x( _x), y( _y) {}
-	explicit IVec2( T v )   : x(v  ), y(v  ) {}
-	explicit IVec2( const IVec3<T> &p );
-	explicit IVec2( const IVec4<T> &p );
-	template <typename S> explicit IVec2( const IVec2<S> &p ) : x(T(p.x)), y(T(p.y)) {}
-	template <typename S> explicit IVec2( const IVec3<S> &p );
-	template <typename S> explicit IVec2( const IVec4<S> &p );
-	template <            int M> explicit IVec2( const IVec<T,M> &p ) { p.CopyData<2>(elem); }
-	template <typename S, int M> explicit IVec2( const IVec<S,M> &p ) { p.ConvertData<T,2>(elem); }
-	template <typename P> explicit IVec2( const P &p ) : x(T(p[0])), y(T(p[1])) {}
+	IVec2( T _x, T _y )   : x( _x), y( _y) {}
+	explicit IVec2( T v ) : x(v  ), y(v  ) {}
+	explicit IVec2( IVec3<T> const &p );
+	explicit IVec2( IVec4<T> const &p );
+	explicit IVec2( T const * restrict v ) { Set( v ); }
+	template <typename S> explicit IVec2( IVec2<S> const &p ) : x(T(p.x)), y(T(p.y)) {}
+	template <typename S> explicit IVec2( IVec3<S> const &p );
+	template <typename S> explicit IVec2( IVec4<S> const &p );
+	template <            int M> explicit IVec2( IVec<T,M> const &p ) { p.CopyData<2>(elem); }
+	template <typename S, int M> explicit IVec2( IVec<S,M> const &p ) { p.ConvertData<T,2>(elem); }
+	template <typename P> explicit IVec2( P const &p ) : x(T(p[0])), y(T(p[1])) {}
 
 	//!@name Conversion
 #ifdef _CY_VECTOR_H_INCLUDED_
@@ -210,38 +210,41 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(elem,2); }				//!< Sets the coordinates as zero.
-	void Get( T *p ) const { ((IVec2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
-	void Set( const T *p ) { operator=(*((IVec2*)p)); }			//!< Sets the coordinates using the values in the given array.
-	void Set( const T &v ) { x=v; y=v; }						//!< Sets all coordinates using the given value
-	void Set( const T &_x, const T &_y ) { x=_x; y=_y; }		//!< Sets the coordinates using the given values
+	void Zero()                      { MemClear(elem,2); }				//!< Sets the coordinates as zero.
+	void Get( T * restrict p ) const { ((IVec2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
+	void Set( T const * restrict p ) { operator=(*((IVec2*)p)); }		//!< Sets the coordinates using the values in the given array.
+	void Set( T v )                  { x=v; y=v; }						//!< Sets all coordinates using the given value
+	void Set( T _x, T _y )           { x=_x; y=_y; }					//!< Sets the coordinates using the given values
 
 	//!@name General methods
-	T    Sum   () const { return x+y; }							//!< Returns the sum of its components
-	bool IsZero() const { return x==T(0) && y==T(0); }		//!< Returns true if all components are exactly zero
-	T    Min   () const { return x<y ? x : y; }
-	T    Max   () const { return x>y ? x : y; }
-	int  MinID () const { return x<y ? 0 : 1; }
-	int  MaxID () const { return x>y ? 0 : 1; }
+	CY_NODISCARD T     Sum     () const { return x+y; }						//!< Returns the sum of its components
+	CY_NODISCARD bool  IsZero  () const { return x==T(0) && y==T(0); }		//!< Returns true if all components are exactly zero
+	CY_NODISCARD T     Min     () const { return x<y ? x : y; }				//!< Returns the minimum component of the vector.
+	CY_NODISCARD T     Max     () const { return x>y ? x : y; }				//!< Returns the maximum component of the vector.
+	CY_NODISCARD int   MinComp () const { return x<y ? 0 : 1; }				//!< Returns the index of the minimum component of the vector.
+	CY_NODISCARD int   MaxComp () const { return x>y ? 0 : 1; }				//!< Returns the index of the maximum component of the vector.
+	CY_NODISCARD IVec2 Abs     () const { return IVec2(std::abs(x),std::abs(y)); }	//!< Returns a vector containing the absolute values of all components.
+	CY_NODISCARD IVec2 SortAsc () const { IVec2 v; Sort2<true >( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD IVec2 SortDesc() const { IVec2 v; Sort2<false>( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
-	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
-	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; }
-	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; }
-	void Abs() { x=std::abs(x); y=std::abs(y); }	//!< Converts all negative components to positive values
+	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
+	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; }									//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; }									//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); }								//!< Converts all negative components to positive values
 
 	//!@name Unary operators
-	IVec2 operator - () const { IVec2 r; r.x=-x; r.y=-y; return r; } 
+	CY_NODISCARD IVec2 operator - () const { IVec2 r; r.x=-x; r.y=-y; return r; } 
 
 	//!@name Binary operators
-	IVec2 operator + ( IVec2 const &p ) const { IVec2 r; r.x=x+p.x; r.y=y+p.y; return r; }
-	IVec2 operator - ( IVec2 const &p ) const { IVec2 r; r.x=x-p.x; r.y=y-p.y; return r; }
-	IVec2 operator * ( IVec2 const &p ) const { IVec2 r; r.x=x*p.x; r.y=y*p.y; return r; }
-	IVec2 operator / ( IVec2 const &p ) const { IVec2 r; r.x=x/p.x; r.y=y/p.y; return r; }
-	IVec2 operator + ( T     const  v ) const { IVec2 r; r.x=x+v;   r.y=y+v;   return r; }
-	IVec2 operator - ( T     const  v ) const { IVec2 r; r.x=x-v;   r.y=y-v;   return r; }
-	IVec2 operator * ( T     const  v ) const { IVec2 r; r.x=x*v;   r.y=y*v;   return r; }
-	IVec2 operator / ( T     const  v ) const { IVec2 r; r.x=x/v;   r.y=y/v;   return r; }
+	CY_NODISCARD IVec2 operator + ( IVec2 const &p ) const { IVec2 r; r.x=x+p.x; r.y=y+p.y; return r; }
+	CY_NODISCARD IVec2 operator - ( IVec2 const &p ) const { IVec2 r; r.x=x-p.x; r.y=y-p.y; return r; }
+	CY_NODISCARD IVec2 operator * ( IVec2 const &p ) const { IVec2 r; r.x=x*p.x; r.y=y*p.y; return r; }
+	CY_NODISCARD IVec2 operator / ( IVec2 const &p ) const { IVec2 r; r.x=x/p.x; r.y=y/p.y; return r; }
+	CY_NODISCARD IVec2 operator + ( T     const  v ) const { IVec2 r; r.x=x+v;   r.y=y+v;   return r; }
+	CY_NODISCARD IVec2 operator - ( T     const  v ) const { IVec2 r; r.x=x-v;   r.y=y-v;   return r; }
+	CY_NODISCARD IVec2 operator * ( T     const  v ) const { IVec2 r; r.x=x*v;   r.y=y*v;   return r; }
+	CY_NODISCARD IVec2 operator / ( T     const  v ) const { IVec2 r; r.x=x/v;   r.y=y/v;   return r; }
 
 	//!@name Assignment operators
 	IVec2 const& operator += ( IVec2 const &p ) { x+=p.x; y+=p.y; return *this; }
@@ -254,16 +257,16 @@ public:
 	IVec2 const& operator /= ( T     const  v ) { x/=v;   y/=v;   return *this; }
 
 	//!@name Bitwise operators
-	IVec2 operator << ( IVec2 const &p ) const { IVec2 r; r.x = x << p.x; r.y = y << p.y; return r; }
-	IVec2 operator >> ( IVec2 const &p ) const { IVec2 r; r.x = x >> p.x; r.y = y >> p.y; return r; }
-	IVec2 operator  & ( IVec2 const &p ) const { IVec2 r; r.x = x  & p.x; r.y = y  & p.y; return r; }
-	IVec2 operator  | ( IVec2 const &p ) const { IVec2 r; r.x = x  | p.x; r.y = y  | p.y; return r; }
-	IVec2 operator  ^ ( IVec2 const &p ) const { IVec2 r; r.x = x  ^ p.x; r.y = y  ^ p.y; return r; }
-	IVec2 operator << ( T     const  v ) const { IVec2 r; r.x = x << v;   r.y = y << v;   return r; }
-	IVec2 operator >> ( T     const  v ) const { IVec2 r; r.x = x >> v;   r.y = y >> v;   return r; }
-	IVec2 operator  & ( T     const  v ) const { IVec2 r; r.x = x  & v;   r.y = y  & v;   return r; }
-	IVec2 operator  | ( T     const  v ) const { IVec2 r; r.x = x  | v;   r.y = y  | v;   return r; }
-	IVec2 operator  ^ ( T     const  v ) const { IVec2 r; r.x = x  ^ v;   r.y = y  ^ v;   return r; }
+	CY_NODISCARD IVec2 operator << ( IVec2 const &p ) const { IVec2 r; r.x = x << p.x; r.y = y << p.y; return r; }
+	CY_NODISCARD IVec2 operator >> ( IVec2 const &p ) const { IVec2 r; r.x = x >> p.x; r.y = y >> p.y; return r; }
+	CY_NODISCARD IVec2 operator  & ( IVec2 const &p ) const { IVec2 r; r.x = x  & p.x; r.y = y  & p.y; return r; }
+	CY_NODISCARD IVec2 operator  | ( IVec2 const &p ) const { IVec2 r; r.x = x  | p.x; r.y = y  | p.y; return r; }
+	CY_NODISCARD IVec2 operator  ^ ( IVec2 const &p ) const { IVec2 r; r.x = x  ^ p.x; r.y = y  ^ p.y; return r; }
+	CY_NODISCARD IVec2 operator << ( T     const  v ) const { IVec2 r; r.x = x << v;   r.y = y << v;   return r; }
+	CY_NODISCARD IVec2 operator >> ( T     const  v ) const { IVec2 r; r.x = x >> v;   r.y = y >> v;   return r; }
+	CY_NODISCARD IVec2 operator  & ( T     const  v ) const { IVec2 r; r.x = x  & v;   r.y = y  & v;   return r; }
+	CY_NODISCARD IVec2 operator  | ( T     const  v ) const { IVec2 r; r.x = x  | v;   r.y = y  | v;   return r; }
+	CY_NODISCARD IVec2 operator  ^ ( T     const  v ) const { IVec2 r; r.x = x  ^ v;   r.y = y  ^ v;   return r; }
 
 	//!@name Bitwise Assignment operators
 	IVec2 const& operator <<= ( IVec2 const &p ) { x<<=p.x; y<<=p.y; return *this; }
@@ -278,20 +281,20 @@ public:
 	IVec2 const& operator  ^= ( T     const  v ) { x ^=v;   y ^=v;   return *this; }
 
 	//!@name Test operators
-	bool operator == ( IVec2 const &p ) const { return x==p.x && y==p.y; }
-	bool operator != ( IVec2 const &p ) const { return x!=p.x && y!=p.y; }
+	CY_NODISCARD bool operator == ( IVec2 const &p ) const { return x==p.x && y==p.y; }
+	CY_NODISCARD bool operator != ( IVec2 const &p ) const { return x!=p.x && y!=p.y; }
 
 	//!@name Access operators
-	T&       operator [] ( int i )       { return Element(i); }
-	T const& operator [] ( int i ) const { return Element(i); }
-	T&       Element     ( int i )       { return elem[i]; }
-	T const& Element     ( int i ) const { return elem[i]; }
-	T*       Data        ()              { return elem; }
-	T const* Data        ()        const { return elem; }
+	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
+	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
+	CY_NODISCARD T&       Element     ( int i )       { return elem[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { return elem[i]; }
+	CY_NODISCARD T*       Data        ()              { return elem; }
+	CY_NODISCARD T const* Data        ()        const { return elem; }
 
 	//!@name Cross product and dot product
-	T Dot        ( IVec2 const &p ) const { IVec2 r=operator*(p); return r.Sum(); }	//!< Dot product
-	T operator % ( IVec2 const &p ) const { return Dot(p); }							//!< Dot product operator
+	CY_NODISCARD T Dot        ( IVec2 const &p ) const { IVec2 r=operator*(p); return r.Sum(); }	//!< Dot product
+	CY_NODISCARD T operator % ( IVec2 const &p ) const { return Dot(p); }							//!< Dot product operator
 };
 
 //-------------------------------------------------------------------------------
@@ -301,9 +304,9 @@ public:
 template <typename T>
 class IVec3
 {
-	friend IVec3 operator + ( T v, IVec3 const &p ) { return   p+v;  }	//!< Addition with a constant
-	friend IVec3 operator - ( T v, IVec3 const &p ) { return -(p-v); }	//!< Subtraction from a constant
-	friend IVec3 operator * ( T v, IVec3 const &p ) { return   p*v;  }	//!< Multiplication with a constant
+	CY_NODISCARD friend IVec3 operator - ( T v, IVec3 const &p ) { return IVec3<T>(v)-p; }	//!< Subtraction from a constant
+	CY_NODISCARD friend IVec3 operator + ( T v, IVec3 const &p ) { return p+v; }			//!< Addition with a constant
+	CY_NODISCARD friend IVec3 operator * ( T v, IVec3 const &p ) { return p*v; }			//!< Multiplication with a constant
 
 public:
 
@@ -317,8 +320,9 @@ public:
 	IVec3() CY_CLASS_FUNCTION_DEFAULT
 	IVec3( T _x, T _y, T _z )                   : x( _x), y( _y), z( _z) {}
 	explicit IVec3( T v )                       : x(v  ), y(v  ), z(v  ) {}
-	explicit IVec3( const IVec2<T> &p, T _z=0 ) : x(p.x), y(p.y), z( _z) {}
-	explicit IVec3( const IVec4<T> &p );
+	explicit IVec3( IVec2<T> const &p, T _z=0 ) : x(p.x), y(p.y), z( _z) {}
+	explicit IVec3( IVec4<T> const &p );
+	explicit IVec3( T const * restrict v ) { Set( v ); }
 	template <typename S> explicit IVec3( IVec3<S> const &p )         : x(T(p.x)), y(T(p.y)), z(T(p.z)) {}
 	template <typename S> explicit IVec3( IVec2<S> const &p, T _z=0 ) : x(T(p.x)), y(T(p.y)), z(   _z ) {}
 	template <typename S> explicit IVec3( IVec4<S> const &p );
@@ -332,38 +336,41 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(elem,3); }				//!< Sets the coordinates as zero
-	void Get( T *p ) const { ((IVec3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
-	void Set( T const *p ) { operator=(*((IVec3*)p)); }			//!< Sets the coordinates using the values in the given array
-	void Set( T v )        { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value
-	void Set( T _x, T _y, T _z ) { x=_x; y=_y; z=_z; }			//!< Sets the coordinates using the given values
+	void Zero()                      { MemClear(elem,3); }				//!< Sets the coordinates as zero
+	void Get( T * restrict p ) const { ((IVec3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
+	void Set( T const * restrict p ) { operator=(*((IVec3*)p)); }		//!< Sets the coordinates using the values in the given array
+	void Set( T v )                  { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value
+	void Set( T _x, T _y, T _z )     { x=_x; y=_y; z=_z; }				//!< Sets the coordinates using the given values
 
 	//!@name Length and Normalize methods
-	T    Sum   () const { return x+y+z; }									//!< Returns the sum of its components
-	bool IsZero() const { return x==T(0) && y==T(0) && z==T(0); }			//!< Returns true if all components are exactly zero
-	T    Min   () const { return x<y ? (x<z ? x : z) : (y<z ? y : z); }
-	T    Max   () const { return x>y ? (x>z ? x : z) : (y>z ? y : z); }
-	int  MinID () const { return x<y ? (x<z ? 0 : 2) : (y<z ? 1 : 2); }
-	int  MaxID () const { return x>y ? (x>z ? 0 : 2) : (y>z ? 1 : 2); }
+	CY_NODISCARD T     Sum     () const { return x+y+z; }										//!< Returns the sum of its components
+	CY_NODISCARD bool  IsZero  () const { return x==T(0) && y==T(0) && z==T(0); }				//!< Returns true if all components are exactly zero
+	CY_NODISCARD T     Min     () const { return elem[MinComp()]; }								//!< Returns the minimum component of the vector.
+	CY_NODISCARD T     Max     () const { return elem[MaxComp()]; }								//!< Returns the maximum component of the vector.
+	CY_NODISCARD int   MinComp () const { int yx=y<x; int zx=z<x; int zy=z<y; return (yx|zx)+(zx&zy); }	//!< Returns the index of the minimum component of the vector.
+	CY_NODISCARD int   MaxComp () const { int xy=x<y; int xz=x<z; int yz=y<z; return (xy|xz)+(xz&yz); }	//!< Returns the index of the maximum component of the vector.
+	CY_NODISCARD IVec3 Abs     () const { return IVec3(std::abs(x),std::abs(y),std::abs(z)); }	//!< Returns a vector containing the absolute values of all components.
+	CY_NODISCARD IVec3 SortAsc () const { IVec3 v; Sort3<true >( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD IVec3 SortDesc() const { IVec3 v; Sort3<false>( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
-	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
-	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; }
-	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; }
-	void Abs() { x=std::abs(x); y=std::abs(y); z=std::abs(z); }	//!< Converts all negative components to positive values
+	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
+	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; }						//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; }						//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); z=std::abs(z); }				//!< Converts all negative components to positive values
 
 	//!@name Unary operators
-	IVec3 operator - () const { IVec3 r; r.x=-x; r.y=-y; r.z=-z; return r; } 
+	CY_NODISCARD IVec3 operator - () const { IVec3 r; r.x=-x; r.y=-y; r.z=-z; return r; } 
 
 	//!@name Binary operators
-	IVec3 operator + ( IVec3 const &p ) const { IVec3 r; r.x=x+p.x; r.y=y+p.y; r.z=z+p.z; return r; }
-	IVec3 operator - ( IVec3 const &p ) const { IVec3 r; r.x=x-p.x; r.y=y-p.y; r.z=z-p.z; return r; }
-	IVec3 operator * ( IVec3 const &p ) const { IVec3 r; r.x=x*p.x; r.y=y*p.y; r.z=z*p.z; return r; }
-	IVec3 operator / ( IVec3 const &p ) const { IVec3 r; r.x=x/p.x; r.y=y/p.y; r.z=z/p.z; return r; }
-	IVec3 operator + ( T     const  v ) const { IVec3 r; r.x=x+v;   r.y=y+v;   r.z=z+v;   return r; }
-	IVec3 operator - ( T     const  v ) const { IVec3 r; r.x=x-v;   r.y=y-v;   r.z=z-v;   return r; }
-	IVec3 operator * ( T     const  v ) const { IVec3 r; r.x=x*v;   r.y=y*v;   r.z=z*v;   return r; }
-	IVec3 operator / ( T     const  v ) const { IVec3 r; r.x=x/v;   r.y=y/v;   r.z=z/v;   return r; }
+	CY_NODISCARD IVec3 operator + ( IVec3 const &p ) const { IVec3 r; r.x=x+p.x; r.y=y+p.y; r.z=z+p.z; return r; }
+	CY_NODISCARD IVec3 operator - ( IVec3 const &p ) const { IVec3 r; r.x=x-p.x; r.y=y-p.y; r.z=z-p.z; return r; }
+	CY_NODISCARD IVec3 operator * ( IVec3 const &p ) const { IVec3 r; r.x=x*p.x; r.y=y*p.y; r.z=z*p.z; return r; }
+	CY_NODISCARD IVec3 operator / ( IVec3 const &p ) const { IVec3 r; r.x=x/p.x; r.y=y/p.y; r.z=z/p.z; return r; }
+	CY_NODISCARD IVec3 operator + ( T     const  v ) const { IVec3 r; r.x=x+v;   r.y=y+v;   r.z=z+v;   return r; }
+	CY_NODISCARD IVec3 operator - ( T     const  v ) const { IVec3 r; r.x=x-v;   r.y=y-v;   r.z=z-v;   return r; }
+	CY_NODISCARD IVec3 operator * ( T     const  v ) const { IVec3 r; r.x=x*v;   r.y=y*v;   r.z=z*v;   return r; }
+	CY_NODISCARD IVec3 operator / ( T     const  v ) const { IVec3 r; r.x=x/v;   r.y=y/v;   r.z=z/v;   return r; }
 
 	//!@name Assignment operators
 	IVec3 const& operator += ( IVec3 const &p ) { x+=p.x; y+=p.y; z+=p.z; return *this; }
@@ -376,16 +383,16 @@ public:
 	IVec3 const& operator /= ( T     const  v ) { x/=v;   y/=v;   z/=v;   return *this; }
 
 	//!@name Bitwise operators
-	IVec3 operator << ( IVec3 const &p ) const { IVec3 r; r.x = x << p.x; r.y = y << p.y; r.z = z << p.z; return r; }
-	IVec3 operator >> ( IVec3 const &p ) const { IVec3 r; r.x = x >> p.x; r.y = y >> p.y; r.z = z >> p.z; return r; }
-	IVec3 operator  & ( IVec3 const &p ) const { IVec3 r; r.x = x  & p.x; r.y = y  & p.y; r.z = z  & p.z; return r; }
-	IVec3 operator  | ( IVec3 const &p ) const { IVec3 r; r.x = x  | p.x; r.y = y  | p.y; r.z = z  | p.z; return r; }
-	IVec3 operator  ^ ( IVec3 const &p ) const { IVec3 r; r.x = x  ^ p.x; r.y = y  ^ p.y; r.z = z  ^ p.z; return r; }
-	IVec3 operator << ( T     const  v ) const { IVec3 r; r.x = x << v;   r.y = y << v;   r.z = z << v;   return r; }
-	IVec3 operator >> ( T     const  v ) const { IVec3 r; r.x = x >> v;   r.y = y >> v;   r.z = z >> v;   return r; }
-	IVec3 operator  & ( T     const  v ) const { IVec3 r; r.x = x  & v;   r.y = y  & v;   r.z = z  & v;   return r; }
-	IVec3 operator  | ( T     const  v ) const { IVec3 r; r.x = x  | v;   r.y = y  | v;   r.z = z  | v;   return r; }
-	IVec3 operator  ^ ( T     const  v ) const { IVec3 r; r.x = x  ^ v;   r.y = y  ^ v;   r.z = z  ^ v;   return r; }
+	CY_NODISCARD IVec3 operator << ( IVec3 const &p ) const { IVec3 r; r.x = x << p.x; r.y = y << p.y; r.z = z << p.z; return r; }
+	CY_NODISCARD IVec3 operator >> ( IVec3 const &p ) const { IVec3 r; r.x = x >> p.x; r.y = y >> p.y; r.z = z >> p.z; return r; }
+	CY_NODISCARD IVec3 operator  & ( IVec3 const &p ) const { IVec3 r; r.x = x  & p.x; r.y = y  & p.y; r.z = z  & p.z; return r; }
+	CY_NODISCARD IVec3 operator  | ( IVec3 const &p ) const { IVec3 r; r.x = x  | p.x; r.y = y  | p.y; r.z = z  | p.z; return r; }
+	CY_NODISCARD IVec3 operator  ^ ( IVec3 const &p ) const { IVec3 r; r.x = x  ^ p.x; r.y = y  ^ p.y; r.z = z  ^ p.z; return r; }
+	CY_NODISCARD IVec3 operator << ( T     const  v ) const { IVec3 r; r.x = x << v;   r.y = y << v;   r.z = z << v;   return r; }
+	CY_NODISCARD IVec3 operator >> ( T     const  v ) const { IVec3 r; r.x = x >> v;   r.y = y >> v;   r.z = z >> v;   return r; }
+	CY_NODISCARD IVec3 operator  & ( T     const  v ) const { IVec3 r; r.x = x  & v;   r.y = y  & v;   r.z = z  & v;   return r; }
+	CY_NODISCARD IVec3 operator  | ( T     const  v ) const { IVec3 r; r.x = x  | v;   r.y = y  | v;   r.z = z  | v;   return r; }
+	CY_NODISCARD IVec3 operator  ^ ( T     const  v ) const { IVec3 r; r.x = x  ^ v;   r.y = y  ^ v;   r.z = z  ^ v;   return r; }
 
 	//!@name Bitwise Assignment operators
 	IVec3 const& operator <<= ( IVec3 const &p ) { x<<=p.x; y<<=p.y; z<<=p.z; return *this; }
@@ -400,23 +407,23 @@ public:
 	IVec3 const& operator  ^= ( T     const  v ) { x ^=v;   y ^=v;   z ^=v;   return *this; }
 
 	//!@name Test operators
-	bool operator == ( IVec3 const& p ) const { return x==p.x && y==p.y && z==p.z; }
-	bool operator != ( IVec3 const& p ) const { return x!=p.x && y!=p.y && z!=p.z; }
+	CY_NODISCARD bool operator == ( IVec3 const& p ) const { return x==p.x && y==p.y && z==p.z; }
+	CY_NODISCARD bool operator != ( IVec3 const& p ) const { return x!=p.x && y!=p.y && z!=p.z; }
 
 	//!@name Access operators
-	T&       operator [] ( int i )       { return Element(i); }
-	T const& operator [] ( int i ) const { return Element(i); }
-	T&       Element     ( int i )       { return elem[i]; }
-	T const& Element     ( int i ) const { return elem[i]; }
-	T*       Data        ()              { return elem; }
-	T const* Data        ()        const { return elem; }
+	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
+	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
+	CY_NODISCARD T&       Element     ( int i )       { return elem[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { return elem[i]; }
+	CY_NODISCARD T*       Data        ()              { return elem; }
+	CY_NODISCARD T const* Data        ()        const { return elem; }
 
 	//!@name Cross product and dot product
-	T   Dot        ( IVec3 const &p ) const { IVec3 r=operator*(p); return r.Sum(); }	//!< Dot product
-	T   operator % ( IVec3 const &p ) const { return Dot(p); }								//!< Dot product
+	CY_NODISCARD T   Dot        ( IVec3 const &p ) const { IVec3 r=operator*(p); return r.Sum(); }	//!< Dot product
+	CY_NODISCARD T   operator % ( IVec3 const &p ) const { return Dot(p); }							//!< Dot product
 
 	//!@name Conversion Methods
-	IVec2<T> XY() const { return IVec2<T>(x,y); }
+	CY_NODISCARD IVec2<T> XY() const { return IVec2<T>(x,y); }
 };
 
 //-------------------------------------------------------------------------------
@@ -426,9 +433,9 @@ public:
 template <typename T>
 class IVec4
 {
-	friend IVec4 operator + ( T v, IVec4 const &p ) { return   p+v;  }	//!< Addition with a constant
-	friend IVec4 operator - ( T v, IVec4 const &p ) { return -(p-v); }	//!< Subtraction from a constant
-	friend IVec4 operator * ( T v, IVec4 const &p ) { return   p*v;  }	//!< Multiplication with a constant
+	CY_NODISCARD friend IVec4 operator - ( T v, IVec4 const &p ) { return IVec4(v)-p; }	//!< Subtraction from a constant
+	CY_NODISCARD friend IVec4 operator + ( T v, IVec4 const &p ) { return p+v; }		//!< Addition with a constant
+	CY_NODISCARD friend IVec4 operator * ( T v, IVec4 const &p ) { return p*v; }		//!< Multiplication with a constant
 
 public:
 
@@ -440,10 +447,11 @@ public:
 
 	//!@name Constructors
 	IVec4() CY_CLASS_FUNCTION_DEFAULT
-	IVec4( T _x, T _y, T _z, T _w ) : x( _x), y( _y), z( _z), w( _w) {}
-	explicit IVec4( T v )           : x(v  ), y(v  ), z(v  ), w(v  ) {}
-	explicit IVec4( IVec3<T> const &p,         T _w=0 )          : x(p.x), y(p.y), z(p.z), w( _w) {}
-	explicit IVec4( IVec2<T> const &p, T _z=0, T _w=0 )          : x(p.x), y(p.y), z( _z), w( _w) {}
+	IVec4( T _x, T _y, T _z,   T _w )                   : x( _x), y( _y), z( _z), w( _w) {}
+	explicit IVec4( T v )                               : x(v  ), y(v  ), z(v  ), w(v  ) {}
+	explicit IVec4( IVec3<T> const &p,         T _w=0 ) : x(p.x), y(p.y), z(p.z), w( _w) {}
+	explicit IVec4( IVec2<T> const &p, T _z=0, T _w=0 ) : x(p.x), y(p.y), z( _z), w( _w) {}
+	explicit IVec4( T const * restrict v ) { Set( v ); }
 	template <typename S> explicit IVec4( IVec4<S> const &p )                  : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(T(p.w)) {}
 	template <typename S> explicit IVec4( IVec3<S> const &p,         T _w=0 )  : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(   _w ) {}
 	template <typename S> explicit IVec4( IVec2<S> const &p, T _z=0, T _w=0 )  : x(T(p.x)), y(T(p.y)), z(   _z ), z(   _w ) {}
@@ -457,38 +465,41 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()            { MemClear(elem,4); }						//!< Sets the coordinates as zero
-	void Get( T *p ) const { ((IVec4*)p)->operator=(*this); }			//!< Puts the coordinate values into the array
-	void Set( T const *p ) { operator=(*((IVec4*)p)); }					//!< Sets the coordinates using the values in the given array
-	void Set( T v )        { x=v; y=v; z=v; w=v; }						//!< Sets all coordinates using the given value
-	void Set( T _x, T _y, T _z, T _w=0 ) { x=_x; y=_y; z=_z; w=_w; }	//!< Sets the coordinates using the given values
+	void Zero()                            { MemClear(elem,4); }				//!< Sets the coordinates as zero
+	void Get( T       * restrict p ) const { ((IVec4*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
+	void Set( T const * restrict p )       { operator=(*((IVec4*)p)); }			//!< Sets the coordinates using the values in the given array
+	void Set( T v )                        { x=v; y=v; z=v; w=v; }				//!< Sets all coordinates using the given value
+	void Set( T _x, T _y, T _z, T _w=0 )   { x=_x; y=_y; z=_z; w=_w; }			//!< Sets the coordinates using the given values
 
 	//!@name Length and Normalize methods
-	T    Sum   () const { return x+y+z+w; }										//!< Returns the sum of its components
-	bool IsZero() const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
-	T    Min   () const { T   mxy = x<y ? x : y; T   mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }
-	T    Max   () const { T   mxy = x>y ? x : y; T   mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }
-	int  MinID () const { int ixy = x<y ? 0 : 1; int izw = z<w ? 2 : 3; return elem[ixy]<elem[izw] ? ixy : izw; }
-	int  MaxID () const { int ixy = x>y ? 0 : 1; int izw = z>w ? 2 : 3; return elem[ixy]>elem[izw] ? ixy : izw; }
+	CY_NODISCARD T     Sum     () const { return x+y+z+w; }										//!< Returns the sum of its components
+	CY_NODISCARD bool  IsZero  () const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
+	CY_NODISCARD T     Min     () const { T   mxy = x<y ? x : y; T   mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }				//!< Returns the minimum component of the vector.
+	CY_NODISCARD T     Max     () const { T   mxy = x>y ? x : y; T   mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }				//!< Returns the maximum component of the vector.
+	CY_NODISCARD int   MinComp () const { int ixy = x<y ? 0 : 1; int izw = z<w ? 2 : 3; return elem[ixy]<elem[izw] ? ixy : izw; }	//!< Returns the index of the minimum component of the vector.
+	CY_NODISCARD int   MaxComp () const { int ixy = x>y ? 0 : 1; int izw = z>w ? 2 : 3; return elem[ixy]>elem[izw] ? ixy : izw; }	//!< Returns the index of the maximum component of the vector.
+	CY_NODISCARD IVec4 Abs     () const { return IVec4(std::abs(x),std::abs(y),std::abs(z),std::abs(w)); }	//!< Returns a vector containing the absolute values of all components.
+	CY_NODISCARD IVec4 SortAsc () const { IVec4 v; Sort4<true >( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD IVec4 SortDesc() const { IVec4 v; Sort4<false>( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
-	void Clamp( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }
-	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; w=(w<v)?v:w; }
-	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; w=(w>v)?v:w; }
-	void Abs() { x=std::abs(x); y=std::abs(y); z=std::abs(z); w=std::abs(w); }	//!< Converts all negative components to positive values
+	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }		//!< Ensures that all components of the vector are within the given limits.
+	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; w=(w<v)?v:w; }			//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; w=(w>v)?v:w; }			//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); z=std::abs(z); w=std::abs(w); }	//!< Converts all negative components to positive values
 
 	//!@name Unary operators
-	IVec4 operator - () const { IVec4 r; r.x=-x; r.y=-y; r.z=-z; r.w=-w; return r; } 
+	CY_NODISCARD IVec4 operator - () const { IVec4 r; r.x=-x; r.y=-y; r.z=-z; r.w=-w; return r; } 
 
 	//!@name Binary operators
-	IVec4 operator + ( IVec4 const &p ) const { IVec4 r; r.x=x+p.x; r.y=y+p.y; r.z=z+p.z; r.w=w+p.w; return r; }
-	IVec4 operator - ( IVec4 const &p ) const { IVec4 r; r.x=x-p.x; r.y=y-p.y; r.z=z-p.z; r.w=w-p.w; return r; }
-	IVec4 operator * ( IVec4 const &p ) const { IVec4 r; r.x=x*p.x; r.y=y*p.y; r.z=z*p.z; r.w=w*p.w; return r; }
-	IVec4 operator / ( IVec4 const &p ) const { IVec4 r; r.x=x/p.x; r.y=y/p.y; r.z=z/p.z; r.w=w/p.w; return r; }
-	IVec4 operator + ( T     const  v ) const { IVec4 r; r.x=x+v;   r.y=y+v;   r.z=z+v;   r.w=w+v;   return r; }
-	IVec4 operator - ( T     const  v ) const { IVec4 r; r.x=x-v;   r.y=y-v;   r.z=z-v;   r.w=w-v;   return r; }
-	IVec4 operator * ( T     const  v ) const { IVec4 r; r.x=x*v;   r.y=y*v;   r.z=z*v;   r.w=w*v;   return r; }
-	IVec4 operator / ( T     const  v ) const { IVec4 r; r.x=x/v;   r.y=y/v;   r.z=z/v;   r.w=w/v;   return r; }
+	CY_NODISCARD IVec4 operator + ( IVec4 const &p ) const { IVec4 r; r.x=x+p.x; r.y=y+p.y; r.z=z+p.z; r.w=w+p.w; return r; }
+	CY_NODISCARD IVec4 operator - ( IVec4 const &p ) const { IVec4 r; r.x=x-p.x; r.y=y-p.y; r.z=z-p.z; r.w=w-p.w; return r; }
+	CY_NODISCARD IVec4 operator * ( IVec4 const &p ) const { IVec4 r; r.x=x*p.x; r.y=y*p.y; r.z=z*p.z; r.w=w*p.w; return r; }
+	CY_NODISCARD IVec4 operator / ( IVec4 const &p ) const { IVec4 r; r.x=x/p.x; r.y=y/p.y; r.z=z/p.z; r.w=w/p.w; return r; }
+	CY_NODISCARD IVec4 operator + ( T     const  v ) const { IVec4 r; r.x=x+v;   r.y=y+v;   r.z=z+v;   r.w=w+v;   return r; }
+	CY_NODISCARD IVec4 operator - ( T     const  v ) const { IVec4 r; r.x=x-v;   r.y=y-v;   r.z=z-v;   r.w=w-v;   return r; }
+	CY_NODISCARD IVec4 operator * ( T     const  v ) const { IVec4 r; r.x=x*v;   r.y=y*v;   r.z=z*v;   r.w=w*v;   return r; }
+	CY_NODISCARD IVec4 operator / ( T     const  v ) const { IVec4 r; r.x=x/v;   r.y=y/v;   r.z=z/v;   r.w=w/v;   return r; }
 
 	//!@name Assignment operators
 	IVec4 const& operator += ( IVec4 const &p ) { x+=p.x; y+=p.y; z+=p.z; w+=p.w; return *this; }
@@ -501,16 +512,16 @@ public:
 	IVec4 const& operator /= ( T     const  v ) { x/=v;   y/=v;   z/=v;   w/=v;   return *this; }
 
 	//!@name Bitwise operators
-	IVec4 operator << ( IVec4 const &p ) const { IVec4 r; r.x = x << p.x; r.y = y << p.y; r.z = z << p.z; r.w = w << p.w; return r; }
-	IVec4 operator >> ( IVec4 const &p ) const { IVec4 r; r.x = x >> p.x; r.y = y >> p.y; r.z = z >> p.z; r.w = w >> p.w; return r; }
-	IVec4 operator  & ( IVec4 const &p ) const { IVec4 r; r.x = x  & p.x; r.y = y  & p.y; r.z = z  & p.z; r.w = w  & p.w; return r; }
-	IVec4 operator  | ( IVec4 const &p ) const { IVec4 r; r.x = x  | p.x; r.y = y  | p.y; r.z = z  | p.z; r.w = w  | p.w; return r; }
-	IVec4 operator  ^ ( IVec4 const &p ) const { IVec4 r; r.x = x  ^ p.x; r.y = y  ^ p.y; r.z = z  ^ p.z; r.w = w  ^ p.w; return r; }
-	IVec4 operator << ( T     const  v ) const { IVec4 r; r.x = x << v;   r.y = y << v;   r.z = z << v;   r.w = w << v;   return r; }
-	IVec4 operator >> ( T     const  v ) const { IVec4 r; r.x = x >> v;   r.y = y >> v;   r.z = z >> v;   r.w = w >> v;   return r; }
-	IVec4 operator  & ( T     const  v ) const { IVec4 r; r.x = x  & v;   r.y = y  & v;   r.z = z  & v;   r.w = w  & v;   return r; }
-	IVec4 operator  | ( T     const  v ) const { IVec4 r; r.x = x  | v;   r.y = y  | v;   r.z = z  | v;   r.w = w  | v;   return r; }
-	IVec4 operator  ^ ( T     const  v ) const { IVec4 r; r.x = x  ^ v;   r.y = y  ^ v;   r.z = z  ^ v;   r.w = w  ^ v;   return r; }
+	CY_NODISCARD IVec4 operator << ( IVec4 const &p ) const { IVec4 r; r.x = x << p.x; r.y = y << p.y; r.z = z << p.z; r.w = w << p.w; return r; }
+	CY_NODISCARD IVec4 operator >> ( IVec4 const &p ) const { IVec4 r; r.x = x >> p.x; r.y = y >> p.y; r.z = z >> p.z; r.w = w >> p.w; return r; }
+	CY_NODISCARD IVec4 operator  & ( IVec4 const &p ) const { IVec4 r; r.x = x  & p.x; r.y = y  & p.y; r.z = z  & p.z; r.w = w  & p.w; return r; }
+	CY_NODISCARD IVec4 operator  | ( IVec4 const &p ) const { IVec4 r; r.x = x  | p.x; r.y = y  | p.y; r.z = z  | p.z; r.w = w  | p.w; return r; }
+	CY_NODISCARD IVec4 operator  ^ ( IVec4 const &p ) const { IVec4 r; r.x = x  ^ p.x; r.y = y  ^ p.y; r.z = z  ^ p.z; r.w = w  ^ p.w; return r; }
+	CY_NODISCARD IVec4 operator << ( T     const  v ) const { IVec4 r; r.x = x << v;   r.y = y << v;   r.z = z << v;   r.w = w << v;   return r; }
+	CY_NODISCARD IVec4 operator >> ( T     const  v ) const { IVec4 r; r.x = x >> v;   r.y = y >> v;   r.z = z >> v;   r.w = w >> v;   return r; }
+	CY_NODISCARD IVec4 operator  & ( T     const  v ) const { IVec4 r; r.x = x  & v;   r.y = y  & v;   r.z = z  & v;   r.w = w  & v;   return r; }
+	CY_NODISCARD IVec4 operator  | ( T     const  v ) const { IVec4 r; r.x = x  | v;   r.y = y  | v;   r.z = z  | v;   r.w = w  | v;   return r; }
+	CY_NODISCARD IVec4 operator  ^ ( T     const  v ) const { IVec4 r; r.x = x  ^ v;   r.y = y  ^ v;   r.z = z  ^ v;   r.w = w  ^ v;   return r; }
 
 	//!@name Bitwise Assignment operators
 	IVec4 const& operator <<= ( IVec4 const &p ) { x<<=p.x; y<<=p.y; z<<=p.z; w<<=p.w; return *this; }
@@ -525,24 +536,24 @@ public:
 	IVec4 const& operator  ^= ( T     const  v ) { x ^=v;   y ^=v;   z ^=v;   w ^=v;   return *this; }
 
 	//!@name Test operators
-	bool operator == ( IVec4 const &p ) const { return x==p.x && y==p.y && z==p.z && w==p.w; }
-	bool operator != ( IVec4 const &p ) const { return x!=p.x && y!=p.y && z!=p.z && w!=p.w; }
+	CY_NODISCARD bool operator == ( IVec4 const &p ) const { return x==p.x && y==p.y && z==p.z && w==p.w; }
+	CY_NODISCARD bool operator != ( IVec4 const &p ) const { return x!=p.x && y!=p.y && z!=p.z && w!=p.w; }
 
 	//!@name Access operators
-	T&       operator [] ( int i )       { return Element(i); }
-	T const& operator [] ( int i ) const { return Element(i); }
-	T&       Element     ( int i )       { return elem[i]; }
-	T const& Element     ( int i ) const { return elem[i]; }
-	T*       Data        ()              { return elem; }
-	T const* Data        ()        const { return elem; }
+	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
+	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
+	CY_NODISCARD T&       Element     ( int i )       { return elem[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { return elem[i]; }
+	CY_NODISCARD T*       Data        ()              { return elem; }
+	CY_NODISCARD T const* Data        ()        const { return elem; }
 
 	//!@name Cross product and dot product
-	T   Dot        ( IVec4 const &p ) const { IVec4 r=operator*(p); return r.Sum(); }	//!< Dot product
-	T   operator % ( IVec4 const &p ) const { return Dot(p); }								//!< Dot product
+	CY_NODISCARD T   Dot        ( IVec4 const &p ) const { IVec4 r=operator*(p); return r.Sum(); }	//!< Dot product
+	CY_NODISCARD T   operator % ( IVec4 const &p ) const { return Dot(p); }							//!< Dot product
 
 	//!@name Conversion Methods
-	IVec2<T> XY () const { return IVec2<T>(x,y); }
-	IVec3<T> XYZ() const { return IVec3<T>(*this); }
+	CY_NODISCARD IVec2<T> XY () const { return IVec2<T>(x,y); }
+	CY_NODISCARD IVec3<T> XYZ() const { return IVec3<T>(*this); }
 };
 
 //-------------------------------------------------------------------------------
