@@ -153,11 +153,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, T x, T y )         { cell[row]=x; cell[row+2]=y; }		//!< Sets a row of the matrix
-	void SetRow     ( int row, Vec2<T> const &v ) { SetRow(row,v.x,v.y); }				//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y )         { Column(col).Set(x,y); }				//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec2<T> const &v ) { Column(col)=v; }					//!< Sets a column of the matrix
-	void SetDiagonal( T xx, T yy )  { cell[0]=xx; cell[3]=yy; }							//!< Sets the diagonal values of the matrix
+	void SetRow     ( int ri, T x, T y )          { cell[ri]=x; cell[ri+2]=y; }			//!< Sets a row of the matrix
+	void SetRow     ( int ri, Vec2<T> const &v )  { SetRow(ri,v.x,v.y); }				//!< Sets a row of the matrix
+	void SetColumn  ( int ci, T x, T y )          { Column(ci).Set(x,y); }				//!< Sets a column of the matrix
+	void SetColumn  ( int ci, Vec2<T> const &v )  { Column(ci)=v; }						//!< Sets a column of the matrix
+	void SetDiagonal( T xx, T yy )                { cell[0]=xx; cell[3]=yy; }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec2<T> const &p )          { SetDiagonal( p.x, p.y ); }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( T const * restrict values ) { SetDiagonal(values[0],values[1]); }	//!< Sets the diagonal values of the matrix
 
@@ -166,33 +166,30 @@ public:
 	//!@name Get Row, Column, or Diagonal
 
 #ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec2<T>       * Columns    ()                { return column; }
-	CY_NODISCARD Vec2<T> const * Columns    ()          const { return column; }
-	CY_NODISCARD Vec2<T>       & Column     ( int col )       { return column[col]; }
-	CY_NODISCARD Vec2<T> const & Column     ( int col ) const { return column[col]; }
+	CY_NODISCARD Vec2<T>       * Columns()               { return column; }
+	CY_NODISCARD Vec2<T> const * Columns()         const { return column; }
+	CY_NODISCARD Vec2<T>       & Column ( int ci )       { return column[ci]; }
+	CY_NODISCARD Vec2<T> const & Column ( int ci ) const { return column[ci]; }
 #else
-	CY_NODISCARD Vec2<T>       * Columns    ()                { return ((Vec2<T>*)cell); }
-	CY_NODISCARD Vec2<T> const * Columns    ()          const { return ((Vec2<T>*)cell); }
-	CY_NODISCARD Vec2<T>       & Column     ( int col )       { return Columns()[col]; }
-	CY_NODISCARD Vec2<T> const & Column     ( int col ) const { return Columns()[col]; }
+	CY_NODISCARD Vec2<T>       * Columns()               { return ((Vec2<T>*)cell); }
+	CY_NODISCARD Vec2<T> const * Columns()         const { return ((Vec2<T>*)cell); }
+	CY_NODISCARD Vec2<T>       & Column ( int ci )       { return Columns()[ci]; }
+	CY_NODISCARD Vec2<T> const & Column ( int ci ) const { return Columns()[ci]; }
 #endif
-	CY_NODISCARD Vec2<T>         GetRow     ( int row ) const { return Vec2<T>( cell[row], cell[row+2] ); }		//!< Returns a row of the matrix
-	CY_NODISCARD Vec2<T>         GetColumn  ( int col ) const { return Column(col); }							//!< Returns a column of the matrix
-	CY_NODISCARD Vec2<T>         GetDiagonal()          const { return Vec2<T>( cell[0], cell[3] ); }			//!< Returns the diagonal of the matrix
-	CY_NODISCARD Matrix2         GetRotation()          const { Matrix2 s, r; GetComponents(s,r); return r; }	//!< Returns the rotation portion of the transformation
+	CY_NODISCARD Vec2<T>         GetRow ( int ri ) const { return Vec2<T>( cell[ri], cell[ri+2] ); }		//!< Returns a row of the matrix
+	CY_NODISCARD Vec2<T>         GetDiagonal()     const { return Vec2<T>( cell[0], cell[3] ); }			//!< Returns the diagonal of the matrix
+	CY_NODISCARD Matrix2         GetRotation()     const { Matrix2 s, r; GetComponents(s,r); return r; }	//!< Returns the rotation portion of the transformation
 
 	//! Returns the scale portion of the transformation.
 	//! The returned matrix is symmetric, but not necessarily diagonal, and it can include non-uniform scale.
 	CY_NODISCARD Matrix2 GetScale() const
 	{
-		Matrix2 trns;
-		GetTranspose(trns);
+		Matrix2 trns = GetTranspose();
 		Matrix2 u2 = *this * trns;
 		Vec2<T> v0, v1;
 		u2.GetEigenvectors( v0, v1 );
 		Matrix2 v(v0,v1);
-		Matrix2 vt;
-		v.GetTranspose(vt);
+		Matrix2 vt = v.GetTranspose();
 		Matrix2 d2 = vt * (*this) * v;	// the result is a diagonal matrix
 		Vec2<T> diag = d2.GetDiagonal();
 		Matrix2 d;
@@ -220,10 +217,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	CY_NODISCARD T&        operator () ( int row, int col )       { assert( row>=0 && row<2 && col>=0 && col<2 ); return cell[ col*2 + row ]; }	//!< subscript operator
-	CY_NODISCARD T const & operator () ( int row, int col ) const { assert( row>=0 && row<2 && col>=0 && col<2 ); return cell[ col*2 + row ]; }	//!< constant subscript operator
-	CY_NODISCARD T&        operator [] ( int i )                  { assert( i>=0 && i<4 ); return cell[i]; }										//!< subscript operator
-	CY_NODISCARD T const & operator [] ( int i )            const { assert( i>=0 && i<4 ); return cell[i]; }										//!< constant subscript operator
+	CY_NODISCARD T&        operator () ( int ri, int ci )       { assert( ri>=0 && ri<2 && ci>=0 && ci<2 ); return cell[ ci*2 + ri ]; }	//!< subscript operator
+	CY_NODISCARD T const & operator () ( int ri, int ci ) const { assert( ri>=0 && ri<2 && ci>=0 && ci<2 ); return cell[ ci*2 + ri ]; }	//!< constant subscript operator
+	CY_NODISCARD T&        operator [] ( int i )                { assert( i>=0 && i<4 ); return cell[i]; }								//!< subscript operator
+	CY_NODISCARD T const & operator [] ( int i )          const { assert( i>=0 && i<4 ); return cell[i]; }								//!< constant subscript operator
 	
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Unary and Binary Operators
@@ -267,12 +264,13 @@ public:
 	//!@name Other Methods
 
 	void Transpose() { T tmp=cell[0]; cell[0]=cell[3]; cell[3]=tmp; }	//!< Transpose this matrix
-	void GetTranspose( Matrix2 &m ) const								//!< return Transpose of this matrix
+	CY_NODISCARD Matrix2 GetTranspose() const							//!< Returns the transpose of this matrix
 	{
+		Matrix2 m;
 		m.cell[0] = cell[0];   m.cell[1] = cell[2];
 		m.cell[2] = cell[1];   m.cell[3] = cell[3];
+		return m;
 	}
-	CY_NODISCARD Matrix2 GetTranspose() const { Matrix2 t; GetTranspose(t); return t; }	//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
 	CY_NODISCARD Vec2<T> TransposeMult( Vec2<T> const &p ) const { return Vec2<T>( p.x*cell[0] + p.y*cell[1], p.x*cell[2] + p.y*cell[3] ); }
@@ -306,14 +304,22 @@ public:
 	void Invert()	//!< Invert this matrix
 	{
 		T det = GetDeterminant();
-		T d0 =  cell[0] / det;
+		T cell3 =  cell[0] / det;
 		cell[0] =  cell[3] / det;
 		cell[1] = -cell[1] / det;
 		cell[2] = -cell[2] / det;
-		cell[3] =  d0;
+		cell[3] =  cell3;
 	}
-	void GetInverse( Matrix2 &inverse ) const { inverse=*this; inverse.Invert(); }	//!< Get the inverse of this matrix
-	CY_NODISCARD Matrix2 GetInverse() const { Matrix2 inv(*this); inv.Invert(); return inv; }	//!< Get the inverse of this matrix
+	CY_NODISCARD Matrix2 GetInverse() const	//!< Get the inverse of this matrix
+	{
+		T det = GetDeterminant();
+		Matrix2 inv;
+		inv.cell[0] =  cell[3] / det;
+		inv.cell[1] = -cell[1] / det;
+		inv.cell[2] = -cell[2] / det;
+		inv.cell[3] =  cell[0] / det;
+		return inv;
+	}
 
 	//! Removes the scale component of the matrix by normalizing each column.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
@@ -613,10 +619,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, T x, T y, T z )    { cell[row]=x; cell[row+3]=y; cell[row+6]=z; }	//!< Sets a row of the matrix
-	void SetRow     ( int row, Vec3<T> const &v ) { SetRow(row,v.x,v.y,v.z); }						//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y, T z )    { Column(col).Set(x,y,z); }						//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec3<T> const &v ) { Column(col)=v; }								//!< Sets a column of the matrix
+	void SetRow     ( int ri, T x, T y, T z )     { cell[ri]=x; cell[ri+3]=y; cell[ri+6]=z; }		//!< Sets a row of the matrix
+	void SetRow     ( int ri, Vec3<T> const &v )  { SetRow(ri,v.x,v.y,v.z); }						//!< Sets a row of the matrix
+	void SetColumn  ( int ci, T x, T y, T z )     { Column(ci).Set(x,y,z); }						//!< Sets a column of the matrix
+	void SetColumn  ( int ci, Vec3<T> const &v )  { Column(ci)=v; }									//!< Sets a column of the matrix
 	void SetDiagonal( T xx, T yy, T zz )          { cell[0]=xx; cell[4]=yy; cell[8]=zz; }			//!< Sets the diagonal values of the matrix
 	void SetDiagonal( Vec3<T> const &p )          { SetDiagonal( p.x, p.y, p.z ); }					//!< Sets the diagonal values of the matrix
 	void SetDiagonal( T const * restrict values ) { SetDiagonal(values[0],values[1],values[2]); }	//!< Sets the diagonal values of the matrix
@@ -626,33 +632,30 @@ public:
 	//!@name Get Row, Column, or Diagonal
 	
 #ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec3<T>       * Columns    ()                { return column; }
-	CY_NODISCARD Vec3<T> const * Columns    ()          const { return column; }
-	CY_NODISCARD Vec3<T>       & Column     ( int col )       { return column[col]; }
-	CY_NODISCARD Vec3<T> const & Column     ( int col ) const { return column[col]; }
+	CY_NODISCARD Vec3<T>       * Columns()               { return column; }
+	CY_NODISCARD Vec3<T> const * Columns()         const { return column; }
+	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return column[ci]; }
+	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return column[ci]; }
 #else
-	CY_NODISCARD Vec3<T>       * Columns    ()                { return ((Vec3<T>*)cell); }
-	CY_NODISCARD Vec3<T> const * Columns    ()          const { return ((Vec3<T>*)cell); }
-	CY_NODISCARD Vec3<T>       & Column     ( int col )       { return Columns()[col]; }
-	CY_NODISCARD Vec3<T> const & Column     ( int col ) const { return Columns()[col]; }
+	CY_NODISCARD Vec3<T>       * Columns()               { return ((Vec3<T>*)cell); }
+	CY_NODISCARD Vec3<T> const * Columns()         const { return ((Vec3<T>*)cell); }
+	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return Columns()[ci]; }
+	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return Columns()[ci]; }
 #endif
-	CY_NODISCARD Vec3<T>         GetRow     ( int row ) const { return Vec3<T>( cell[row], cell[row+3], cell[row+6] ); }	//!< Returns a row of the matrix
-	CY_NODISCARD Vec3<T>         GetColumn  ( int col ) const { return Column(col); }									//!< Returns a column of the matrix
-	CY_NODISCARD Vec3<T>         GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }			//!< Returns the diagonal of the matrix
-	CY_NODISCARD Matrix3         GetRotation()          const { Matrix3 s, r; GetComponents(s,r); return r; }			//!< Returns the rotation portion of the transformation
+	CY_NODISCARD Vec3<T>         GetRow ( int ri ) const { return Vec3<T>( cell[ri], cell[ri+3], cell[ri+6] ); }	//!< Returns a row of the matrix
+	CY_NODISCARD Vec3<T>         GetDiagonal()     const { return Vec3<T>( cell[0], cell[4], cell[8] ); }			//!< Returns the diagonal of the matrix
+	CY_NODISCARD Matrix3         GetRotation()     const { Matrix3 s, r; GetComponents(s,r); return r; }			//!< Returns the rotation portion of the transformation
 
 	//! Returns the scale portion of the transformation.
 	//! The returned matrix is symmetric, but not necessarily diagonal, and it can include non-uniform scale.
 	CY_NODISCARD Matrix3 GetScale() const
 	{
-		Matrix3 trns;
-		GetTranspose(trns);
+		Matrix3 trns = GetTranspose();
 		Matrix3 u2 = *this * trns;
 		Vec3<T> v0, v1, v2;
 		u2.GetEigenvectors( v0, v1, v2 );
 		Matrix3 v(v0,v1,v2);
-		Matrix3 vt;
-		v.GetTranspose(vt);
+		Matrix3 vt = v.GetTranspose();
 		Matrix3 d2 = vt * (*this) * v;	// the result is a diagonal matrix
 		Vec3<T> diag = d2.GetDiagonal();
 		Matrix3 d;
@@ -688,10 +691,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	CY_NODISCARD T&        operator () ( int row, int col )       { assert( row>=0 && row<3 && col>=0 && col<3 ); return cell[ col*3 + row ]; }	//!< subscript operator
-	CY_NODISCARD T const & operator () ( int row, int col ) const { assert( row>=0 && row<3 && col>=0 && col<3 ); return cell[ col*3 + row ]; }	//!< constant subscript operator
-	CY_NODISCARD T&        operator [] ( int i )                  { assert( i>=0 && i<9 ); return cell[i]; }										//!< subscript operator
-	CY_NODISCARD T const & operator [] ( int i )            const { assert( i>=0 && i<9 ); return cell[i]; }										//!< constant subscript operator
+	CY_NODISCARD T&        operator () ( int ri, int ci )       { assert( ri>=0 && ri<3 && ci>=0 && ci<3 ); return cell[ ci*3 + ri ]; }	//!< subscript operator
+	CY_NODISCARD T const & operator () ( int ri, int ci ) const { assert( ri>=0 && ri<3 && ci>=0 && ci<3 ); return cell[ ci*3 + ri ]; }	//!< constant subscript operator
+	CY_NODISCARD T&        operator [] ( int i )                { assert( i>=0 && i<9 ); return cell[i]; }								//!< subscript operator
+	CY_NODISCARD T const & operator [] ( int i )          const { assert( i>=0 && i<9 ); return cell[i]; }								//!< constant subscript operator
 	
 
 	//////////////////////////////////////////////////////////////////////////
@@ -773,7 +776,7 @@ public:
 	CY_NODISCARD Matrix3 AddDiagonal( Vec3<T> const &diag ) const { return AddDiagonal(diag.x,diag.y,diag.z); }	//!< Adds a diagonal matrix to this matrix and returns the result.
 	CY_NODISCARD Matrix3 AddIdentity( T scale=T(1) )        const { return AddDiagonal( scale, scale, scale ); }	//!< Adds a scaled identity matrix to this matrix and returns the result.
 
-	void Transpose()														//!< Transpose this matrix
+	void Transpose()	//!< Transpose this matrix
 	{
 		for ( int i = 1; i < 3; ++i ) {
 			for ( int j = 0; j < i; j++) {
@@ -783,13 +786,14 @@ public:
 			}
 		}
 	}
-	void GetTranspose( Matrix3 &m ) const									//!< return Transpose of this matrix
+	CY_NODISCARD Matrix3 GetTranspose() const	//!< Return the transpose of this matrix
 	{
+		Matrix3 m;
 		m.cell[0] = cell[0];   m.cell[1] = cell[3];   m.cell[2] = cell[6];
 		m.cell[3] = cell[1];   m.cell[4] = cell[4];   m.cell[5] = cell[7];
 		m.cell[6] = cell[2];   m.cell[7] = cell[5];   m.cell[8] = cell[8];
+		return m;
 	}
-	CY_NODISCARD Matrix3 GetTranspose() const { Matrix3 t; GetTranspose(t); return t; }	//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
 	CY_NODISCARD Vec3<T> TransposeMult( Vec3<T> const &p ) const
@@ -837,12 +841,14 @@ public:
 		       cell[2] * ( cell[3] * cell[7] - cell[4] * cell[6] );
 	}
 
-	void Invert() { Matrix3 inv; GetInverse(inv); *this=inv; }			//!< Invert this matrix
-	void GetInverse( Matrix3 &inverse ) const							//!< Get the inverse of this matrix
+	void Invert() { *this = GetInverse(); }	//!< Invert this matrix
+	CY_NODISCARD Matrix3 GetInverse() const	//!< Get the inverse of this matrix
 	{
 		//  ( 4 8 - 5 7    5 6 - 3 8    3 7 - 4 6 ) 
 		//  ( 2 7 - 1 8    0 8 - 2 6    1 6 - 0 7 )  / det
 		//  ( 1 5 - 2 4    2 3 - 0 5    0 4 - 1 3 ) 
+
+		Matrix3 inverse;
 
 		inverse.cell[0] = (cell[4]*cell[8] - cell[5]*cell[7]);
 		inverse.cell[1] = (cell[2]*cell[7] - cell[1]*cell[8]);
@@ -857,10 +863,8 @@ public:
 		inverse.cell[8] = (cell[0]*cell[4] - cell[1]*cell[3]);
 
 		T det = cell[0] * inverse.cell[0] + cell[1] * inverse.cell[3] + cell[2] * inverse.cell[6];
-		inverse /= det;
-
+		return inverse / det;
 	}
-	CY_NODISCARD Matrix3 GetInverse() const { Matrix3 inv; GetInverse(inv); return inv; }	//!< Get the inverse of this matrix
 
 	//! Removes the scale component of the matrix by normalizing each column.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
@@ -1254,32 +1258,31 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, T x, T y, T z, T w ) { cell[row]=x; cell[row+3]=y; cell[row+6]=z; cell[row+9]=w; }	//!< Sets a row of the matrix
-	void SetRow     ( int row, Vec4<T> const &v )   { SetRow(row,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y, T z )      { Column(col).Set(x,y,z); }										//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec3<T> const &v )   { Column(col)=v; }												//!< Sets a column of the matrix
-	void SetDiagonal( T xx, T yy, T zz )            { cell[0]=xx; cell[4]=yy; cell[8]=zz; }							//!< Sets the diagonal values of the matrix
-	void SetDiagonal( Vec3<T> const &p )            { SetDiagonal( p.x, p.y, p.z ); }								//!< Sets the diagonal values of the matrix
-	void SetDiagonal( T const * restrict values )   { SetDiagonal(values[0],values[1],values[2]); }					//!< Sets the diagonal values of the matrix
+	void SetRow     ( int ri, T x, T y, T z, T w ) { cell[ri]=x; cell[ri+3]=y; cell[ri+6]=z; cell[ri+9]=w; }	//!< Sets a row of the matrix
+	void SetRow     ( int ri, Vec4<T> const &v )   { SetRow(ri,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
+	void SetColumn  ( int ci, T x, T y, T z )      { Column(ci).Set(x,y,z); }									//!< Sets a column of the matrix
+	void SetColumn  ( int ci, Vec3<T> const &v )   { Column(ci)=v; }											//!< Sets a column of the matrix
+	void SetDiagonal( T xx, T yy, T zz )           { cell[0]=xx; cell[4]=yy; cell[8]=zz; }						//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec3<T> const &p )           { SetDiagonal( p.x, p.y, p.z ); }							//!< Sets the diagonal values of the matrix
+	void SetDiagonal( T const * restrict values )  { SetDiagonal(values[0],values[1],values[2]); }				//!< Sets the diagonal values of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
 #ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec3<T>       * Columns    ()                { return column; }
-	CY_NODISCARD Vec3<T> const * Columns    ()          const { return column; }
-	CY_NODISCARD Vec3<T>       & Column     ( int col )       { return column[col]; }
-	CY_NODISCARD Vec3<T> const & Column     ( int col ) const { return column[col]; }
+	CY_NODISCARD Vec3<T>       * Columns()               { return column; }
+	CY_NODISCARD Vec3<T> const * Columns()         const { return column; }
+	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return column[ci]; }
+	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return column[ci]; }
 #else
-	CY_NODISCARD Vec3<T>       * Columns    ()                { return ((Vec3<T>*)cell); }
-	CY_NODISCARD Vec3<T> const * Columns    ()          const { return ((Vec3<T>*)cell); }
-	CY_NODISCARD Vec3<T>       & Column     ( int col )       { return Columns()[col]; }
-	CY_NODISCARD Vec3<T> const & Column     ( int col ) const { return Columns()[col]; }
+	CY_NODISCARD Vec3<T>       * Columns()               { return ((Vec3<T>*)cell); }
+	CY_NODISCARD Vec3<T> const * Columns()         const { return ((Vec3<T>*)cell); }
+	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return Columns()[ci]; }
+	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return Columns()[ci]; }
 #endif
-	CY_NODISCARD Vec4<T>         GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+3], cell[row+6], cell[row+9] ); }	//!< Returns a row of the matrix
-	CY_NODISCARD Vec3<T>         GetColumn  ( int col ) const { return Column(col); }													//!< Returns a column of the matrix
-	CY_NODISCARD Vec3<T>         GetDiagonal()          const { return Vec3<T>( cell[0], cell[4], cell[8] ); }							//!< Returns the diagonal of the matrix
+	CY_NODISCARD Vec4<T>         GetRow ( int ri ) const { return Vec4<T>( cell[ri], cell[ri+3], cell[ri+6], cell[ri+9] ); }	//!< Returns a row of the matrix
+	CY_NODISCARD Vec3<T>         GetDiagonal()     const { return Vec3<T>( cell[0], cell[4], cell[8] ); }							//!< Returns the diagonal of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1313,10 +1316,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	CY_NODISCARD T&        operator () ( int row, int col )       { assert( row>=0 && row<3 && col>=0 && col<4 ); return cell[ col*3 + row ]; }	//!< subscript operator
-	CY_NODISCARD T const & operator () ( int row, int col ) const { assert( row>=0 && row<3 && col>=0 && col<4 ); return cell[ col*3 + row ]; }	//!< constant subscript operator
-	CY_NODISCARD T&        operator [] ( int i )                  { assert( i>=0 && i<12 ); return cell[i]; }									//!< subscript operator
-	CY_NODISCARD T const & operator [] ( int i )            const { assert( i>=0 && i<12 ); return cell[i]; }									//!< constant subscript operator
+	CY_NODISCARD T&        operator () ( int ri, int ci )       { assert( ri>=0 && ri<3 && ci>=0 && ci<4 ); return cell[ ci*3 + ri ]; }	//!< subscript operator
+	CY_NODISCARD T const & operator () ( int ri, int ci ) const { assert( ri>=0 && ri<3 && ci>=0 && ci<4 ); return cell[ ci*3 + ri ]; }	//!< constant subscript operator
+	CY_NODISCARD T&        operator [] ( int i )                { assert( i>=0 && i<12 ); return cell[i]; }								//!< subscript operator
+	CY_NODISCARD T const & operator [] ( int i )          const { assert( i>=0 && i<12 ); return cell[i]; }								//!< constant subscript operator
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1452,8 +1455,7 @@ public:
 		MemClear(cell+9,3);
 	}
 
-	void GetTranspose( Matrix4<T> &m ) const;	//!< return Transpose of this matrix
-	CY_NODISCARD Matrix4<T> GetTranspose() const;			//!< return Transpose of this matrix
+	CY_NODISCARD Matrix4<T> GetTranspose() const;	//!< Returns the transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
 	CY_NODISCARD Vec4<T> TransposeMult( Vec3<T> const &p ) const
@@ -1480,12 +1482,14 @@ public:
 		       cell[1] * ( cell[5] * cell[6] - cell[3] * cell[8] ) + 
 		       cell[2] * ( cell[3] * cell[7] - cell[4] * cell[6] );
 	}
-	void Invert() { Matrix34 inv; GetInverse(inv); *this=inv; }	//!< Invert this matrix
-	void GetInverse( Matrix34 &inverse ) const					//!< Get the inverse of this matrix
+	void Invert() { *this = GetInverse(); }		//!< Invert this matrix
+	CY_NODISCARD Matrix34 GetInverse() const	//!< Get the inverse of this matrix
 	{
 		//  (4 8 - 5 7)    (5 6 - 3 8)    (3 7 - 4 6)    (3 (8 10 - 7 11) + 4 (6 11 - 8  9) + 5 (7  9 - 6 10))
 		//  (2 7 - 1 8)    (0 8 - 2 6)    (1 6 - 0 7)    (0 (7 11 - 8 10) + 1 (8  9 - 6 11) + 2 (6 10 -  7 9))    / det
 		//  (1 5 - 2 4)    (2 3 - 0 5)    (0 4 - 1 3)    (0 (5 10 - 4 11) + 1 (3 11 - 5  9) + 2 (4  9 - 3 10))
+
+		Matrix34 inverse;
 
 		T data_8_10__7_11 = cell[8] * cell[10] - cell[7] * cell[11];
 		T data_6_11__8__9 = cell[6] * cell[11] - cell[8] * cell[ 9];
@@ -1510,9 +1514,8 @@ public:
 		                   cell[2] * (cell[4] * cell[ 9] - cell[3] * cell[10]);
 
 		T det = cell[0] * inverse.cell[0] + cell[1] * inverse.cell[3] + cell[2] * inverse.cell[6];
-		inverse /= det;
+		return inverse / det;
 	}
-	CY_NODISCARD Matrix34 GetInverse() const { Matrix34 inv; GetInverse(inv); return inv; }	//!< Get the inverse of this matrix
 
 	//! Removes the scale component of the matrix by normalizing the first three columns.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
@@ -1878,37 +1881,36 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Set Row, Column, or Diagonal
 
-	void SetRow     ( int row, T x, T y, T z, T w ) { cell[row]=x; cell[row+4]=y; cell[row+8]=z; cell[row+12]=w; }	//!< Sets a row of the matrix
-	void SetRow     ( int row, Vec4<T> const &v )   { SetRow(row,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
-	void SetColumn  ( int col, T x, T y, T z, T w ) { Column(col).Set(x,y,z,w); }									//!< Sets a column of the matrix
-	void SetColumn  ( int col, Vec4<T> const &v )   { Column(col)=v; }												//!< Sets a column of the matrix
-	void SetDiagonal( T xx, T yy, T zz, T ww=1 )    { cell[0]=xx; cell[5]=yy; cell[10]=zz; cell[15]=ww; }			//!< Sets the diagonal values of the matrix
-	void SetDiagonal( Vec4<T> const &p )            { SetDiagonal( p.x, p.y, p.z, p.w ); }							//!< Sets the diagonal values of the matrix
-	void SetDiagonal( Vec3<T> const &p )            { SetDiagonal( p.x, p.y, p.z, T(1) ); }							//!< Sets the diagonal values of the matrix
-	void SetDiagonal( T const * restrict values )   { SetDiagonal(values[0],values[1],values[2],values[3]); }		//!< Sets the 4 diagonal values of the matrix
+	void SetRow     ( int ri, T x, T y, T z, T w ) { cell[ri]=x; cell[ri+4]=y; cell[ri+8]=z; cell[ri+12]=w; }	//!< Sets a row of the matrix
+	void SetRow     ( int ri, Vec4<T> const &v )   { SetRow(ri,v.x,v.y,v.z,v.w); }								//!< Sets a row of the matrix
+	void SetColumn  ( int ci, T x, T y, T z, T w ) { Column(ci).Set(x,y,z,w); }									//!< Sets a column of the matrix
+	void SetColumn  ( int ci, Vec4<T> const &v )   { Column(ci)=v; }											//!< Sets a column of the matrix
+	void SetDiagonal( T xx, T yy, T zz, T ww=1 )   { cell[0]=xx; cell[5]=yy; cell[10]=zz; cell[15]=ww; }		//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec4<T> const &p )           { SetDiagonal( p.x, p.y, p.z, p.w ); }						//!< Sets the diagonal values of the matrix
+	void SetDiagonal( Vec3<T> const &p )           { SetDiagonal( p.x, p.y, p.z, T(1) ); }						//!< Sets the diagonal values of the matrix
+	void SetDiagonal( T const * restrict values )  { SetDiagonal(values[0],values[1],values[2],values[3]); }	//!< Sets the 4 diagonal values of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
 #ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec4<T>       * Columns    ()                { return column; }
-	CY_NODISCARD Vec4<T> const * Columns    ()          const { return column; }
-	CY_NODISCARD Vec4<T>       & Column     ( int col )       { return column[col]; }
-	CY_NODISCARD Vec4<T> const & Column     ( int col ) const { return column[col]; }
-	CY_NODISCARD Vec3<T>       & Column3    ( int col )       { return col3[col].v; }
-	CY_NODISCARD Vec3<T> const & Column3    ( int col ) const { return col3[col].v; }
+	CY_NODISCARD Vec4<T>       * Columns()               { return column; }
+	CY_NODISCARD Vec4<T> const * Columns()         const { return column; }
+	CY_NODISCARD Vec4<T>       & Column ( int ci )       { return column[ci]; }
+	CY_NODISCARD Vec4<T> const & Column ( int ci ) const { return column[ci]; }
+	CY_NODISCARD Vec3<T>       & Column3( int ci )       { return col3[ci].v; }
+	CY_NODISCARD Vec3<T> const & Column3( int ci ) const { return col3[ci].v; }
 #else
-	CY_NODISCARD Vec4<T>       * Columns    ()                { return ((Vec4<T>*)cell); }
-	CY_NODISCARD Vec4<T> const * Columns    ()          const { return ((Vec4<T>*)cell); }
-	CY_NODISCARD Vec4<T>       & Column     ( int col )       { return Columns()[col]; }
-	CY_NODISCARD Vec4<T> const & Column     ( int col ) const { return Columns()[col]; }
-	CY_NODISCARD Vec3<T>       & Column3    ( int col )       { return (Vec3<T>       &)cell[col*4]; }
-	CY_NODISCARD Vec3<T> const & Column3    ( int col ) const { return (Vec3<T> const &)cell[col*4]; }
+	CY_NODISCARD Vec4<T>       * Columns()               { return ((Vec4<T>*)cell); }
+	CY_NODISCARD Vec4<T> const * Columns()         const { return ((Vec4<T>*)cell); }
+	CY_NODISCARD Vec4<T>       & Column ( int ci )       { return Columns()[ci]; }
+	CY_NODISCARD Vec4<T> const & Column ( int ci ) const { return Columns()[ci]; }
+	CY_NODISCARD Vec3<T>       & Column3( int ci )       { return (Vec3<T>       &)cell[ci*4]; }
+	CY_NODISCARD Vec3<T> const & Column3( int ci ) const { return (Vec3<T> const &)cell[ci*4]; }
 #endif
-	CY_NODISCARD Vec4<T>         GetRow     ( int row ) const { return Vec4<T>( cell[row], cell[row+4], cell[row+8], cell[row+12] ); }	//!< Returns a row of the matrix
-	CY_NODISCARD Vec4<T>         GetColumn  ( int col ) const { return Column(col); }													//!< Returns a column of the matrix
-	CY_NODISCARD Vec4<T>         GetDiagonal()          const { return Vec4<T>( cell[0], cell[5], cell[10], cell[15] ); }				//!< Returns the diagonal of the matrix
+	CY_NODISCARD Vec4<T>         GetRow ( int ri ) const { return Vec4<T>( cell[ri], cell[ri+4], cell[ri+8], cell[ri+12] ); }	//!< Returns a row of the matrix
+	CY_NODISCARD Vec4<T>         GetDiagonal()     const { return Vec4<T>( cell[0], cell[5], cell[10], cell[15] ); }				//!< Returns the diagonal of the matrix
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1943,10 +1945,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Access Operators
 
-	CY_NODISCARD T&        operator () ( int row, int col )       { assert( row>=0 && row<4 && col>=0 && col<4 ); return cell[ col*4 + row ]; }	//!< subscript operator
-	CY_NODISCARD T const & operator () ( int row, int col ) const { assert( row>=0 && row<4 && col>=0 && col<4 ); return cell[ col*4 + row ]; }	//!< constant subscript operator
-	CY_NODISCARD T&        operator [] ( int i )                  { assert( i>=0 && i<16 ); return cell[i]; }									//!< subscript operator
-	CY_NODISCARD T const & operator [] ( int i )            const { assert( i>=0 && i<16 ); return cell[i]; }									//!< constant subscript operator
+	CY_NODISCARD T&        operator () ( int ri, int ci )       { assert( ri>=0 && ri<4 && ci>=0 && ci<4 ); return cell[ ci*4 + ri ]; }	//!< subscript operator
+	CY_NODISCARD T const & operator () ( int ri, int ci ) const { assert( ri>=0 && ri<4 && ci>=0 && ci<4 ); return cell[ ci*4 + ri ]; }	//!< constant subscript operator
+	CY_NODISCARD T&        operator [] ( int i )                { assert( i>=0 && i<16 ); return cell[i]; }								//!< subscript operator
+	CY_NODISCARD T const & operator [] ( int i )          const { assert( i>=0 && i<16 ); return cell[i]; }								//!< constant subscript operator
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -2083,7 +2085,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Other Methods
 
-	void Transpose()															//!< Transpose this matrix
+	void Transpose()			//!< Transpose this matrix
 	{
 		for ( int i = 1; i < 4; ++i ) {
 			for ( int j = 0; j < i; j++) {
@@ -2093,14 +2095,15 @@ public:
 			}
 		}
 	}
-	void GetTranspose( Matrix4 &m ) const										//!< return Transpose of this matrix
+	CY_NODISCARD Matrix4 GetTranspose() const	//!< Return the transpose of this matrix
 	{
+		Matrix4 m;
 		m.cell[ 0] = cell[0];   m.cell[ 1] = cell[4];   m.cell[ 2] = cell[ 8];  m.cell[ 3] = cell[12];
 		m.cell[ 4] = cell[1];   m.cell[ 5] = cell[5];   m.cell[ 6] = cell[ 9];  m.cell[ 7] = cell[13];
 		m.cell[ 8] = cell[2];   m.cell[ 9] = cell[6];   m.cell[10] = cell[10];  m.cell[11] = cell[14];
 		m.cell[12] = cell[3];   m.cell[13] = cell[7];   m.cell[14] = cell[11];  m.cell[15] = cell[15];
+		return m;
 	}
-	CY_NODISCARD Matrix4 GetTranspose() const { Matrix4 t; GetTranspose(t); return t; }	//!< return Transpose of this matrix
 
 	//! Multiply the give vector with the transpose of the matrix
 	CY_NODISCARD Vec4<T> TransposeMult( Vec3<T> const &p ) const { return TransposeMult( Vec4<T>(p.x, p.y, p.z, T(1)) ); }
@@ -2178,8 +2181,8 @@ public:
 		       cell[3] * ( cell[4] * ( data_10_13___9_14 ) + cell[5] * ( data__8_14__10_12 ) + cell[6] * ( data__9_12___8_13 ) );
 	}
 
-	void Invert() { Matrix4 inv; GetInverse(inv); *this=inv; }					//!< Invert this matrix
-	void GetInverse( Matrix4 &inverse ) const									//!< Get the inverse of this matrix
+	void Invert() { *this = GetInverse(); }	//!< Invert this matrix
+	CY_NODISCARD Matrix4 GetInverse() const	//!< Get the inverse of this matrix
 	{
 		//                       5 ( 10 15 - 11 14 ) + 6 ( 11 13 -  9 15 ) + 7 (  9 14 - 10 13 )
 		//                       1 ( 11 14 - 10 15 ) + 2 (  9 15 - 11 13 ) + 3 ( 10 13 -  9 14 ) 
@@ -2200,6 +2203,8 @@ public:
 		// 0 (  9 14 - 10 13 ) + 1 ( 10 12 -  8 14 ) + 2 (  8 13 -  9 12 )
 		// 0 (  6 13 -  5 14 ) + 1 (  4 14 -  6 12 ) + 2 (  5 12 -  4 13 )
 		// 0 (  5 10 -  6  9 ) + 1 (  6  8 -  4 10 ) + 2 (  4  9 -  5  8 )
+
+		Matrix4 inverse;
 
 		T data_11_14__10_15 = cell[11] * cell[14] - cell[10] * cell[15];
 		T data_10_15__11_14 = cell[10] * cell[15] - cell[11] * cell[14];
@@ -2252,9 +2257,8 @@ public:
 		inverse.cell[15] = cell[0] * ( data__5_10___6__9) + cell[1] * ( data__6__8___4_10) + cell[2] * ( data__4__9___5__8);
 
 		T det = cell[0] * inverse.cell[0] + cell[1] * inverse.cell[4] + cell[2] * inverse.cell[8] + cell[3] * inverse.cell[12];
-		inverse /= det;
+		return inverse / det;
 	}
-	CY_NODISCARD Matrix4 GetInverse() const { Matrix4 inv; GetInverse(inv); return inv; }	//!< Get the inverse of this matrix
 
 	//! Removes the scale component of the matrix by normalizing each column of the 3x3 sub-matrix.
 	//! The resulting matrix can contain shear, if it originally contained non-uniform scale and rotation.
@@ -2375,14 +2379,15 @@ template <typename T>  Matrix3 <T>::Matrix3 ( Matrix34<T> const &m ) { MemCopy(c
 template <typename T>  Matrix3 <T>::Matrix3 ( Matrix4 <T> const &m ) { MemCopy(cell,m.cell,3); MemCopy(cell+3,m.cell+4,3); MemCopy(cell+6,m.cell+8,3); }
 template <typename T>  Matrix34<T>::Matrix34( Matrix4 <T> const &m ) { MemCopy(cell,m.cell,3); MemCopy(cell+3,m.cell+4,3); MemCopy(cell+6,m.cell+8,3); MemCopy(cell+9,m.cell+12,3); }
 
-template <typename T> inline void Matrix34<T>::GetTranspose( Matrix4<T> &m ) const
+template <typename T> inline Matrix4<T> Matrix34<T>::GetTranspose() const
 {
+	Matrix4<T> m;
 	m.cell[ 0] = cell[0];   m.cell[ 1] = cell[3];   m.cell[ 2] = cell[ 6];   m.cell[ 3] = cell[ 9];
 	m.cell[ 4] = cell[1];   m.cell[ 5] = cell[4];   m.cell[ 6] = cell[ 7];   m.cell[ 7] = cell[10];
 	m.cell[ 8] = cell[2];   m.cell[ 9] = cell[5];   m.cell[10] = cell[ 8];   m.cell[11] = cell[11];
 	m.cell[12] = T(0);      m.cell[13] = T(0);      m.cell[14] = T(0);       m.cell[15] = T(1);
+	return m;
 }
-template <typename T> inline Matrix4<T> Matrix34<T>::GetTranspose() const { Matrix4<T> t; GetTranspose(t); return t; }
 
 //-------------------------------------------------------------------------------
 
