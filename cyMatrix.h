@@ -401,8 +401,10 @@ public:
 
 	//! Returns an identity matrix
 	CY_NODISCARD static Matrix2 Identity() { T c[] = { 1,0, 0,1 }; return Matrix2(c); }
-	//! Returns a rotation matrix about the given axis by angle in radians
+	//! Returns a rotation matrix by angle in radians
 	CY_NODISCARD static Matrix2 Rotation( T angle ) { Matrix2 m; m.SetRotation(angle); return m; }
+	//! Returns a rotation matrix by cos and sin of the rotation angle
+	CY_NODISCARD static Matrix2 Rotation( T cosAngle, T sinAngle ) { Matrix2 m; m.SetRotation(cosAngle,sinAngle); return m; }
 	//! Returns a uniform scale matrix
 	CY_NODISCARD static Matrix2 Scale( T uniformScale ) { Matrix2 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
@@ -730,14 +732,13 @@ public:
 		//return Vec3<T>( p.x*cell[0] + p.y*cell[3] + p.z*cell[6], 
 		//                p.x*cell[1] + p.y*cell[4] + p.z*cell[7],
 		//                p.x*cell[2] + p.y*cell[5] + p.z*cell[8] );
-		T a[4], b[4], c[4], d[4];
-		Vec3<T> r;
+		T a[4], b[4], c[4], d[4], r[4];
 		_CY_IVDEP_FOR ( int i=0; i<N; ++i ) a[i] = p[0] * cell[  i];
 		_CY_IVDEP_FOR ( int i=0; i<N; ++i ) b[i] = p[1] * cell[3+i];
 		_CY_IVDEP_FOR ( int i=0; i<N; ++i ) c[i] = p[2] * cell_6[i];
 		_CY_IVDEP_FOR ( int i=0; i<N; ++i ) d[i] = a[i] + b[i];
 		_CY_IVDEP_FOR ( int i=0; i<N; ++i ) r[i] = d[i] + c[i];	
-		return r;
+		return Vec3<T>(r);
 	}
 
 	CY_NODISCARD Matrix3 operator + ( T value ) const { Matrix3 r=*this; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< add a value times identity matrix
@@ -1026,6 +1027,8 @@ public:
 	CY_NODISCARD static Matrix3 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix3 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
 	CY_NODISCARD static Matrix3 Rotation( Vec3<T> const &axis, T angle ) { Matrix3 m; m.SetRotation(axis,angle); return m; }
+	//! Returns a rotation matrix about the given axis by cos and sin of the rotation angle
+	CY_NODISCARD static Matrix3 Rotation( Vec3<T> const &axis, T cosAngle, T sinAngle ) { Matrix3 m; m.SetRotation(axis,cosAngle,sinAngle); return m; }
 	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
 	CY_NODISCARD static Matrix3 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix3 m; m.SetRotation(from,to); return m; }
 	//! Returns a uniform scale matrix
@@ -1600,6 +1603,8 @@ public:
 	CY_NODISCARD static Matrix34 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix34 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
 	CY_NODISCARD static Matrix34 Rotation( Vec3<T> const &axis, T angle ) { Matrix34 m; m.SetRotation(axis,angle); return m; }
+	//! Returns a rotation matrix about the given axis by cos and sin of the rotation angle
+	CY_NODISCARD static Matrix34 Rotation( Vec3<T> const &axis, T cosAngle, T sinAngle ) { Matrix34 m; m.SetRotation(axis,cosAngle,sinAngle); return m; }
 	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
 	CY_NODISCARD static Matrix34 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix34 m; m.SetRotation(from,to); return m; }
 	//! Returns a uniform scale matrix
@@ -2339,6 +2344,8 @@ public:
 	CY_NODISCARD static Matrix4 RotationZ( T angle ) { Matrix4 m; m.SetRotationZ(angle); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
 	CY_NODISCARD static Matrix4 Rotation( Vec3<T> const &axis, T angle ) { Matrix4 m; m.SetRotation(axis,angle); return m; }
+	//! Returns a rotation matrix about the given axis by cos and sin of the rotation angle
+	CY_NODISCARD static Matrix4 Rotation( Vec3<T> const &axis, T cosAngle, T sinAngle ) { Matrix4 m; m.SetRotation(axis,cosAngle,sinAngle); return m; }
 	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
 	CY_NODISCARD static Matrix4 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix4 m; m.SetRotation(from,to); return m; }
 	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
