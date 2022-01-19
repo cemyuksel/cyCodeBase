@@ -52,8 +52,8 @@
 #include <type_traits>
 #include <limits>
 
-#ifndef CY_NO_EMMINTRIN_H
-# include <emmintrin.h>
+#if !defined(CY_NO_INTRIN_H) && !defined(CY_NO_EMMINTRIN_H)
+# include <intrin.h>
 #endif
 
 //-------------------------------------------------------------------------------
@@ -164,7 +164,7 @@ static _cy_nullptr_t nullptr;
 #endif
 
 // nodiscard
-#if _CY_COMPILER_VER_MEETS(1900,40800,30000,1500)
+#if _CY_COMPILER_VER_MEETS(1901,40800,30000,1500)
 # define CY_NODISCARD [[nodiscard]]
 #else
 # define CY_NODISCARD
@@ -273,8 +273,8 @@ void MemClear( T * dest, size_t count )
 	memset( dest, 0, count*sizeof(T) );
 }
 
-template <typename T> inline void Swap     ( T &v1, T &v2 ) { if ( std::is_trivially_copyable<T>::value ) { T t=v1; v1=v2; v2=t; } else SwapBytes(v1,v2); }
 template <typename T> inline void SwapBytes( T &v1, T &v2 ) { char t[sizeof(T)]; memcpy(&t,&v1,sizeof(T)); memcpy(&v1,&v2,sizeof(T)); memcpy(&v2,&t,sizeof(T)); }
+template <typename T> inline void Swap     ( T &v1, T &v2 ) { if ( std::is_trivially_copyable<T>::value ) { T t=v1; v1=v2; v2=t; } else SwapBytes(v1,v2); }
 
 /////////////////////////////////////////////////////////////////////////////////
 // Sorting functions
@@ -293,7 +293,7 @@ inline void Sort2( T r[2], T const v[2] )
 }
 
 template <bool ascending, typename T>
-void Sort3( T r[3], T const v[3] ) noexcept
+void Sort3( T r[3], T const v[3] )
 {
 	T n01   = Min( v[1], v[0] );
 	T x01   = Max( v[0], v[1] );
