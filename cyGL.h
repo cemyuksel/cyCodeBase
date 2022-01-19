@@ -89,6 +89,7 @@
 // checking the OpenGL context is disabled and these includes are skipped.
 #ifndef CY_GL_DONT_CHECK_CONTEXT
 # ifdef _WIN32
+#  include <wtypes.h>
 #  include <Wingdi.h>
 #  define _CY_GL_GET_CONTEXT wglGetCurrentContext()
 # elif defined(__APPLE__)
