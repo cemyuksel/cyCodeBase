@@ -512,7 +512,7 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 			std::string mtlFilename = ( mtlPathName ) ? std::string(mtlPathName) + mtlFiles[mi].filename : mtlFiles[mi].filename;
 			FILE *fp = fopen(mtlFilename.data(),"r");
 			if ( !fp ) {
-				if ( outStream ) *outStream << "ERROR: Cannot open file " << mtlFilename << std::endl;
+				if ( outStream ) *outStream << "ERROR: Cannot open file " << mtlFilename.c_str() << std::endl;
 				continue;
 			}
 			int mtlID = -1;
