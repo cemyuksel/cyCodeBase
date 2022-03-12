@@ -204,8 +204,8 @@ public:
 	CY_NODISCARD T    Length          () const { return cy::Sqrt(LengthSquared()); }					//!< Returns the length of the vector.
 	CY_NODISCARD T    Sum             () const { return x+y; }											//!< Returns the sum of its components
 	CY_NODISCARD bool IsZero          () const { return x==T(0) && y==T(0); }							//!< Returns true if all components are exactly zero
-	CY_NODISCARD T    Min             () const { return elem[MinComp()]; }								//!< Returns the minimum component of the vector.
-	CY_NODISCARD T    Max             () const { return elem[MaxComp()]; }								//!< Returns the maximum component of the vector.
+	CY_NODISCARD T    Min             () const { return cy::Min(x,y); }									//!< Returns the minimum component of the vector.
+	CY_NODISCARD T    Max             () const { return cy::Max(x,y); }									//!< Returns the maximum component of the vector.
 	CY_NODISCARD int  MinComp         () const { return x>y; }											//!< Returns the index of the minimum component of the vector.
 	CY_NODISCARD int  MaxComp         () const { return x<y; }											//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD bool IsFinite        () const { return cy::IsFinite(x) && cy::IsFinite(y); }			//!< Returns true if all components are finite real numbers.
@@ -317,8 +317,8 @@ public:
 	CY_NODISCARD T    Length          () const { return cy::Sqrt(LengthSquared()); }					//!< Returns the length of the vector.
 	CY_NODISCARD T    Sum             () const { return x+y+z; }										//!< Returns the sum of its components.
 	CY_NODISCARD bool IsZero          () const { return x==T(0) && y==T(0) && z==T(0); }				//!< Returns true if all components are exactly zero.
-	CY_NODISCARD T    Min             () const { return elem[MinComp()]; }								//!< Returns the minimum component of the vector.
-	CY_NODISCARD T    Max             () const { return elem[MaxComp()]; }								//!< Returns the maximum component of the vector.
+	CY_NODISCARD T    Min             () const { return cy::Min(x,y,z); }								//!< Returns the minimum component of the vector.
+	CY_NODISCARD T    Max             () const { return cy::Max(x,y,z); }								//!< Returns the maximum component of the vector.
 	CY_NODISCARD int  MinComp         () const { int yx=y<x; int zx=z<x; int zy=z<y; return (yx|zx)+(zx&zy); }	//!< Returns the index of the minimum component of the vector.
 	CY_NODISCARD int  MaxComp         () const { int xy=x<y; int xz=x<z; int yz=y<z; return (xy|xz)+(xz&yz); }	//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD bool IsFinite        () const { return cy::IsFinite(x) && cy::IsFinite(y) && cy::IsFinite(z); }	//!< Returns true if all components are finite real numbers.
@@ -481,8 +481,8 @@ public:
 	CY_NODISCARD T    Length       () const { return cy::Sqrt(LengthSquared()); }					//!< Returns the length of the vector.
 	CY_NODISCARD T    Sum          () const { return x+y+z+w; }										//!< Returns the sum of its components
 	CY_NODISCARD bool IsZero       () const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
-	CY_NODISCARD T    Min          () const { return elem[MaxComp()]; }								//!< Returns the minimum component of the vector.
-	CY_NODISCARD T    Max          () const { return elem[MaxComp()]; }								//!< Returns the maximum component of the vector.
+	CY_NODISCARD T    Min          () const { return cy::Min(x,y,z,w); }							//!< Returns the minimum component of the vector.
+	CY_NODISCARD T    Max          () const { return cy::Max(x,y,z,w); }							//!< Returns the maximum component of the vector.
 	CY_NODISCARD int  MinComp      () const { int xy=x>y; int zw=(z>w)+2; return elem[xy]<elem[zw]?xy:zw; }	//!< Returns the index of the minimum component of the vector.
 	CY_NODISCARD int  MaxComp      () const { int xy=x<y; int zw=(z<w)+2; return elem[xy]>elem[zw]?xy:zw; }	//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD bool IsFinite     () const { return cy::IsFinite(x) && cy::IsFinite(y) && cy::IsFinite(z) && cy::IsFinite(w); }	//!< Returns true if all components are finite real numbers.
