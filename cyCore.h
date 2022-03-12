@@ -179,6 +179,15 @@ static _cy_nullptr_t nullptr;
 # define CY_CLASS_FUNCTION_DELETE  { static_assert(false,"Calling deleted method."); }
 #endif
 
+// switch statements where default cannot be reached
+#if defined(__INTEL_COMPILER) || defined(__clang__) || defined(__GNUC__)
+# define nodefault default: __builtin_unreachable()
+#elif defined(_MSC_VER)
+# define nodefault default: __assume(0)
+#else
+# define nodefault default: 
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 // Auto Vectorization
 //////////////////////////////////////////////////////////////////////////
@@ -226,8 +235,10 @@ static _cy_nullptr_t nullptr;
 
 template <typename T> inline T Max      ( T const &v1, T const &v2 ) { return v1 >= v2 ? v1 : v2; }
 template <typename T> inline T Min      ( T const &v1, T const &v2 ) { return v1 <= v2 ? v1 : v2; }
-template <typename T> inline T Max      ( T const &v1, T const &v2, T const &v3 ) { return (v1>=v2) ? (v1>=v3?v1:v3) : (v2>=v3?v2:v3); }
-template <typename T> inline T Min      ( T const &v1, T const &v2, T const &v3 ) { return (v1<=v2) ? (v1<=v3?v1:v3) : (v2<=v3?v2:v3); }
+template <typename T> inline T Max      ( T const &v1, T const &v2, T const &v3 ) { return Max( Max(v1,v2), v3 ); }
+template <typename T> inline T Min      ( T const &v1, T const &v2, T const &v3 ) { return Min( Min(v1,v2), v3 ); }
+template <typename T> inline T Max      ( T const &v1, T const &v2, T const &v3, T const &v4 ) { return Max( Max(v1,v2), Max(v3,v4) ); }
+template <typename T> inline T Min      ( T const &v1, T const &v2, T const &v3, T const &v4 ) { return Min( Min(v1,v2), Min(v3,v4) ); }
 template <typename T> inline T Clamp    ( T const &v, T minVal=T(0), T maxVal=T(1) ) { return Min(maxVal,Max(minVal,v)); }
 
 template <typename T> inline T ACosSafe ( T const &v ) { return (T) std::acos(Clamp(v,T(-1),T(1))); }
@@ -283,19 +294,14 @@ template <typename T> inline void Swap     ( T &v1, T &v2 ) { if ( std::is_trivi
 template <bool ascending, typename T>
 inline void Sort2( T r[2], T const v[2] )
 {
-	if ( ascending ) {
-		r[0] = Min( v[0], v[1] );
-		r[1] = Max( v[1], v[0] );
-	} else {
-		r[0] = Max( v[0], v[1] );
-		r[1] = Min( v[1], v[0] );
-	}
+	r[1-ascending] = Min( v[0], v[1] );
+	r[  ascending] = Max( v[0], v[1] );
 }
 
 template <bool ascending, typename T>
 void Sort3( T r[3], T const v[3] )
 {
-	T n01   = Min( v[1], v[0] );
+	T n01   = Min( v[0], v[1] );
 	T x01   = Max( v[0], v[1] );
 	T n2x01 = Min( v[2], x01  );
 	T r2    = Max( x01,  v[2] );
@@ -308,10 +314,10 @@ void Sort3( T r[3], T const v[3] )
 template <bool ascending, typename T>
 inline void Sort4( T r[4], T const v[4] )
 {
-	T n01 = Min( v[1], v[0] );
+	T n01 = Min( v[0], v[1] );
 	T x01 = Max( v[0], v[1] );
 	T n23 = Min( v[2], v[3] );
-	T x23 = Max( v[3], v[2] );
+	T x23 = Max( v[2], v[3] );
 	T r0  = Min( n01, n23 );
 	T x02 = Max( n23, n01 );
 	T n13 = Min( x01, x23 );
