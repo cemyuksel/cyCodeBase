@@ -52,8 +52,8 @@
 #include <type_traits>
 #include <limits>
 
-#if !defined(CY_NO_INTRIN_H) && !defined(CY_NO_EMMINTRIN_H)
-# include <intrin.h>
+#if !defined(CY_NO_INTRIN_H) && !defined(CY_NO_EMMINTRIN_H) && !defined(CY_NO_IMMINTRIN_H)
+# include <immintrin.h>
 #endif
 
 //-------------------------------------------------------------------------------
@@ -164,7 +164,8 @@ static _cy_nullptr_t nullptr;
 #endif
 
 // nodiscard
-#if _CY_COMPILER_VER_MEETS(1901,40800,30000,1500)
+//#if _CY_COMPILER_VER_MEETS(1901,40800,30000,1500)
+#if (__cplusplus>=201703L) || (defined(_MSVC_LANG) && _MSVC_LANG>=201703L)
 # define CY_NODISCARD [[nodiscard]]
 #else
 # define CY_NODISCARD
@@ -233,36 +234,36 @@ static _cy_nullptr_t nullptr;
 
 //!@name Common math function templates
 
-template <typename T> inline T Max      ( T const &v1, T const &v2 ) { return v1 >= v2 ? v1 : v2; }
-template <typename T> inline T Min      ( T const &v1, T const &v2 ) { return v1 <= v2 ? v1 : v2; }
-template <typename T> inline T Max      ( T const &v1, T const &v2, T const &v3 ) { return Max( Max(v1,v2), v3 ); }
-template <typename T> inline T Min      ( T const &v1, T const &v2, T const &v3 ) { return Min( Min(v1,v2), v3 ); }
-template <typename T> inline T Max      ( T const &v1, T const &v2, T const &v3, T const &v4 ) { return Max( Max(v1,v2), Max(v3,v4) ); }
-template <typename T> inline T Min      ( T const &v1, T const &v2, T const &v3, T const &v4 ) { return Min( Min(v1,v2), Min(v3,v4) ); }
-template <typename T> inline T Clamp    ( T const &v, T minVal=T(0), T maxVal=T(1) ) { return Min(maxVal,Max(minVal,v)); }
+template <typename T> CY_NODISCARD inline T Max      ( T v1, T v2 ) { return v1 >= v2 ? v1 : v2; }
+template <typename T> CY_NODISCARD inline T Min      ( T v1, T v2 ) { return v1 <= v2 ? v1 : v2; }
+template <typename T> CY_NODISCARD inline T Max      ( T v1, T v2, T v3 ) { return Max( Max(v1,v2), v3 ); }
+template <typename T> CY_NODISCARD inline T Min      ( T v1, T v2, T v3 ) { return Min( Min(v1,v2), v3 ); }
+template <typename T> CY_NODISCARD inline T Max      ( T v1, T v2, T v3, T const v4 ) { return Max( Max(v1,v2), Max(v3,v4) ); }
+template <typename T> CY_NODISCARD inline T Min      ( T v1, T v2, T v3, T const v4 ) { return Min( Min(v1,v2), Min(v3,v4) ); }
+template <typename T> CY_NODISCARD inline T Clamp    ( T v, T minVal=T(0), T maxVal=T(1) ) { return Min(maxVal,Max(minVal,v)); }
 
-template <typename T> inline T ACosSafe ( T const &v ) { return (T) std::acos(Clamp(v,T(-1),T(1))); }
-template <typename T> inline T ASinSafe ( T const &v ) { return (T) std::asin(Clamp(v,T(-1),T(1))); }
-template <typename T> inline T Sqrt     ( T const &v ) { return (T) std::sqrt(v); }
-template <typename T> inline T SqrtSafe ( T const &v ) { return (T) std::sqrt(Max(v,T(0))); }
+template <typename T> CY_NODISCARD inline T ACosSafe ( T v ) { return (T) std::acos(Clamp(v,T(-1),T(1))); }
+template <typename T> CY_NODISCARD inline T ASinSafe ( T v ) { return (T) std::asin(Clamp(v,T(-1),T(1))); }
+template <typename T> CY_NODISCARD inline T Sqrt     ( T v ) { return (T) std::sqrt(v); }
+template <typename T> CY_NODISCARD inline T SqrtSafe ( T v ) { return (T) std::sqrt(Max(v,T(0))); }
 
-#ifndef CY_NO_EMMINTRIN_H
-template<> inline float  Sqrt    <float> ( float  const &v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(v))); }
-template<> inline float  SqrtSafe<float> ( float  const &v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(Max(v,0.0f)))); }
-template<> inline double Sqrt    <double>( double const &v ) { __m128d t=_mm_set1_pd(v);          return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
-template<> inline double SqrtSafe<double>( double const &v ) { __m128d t=_mm_set1_pd(Max(v,0.0)); return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+#ifdef _INCLUDED_IMM
+template<> CY_NODISCARD inline float  Sqrt    <float> ( float  v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(v))); }
+template<> CY_NODISCARD inline float  SqrtSafe<float> ( float  v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(Max(v,0.0f)))); }
+template<> CY_NODISCARD inline double Sqrt    <double>( double v ) { __m128d t=_mm_set1_pd(v);          return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+template<> CY_NODISCARD inline double SqrtSafe<double>( double v ) { __m128d t=_mm_set1_pd(Max(v,0.0)); return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
 #endif
 
 template<typename T> inline T Pi  () { return T(3.141592653589793238462643383279502884197169); }
 
-template <typename T> bool IsFinite( T const &v ) { return std::numeric_limits<T>::is_integer || std::isfinite(v); }
+template <typename T> CY_NODISCARD inline bool IsFinite( T v ) { return std::numeric_limits<T>::is_integer || std::isfinite(v); }
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Operations
 //////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-void MemCopy( T * restrict dest, T const * restrict src, size_t count )
+inline void MemCopy( T * restrict dest, T const * restrict src, size_t count )
 {
 #ifdef _cy_std_is_trivially_copyable
 	if ( std::is_trivially_copyable<T>() ) {
@@ -273,13 +274,13 @@ void MemCopy( T * restrict dest, T const * restrict src, size_t count )
 }
 
 template <typename T, typename S>
-void MemConvert( T * restrict dest, S const * restrict src, size_t count )
+inline void MemConvert( T * restrict dest, S const * restrict src, size_t count )
 {
 	for ( size_t i=0; i<count; ++i ) dest[i] = reinterpret_cast<T>(src[i]);
 }
 
 template <typename T>
-void MemClear( T * dest, size_t count )
+inline void MemClear( T * dest, size_t count )
 {
 	memset( dest, 0, count*sizeof(T) );
 }
