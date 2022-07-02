@@ -395,20 +395,17 @@ private:
 		}
 		// Step 4: Update texture
 		{
-			auto setImgAlpha = [&]( int const *ix, int n, uint32_t count )
+			auto setImgAlpha = [&]( unsigned char *a, int const *ix, int n, uint32_t count )
 			{
 				if ( spp > 1 ) {
 					count *= 256/spp;
 				}
 
-				unsigned char a[9];
-				assert(n<=9);
 				for ( int j=0; j<n; j++ ) a[j] = 0;
 				uint32_t remSum = 0;
 				uint32_t rem = count;
 				while ( rem > 0 ) {
 					int max_i = 0;
-					int eqCount = 1;
 					int max_v = image[ ix[0]*NUM_CHANNELS+(NUM_CHANNELS-1) ] - a[0];
 					if ( max_v < 0 ) max_v = 0;
 					for ( int j=1; j<n; j++ ) {
@@ -417,7 +414,6 @@ private:
 						if ( max_v < v ) {
 							max_v = v;
 							max_i = j;
-							eqCount = 1;
 						}
 					}
 					assert(max_v > 0);
@@ -451,6 +447,7 @@ private:
 			};
 
 			if ( pyramid.size() > 0 ) {
+				unsigned char tmpAlpha[9];
 				int hLim = (height&1) ? height-3 : height;
 				int wLim = (width&1) ? width -3 : width;
 				for ( int ih=0; ih<hLim; ih+=2 ) {
@@ -458,13 +455,13 @@ private:
 						uint32_t count = pyramid[0]->GetAlpha(iw/2,ih/2);
 						int i = ih*width + iw;
 						int ix[] = { i, i+width+1, i+1, i+width };
-						setImgAlpha( ix, 4, count );
+						setImgAlpha( tmpAlpha, ix, 4, count );
 					}
 					if ( wLim < width ) {
 						uint32_t count = pyramid[0]->GetAlpha(wLim/2,ih/2);
 						int i = ih*width + wLim;
 						int ix[] = { i, i+width+1, i+2, i+width, i+1, i+width+2 };
-						setImgAlpha( ix, 6, count );
+						setImgAlpha( tmpAlpha, ix, 6, count );
 					}
 				}
 				if ( hLim < height ) {
@@ -472,20 +469,22 @@ private:
 						uint32_t count = pyramid[0]->GetAlpha(iw/2,hLim/2);
 						int i = hLim*width + iw;
 						int ix[] = { i, i+width+1, i+width+width, i+1, i+width, i+width+width+1 };
-						setImgAlpha( ix, 6, count );
+						setImgAlpha( tmpAlpha, ix, 6, count );
 					}
 					if ( wLim < width ) {
 						uint32_t count = pyramid[0]->GetAlpha(wLim/2,hLim/2);
 						int i = hLim*width + wLim;
 						int ix[] = { i, i+width+width+2, i+2, i+width+width, i+width+1, i+1, i+width+width+1, i+width, i+width+2 };
-						setImgAlpha( ix, 9, count );
+						setImgAlpha( tmpAlpha, ix, 9, count );
 					}
 				}
 			} else {
 				// no pyramid
-				int ix[9];
-				for ( int i=0; i<9; i++ ) ix[i] = i;
-				setImgAlpha( ix, width*height, on_texels );
+				int size = width * height;
+				std::vector<int> ix(size);
+				std::vector<unsigned char> tmpAlpha(size);
+				for ( int i=0; i<size; i++ ) ix[i] = i;
+				setImgAlpha( tmpAlpha.data(), ix.data(), size, on_texels );
 			}
 		}
 		// Step 5: Clean up
