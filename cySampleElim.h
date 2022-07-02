@@ -276,7 +276,7 @@ public:
 		assert( dimensions >= 2 );
 		if ( domainSize <= FType(0) ) {
 			domainSize = boundsMax[0] - boundsMin[0];
-			for ( int d=1; d<DIMENSIONS; d++ ) domainSize *= boundsMax[0] - boundsMin[0];
+			for ( int d=1; d<DIMENSIONS; d++ ) domainSize *= boundsMax[d] - boundsMin[d];
 		}
 		FType sampleArea = domainSize / (FType) sampleCount;
 		FType r_max;
