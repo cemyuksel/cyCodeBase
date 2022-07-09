@@ -885,37 +885,37 @@ public:
 	void SetUniform (int index, float x, float y)                       { glUniform2f  (params[index],x,y); }
 	void SetUniform (int index, float x, float y, float z)              { glUniform3f  (params[index],x,y,z); }
 	void SetUniform (int index, float x, float y, float z, float w)     { glUniform4f  (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, float  const *data)          { glUniform1fv (params[index],count,data); }
-	void SetUniform2(int index, int count, float  const *data)          { glUniform2fv (params[index],count,data); }
-	void SetUniform3(int index, int count, float  const *data)          { glUniform3fv (params[index],count,data); }
-	void SetUniform4(int index, int count, float  const *data)          { glUniform4fv (params[index],count,data); }
+	void SetUniform1(int index, float  const *data, int count=1)        { glUniform1fv (params[index],count,data); }
+	void SetUniform2(int index, float  const *data, int count=1)        { glUniform2fv (params[index],count,data); }
+	void SetUniform3(int index, float  const *data, int count=1)        { glUniform3fv (params[index],count,data); }
+	void SetUniform4(int index, float  const *data, int count=1)        { glUniform4fv (params[index],count,data); }
 	void SetUniform (int index, int x)                                  { glUniform1i  (params[index],x); }
 	void SetUniform (int index, int x, int y)                           { glUniform2i  (params[index],x,y); }
 	void SetUniform (int index, int x, int y, int z)                    { glUniform3i  (params[index],x,y,z); }
 	void SetUniform (int index, int x, int y, int z, int w)             { glUniform4i  (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, int    const *data)          { glUniform1iv (params[index],count,data); }
-	void SetUniform2(int index, int count, int    const *data)          { glUniform2iv (params[index],count,data); }
-	void SetUniform3(int index, int count, int    const *data)          { glUniform3iv (params[index],count,data); }
-	void SetUniform4(int index, int count, int    const *data)          { glUniform4iv (params[index],count,data); }
+	void SetUniform1(int index, int    const *data, int count=1)        { glUniform1iv (params[index],count,data); }
+	void SetUniform2(int index, int    const *data, int count=1)        { glUniform2iv (params[index],count,data); }
+	void SetUniform3(int index, int    const *data, int count=1)        { glUniform3iv (params[index],count,data); }
+	void SetUniform4(int index, int    const *data, int count=1)        { glUniform4iv (params[index],count,data); }
 #ifdef GL_VERSION_3_0
 	void SetUniform (int index, GLuint x)                               { glUniform1ui (params[index],x); }
 	void SetUniform (int index, GLuint x, GLuint y)                     { glUniform2ui (params[index],x,y); }
 	void SetUniform (int index, GLuint x, GLuint y, GLuint z)           { glUniform3ui (params[index],x,y,z); }
 	void SetUniform (int index, GLuint x, GLuint y, GLuint z, GLuint w) { glUniform4ui (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, GLuint const *data)          { glUniform1uiv(params[index],count,data); }
-	void SetUniform2(int index, int count, GLuint const *data)          { glUniform2uiv(params[index],count,data); }
-	void SetUniform3(int index, int count, GLuint const *data)          { glUniform3uiv(params[index],count,data); }
-	void SetUniform4(int index, int count, GLuint const *data)          { glUniform4uiv(params[index],count,data); }
+	void SetUniform1(int index, GLuint const *data, int count=1)        { glUniform1uiv(params[index],count,data); }
+	void SetUniform2(int index, GLuint const *data, int count=1)        { glUniform2uiv(params[index],count,data); }
+	void SetUniform3(int index, GLuint const *data, int count=1)        { glUniform3uiv(params[index],count,data); }
+	void SetUniform4(int index, GLuint const *data, int count=1)        { glUniform4uiv(params[index],count,data); }
 #endif
 #ifdef GL_VERSION_4_0
 	void SetUniform (int index, double x)                               { glUniform1d  (params[index],x); }
 	void SetUniform (int index, double x, double y)                     { glUniform2d  (params[index],x,y); }
 	void SetUniform (int index, double x, double y, double z)           { glUniform3d  (params[index],x,y,z); }
 	void SetUniform (int index, double x, double y, double z, double w) { glUniform4d  (params[index],x,y,z,w); }
-	void SetUniform1(int index, int count, double const *data)          { glUniform1dv (params[index],count,data); }
-	void SetUniform2(int index, int count, double const *data)          { glUniform2dv (params[index],count,data); }
-	void SetUniform3(int index, int count, double const *data)          { glUniform3dv (params[index],count,data); }
-	void SetUniform4(int index, int count, double const *data)          { glUniform4dv (params[index],count,data); }
+	void SetUniform1(int index, double const *data, int count=1)        { glUniform1dv (params[index],count,data); }
+	void SetUniform2(int index, double const *data, int count=1)        { glUniform2dv (params[index],count,data); }
+	void SetUniform3(int index, double const *data, int count=1)        { glUniform3dv (params[index],count,data); }
+	void SetUniform4(int index, double const *data, int count=1)        { glUniform4dv (params[index],count,data); }
 #endif
 
 	void SetUniformMatrix2  (int index, float  const *m, int count=1, bool transpose=false) { glUniformMatrix2fv  (params[index],count,transpose,m); }
@@ -1022,37 +1022,37 @@ public:
 	void SetUniform (char const *name, float x, float y)                       { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2f  (id,x,y); }
 	void SetUniform (char const *name, float x, float y, float z)              { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3f  (id,x,y,z); }
 	void SetUniform (char const *name, float x, float y, float z, float w)     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4f  (id,x,y,z,w); }
-	void SetUniform1(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1fv (id,count,data); }
-	void SetUniform2(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,count,data); }
-	void SetUniform3(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,count,data); }
-	void SetUniform4(char const *name, int count, float  const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,count,data); }
+	void SetUniform1(char const *name, float  const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1fv (id,count,data); }
+	void SetUniform2(char const *name, float  const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2fv (id,count,data); }
+	void SetUniform3(char const *name, float  const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3fv (id,count,data); }
+	void SetUniform4(char const *name, float  const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4fv (id,count,data); }
 	void SetUniform (char const *name, int x)                                  { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1i  (id,x); }
 	void SetUniform (char const *name, int x, int y)                           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2i  (id,x,y); }
 	void SetUniform (char const *name, int x, int y, int z)                    { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3i  (id,x,y,z); }
 	void SetUniform (char const *name, int x, int y, int z, int w)             { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4i  (id,x,y,z,w); }
-	void SetUniform1(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1iv (id,count,data); }
-	void SetUniform2(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,data); }
-	void SetUniform3(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,data); }
-	void SetUniform4(char const *name, int count, int    const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,data); }
+	void SetUniform1(char const *name, int    const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1iv (id,count,data); }
+	void SetUniform2(char const *name, int    const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2iv (id,count,data); }
+	void SetUniform3(char const *name, int    const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3iv (id,count,data); }
+	void SetUniform4(char const *name, int    const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4iv (id,count,data); }
 #ifdef GL_VERSION_3_0
 	void SetUniform (char const *name, GLuint x)                               { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1ui (id,x); }
 	void SetUniform (char const *name, GLuint x, GLuint y)                     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2ui (id,x,y); }
 	void SetUniform (char const *name, GLuint x, GLuint y, GLuint z)           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3ui (id,x,y,z); }
 	void SetUniform (char const *name, GLuint x, GLuint y, GLuint z, GLuint w) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4ui (id,x,y,z,w); }
-	void SetUniform1(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1uiv(id,count,data); }
-	void SetUniform2(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,data); }
-	void SetUniform3(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,data); }
-	void SetUniform4(char const *name, int count, GLuint const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,data); }
+	void SetUniform1(char const *name, GLuint const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1uiv(id,count,data); }
+	void SetUniform2(char const *name, GLuint const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2uiv(id,count,data); }
+	void SetUniform3(char const *name, GLuint const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3uiv(id,count,data); }
+	void SetUniform4(char const *name, GLuint const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4uiv(id,count,data); }
 #endif
 #ifdef GL_VERSION_4_0
 	void SetUniform (char const *name, double x)                               { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1d  (id,x); }
 	void SetUniform (char const *name, double x, double y)                     { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2d  (id,x,y); }
 	void SetUniform (char const *name, double x, double y, double z)           { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3d  (id,x,y,z); }
 	void SetUniform (char const *name, double x, double y, double z, double w) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4d  (id,x,y,z,w); }
-	void SetUniform1(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1dv (id,count,data); }
-	void SetUniform2(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,count,data); }
-	void SetUniform3(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,count,data); }
-	void SetUniform4(char const *name, int count, double const *data)          { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,count,data); }
+	void SetUniform1(char const *name, double const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform1dv (id,count,data); }
+	void SetUniform2(char const *name, double const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform2dv (id,count,data); }
+	void SetUniform3(char const *name, double const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform3dv (id,count,data); }
+	void SetUniform4(char const *name, double const *data, int count=1)        { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniform4dv (id,count,data); }
 #endif
 
 	void SetUniformMatrix2  (char const *name, float  const *m, int count=1, bool transpose=false) { glUseProgram(programID); int id = glGetUniformLocation( programID, name ); if ( id >= 0 ) glUniformMatrix2fv  (id,count,transpose,m); }
@@ -1158,7 +1158,14 @@ public:
 		Param(GLSLProgram &p, char const *n) : prog(p), name(n) {}
 	public:
 		template <typename T> void operator = ( T const &v ) { prog.SetUniform( name, v ); }
-		template <typename T> void Set( T const *v, int count=1 ) { prog.SetUniform( name, v, count ); }
+		template <typename T> void Set ( T const &x ) { prog.SetUniform( name, x ); }
+		template <typename T> void Set ( T const &x, T const &y ) { prog.SetUniform( name, x, y ); }
+		template <typename T> void Set ( T const &x, T const &y, T const &z ) { prog.SetUniform( name, x, y, z ); }
+		template <typename T> void Set ( T const &x, T const &y, T const &z, T const &w ) { prog.SetUniform( name, x, y, z, w ); }
+		template <typename T> void Set1( T const *v, int count=1 ) { prog.SetUniform1( name, v, count ); }
+		template <typename T> void Set2( T const *v, int count=1 ) { prog.SetUniform2( name, v, count ); }
+		template <typename T> void Set3( T const *v, int count=1 ) { prog.SetUniform3( name, v, count ); }
+		template <typename T> void Set4( T const *v, int count=1 ) { prog.SetUniform4( name, v, count ); }
 	};
 
 	Param operator [] ( char const *name ) { return Param(*this,name); }
