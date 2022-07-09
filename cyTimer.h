@@ -40,8 +40,11 @@
 
 //-------------------------------------------------------------------------------
 
-#include <ctime>
-#include <cmath>
+#include <chrono>
+#include "cyCore.h"
+#ifdef _WIN32
+# include <windows.h>
+#endif
 
 //-------------------------------------------------------------------------------
 namespace cy {
@@ -56,7 +59,7 @@ class Timer
 public:
 	//! Starts the timer
 	void Start() {
-		startTime = clock();
+		startTime = std::chrono::high_resolution_clock::now();
 	}
 
 	//! Returns the time passed since Start call in seconds.
@@ -65,12 +68,66 @@ public:
 	//! Therefore, you can call this method as many times as you like
 	//! once you call Start method once.
 	double Stop() const {
-		clock_t endTime = clock();
-		return float(endTime-startTime)/CLOCKS_PER_SEC;;
+		std::chrono::time_point<std::chrono::high_resolution_clock> endTime = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> dif = endTime - startTime;
+		return dif.count();
 	}
 
 protected:
-	clock_t startTime;	//!< Keeps the starting time
+	std::chrono::time_point<std::chrono::high_resolution_clock> startTime;	//!< Keeps the starting time
+};
+
+//-------------------------------------------------------------------------------
+
+//! A stopwatch class that measures the CPU time of the current process.
+
+class TimerCPU
+{
+#ifdef _WIN32
+	typedef double clock_data;
+#else
+	typedef clock_t clock_data;
+#endif
+public:
+	//! Starts the timer
+	void Start()
+	{
+#ifdef _WIN32
+		processHandle = GetCurrentProcess();
+#endif
+		startTime = GetTime();
+	}
+
+	//! Returns the time passed since Start call in seconds.
+	//! Note that this method does not actually stop the timer,
+	//! it only returns the time passed since Start call.
+	//! Therefore, you can call this method as many times as you like
+	//! once you call Start method once.
+	double Stop() const
+	{
+		clock_data diff = GetTime() - startTime;
+#ifdef _WIN32
+		return diff;
+#else
+		return double(diff)/CLOCKS_PER_SEC;
+#endif
+	}
+
+protected:
+	clock_data GetTime() const
+	{
+#ifdef _WIN32
+		FILETIME a,b,c,d;
+		return ( GetProcessTimes(processHandle,&a,&b,&c,&d) != 0 ) ? (double)(d.dwLowDateTime | ((unsigned long long)d.dwHighDateTime << 32)) * 0.0000001 : 0.0;
+#else
+		return clock();
+#endif
+	}
+
+	clock_data startTime;	//!< Keeps the starting time
+#ifdef _WIN32
+	HANDLE processHandle;
+#endif
 };
 
 //-------------------------------------------------------------------------------
@@ -146,7 +203,7 @@ public:
 	//! Returns the standard deviation of the time records.
 	//! Note that this method goes over all time records,
 	//! so it may take a little time to compute the standard deviation.
-	double GetStdev() const { return sqrt( GetVariance() ); }
+	double GetStdev() const { return Sqrt( GetVariance() ); }
 
 
 	//!@name Access time records
