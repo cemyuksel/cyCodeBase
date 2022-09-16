@@ -398,15 +398,16 @@ inline ftype RootFinderNewton::FindClosed( ftype const coef[N+1], ftype const de
 	}
 
 	ftype yr = PolynomialEval<N,ftype>( coef, xr );
-	ftype xbounds[2] = { x0, x1 };
+	ftype xb0 = x0;
+	ftype xb1 = x1;
 
 	while ( true ) {
 		int side = IsDifferentSign( y0, yr );
-		xbounds[side] = xr;
+		if ( side ) xb1 = xr; else xb0 = xr;
 		ftype dy = PolynomialEval<N-1,ftype>( deriv, xr );
 		ftype dx = yr / dy;
 		ftype xn = xr - dx;
-		if ( xn > xbounds[0] && xn < xbounds[1] ) { // valid Newton step
+		if ( xn > xb0 && xn < xb1 ) { // valid Newton step
 			ftype stepsize = std::abs(xr-xn);
 			xr = xn;
 			if ( stepsize > xError ) {
@@ -415,10 +416,10 @@ inline ftype RootFinderNewton::FindClosed( ftype const coef[N+1], ftype const de
 				if constexpr ( boundError ) {
 					ftype xs;
 					if ( xError == 0 ) {
-						xs = std::nextafter( xbounds[side], xbounds[1-side] );
+						xs = std::nextafter( side?xb1:xb0, side?xb0:xb1 );
 					} else {
 						xs = xn - MultSign( xError, side-1 );
-						if ( xs == xn ) xs = std::nextafter( xbounds[side], xbounds[1-side] );
+						if ( xs == xn ) xs = std::nextafter( side?xb1:xb0, side?xb0:xb1 );
 					}
 					ftype ys = PolynomialEval<N,ftype>( coef, xs );
 					int s = IsDifferentSign( y0, ys );
@@ -428,11 +429,11 @@ inline ftype RootFinderNewton::FindClosed( ftype const coef[N+1], ftype const de
 				} else break;
 			}
 		} else { // Newton step failed
-			xr = (xbounds[0] + xbounds[1]) / 2;
-			if ( xr == xbounds[0] || xr == xbounds[1] || xbounds[1] - xbounds[0] <= ep2 ) {
+			xr = (xb0 + xb1) / 2;
+			if ( xr == xb0 || xr == xb1 || xb1 - xb0 <= ep2 ) {
 				if constexpr ( boundError ) {
 					if ( xError == 0 ) {
-						ftype xm = xbounds[1-side];
+						ftype xm = side ? xb0 : xb1;
 						ftype ym = PolynomialEval<N,ftype>( coef, xm );
 						if ( std::abs(ym) < std::abs(yr) ) xr = xm;
 					}
@@ -509,7 +510,7 @@ inline ftype RootFinderNewton::FindOpen( ftype const coef[N+1], ftype const deri
 			ftype dx = yr / dy;
 			ftype xn = xr - dx;
 			ftype dif = openMin ? xr-xn : xn-xr;
-			if ( dif <= 0 ) {	// valid Newton step
+			if ( dif <= 0 && std::isfinite(xn) ) {	// valid Newton step
 				xr = xn;
 				if ( dif <= xError ) { // we might have converged
 					if ( xr == xm ) break;
@@ -569,7 +570,7 @@ inline int QuadraticRoots( ftype roots[2], ftype const coef[3] )
 	const ftype b = coef[1];
 	const ftype a = coef[2];
 	const ftype delta = b*b - 4*a*c;
-	if ( delta >= 0 ) {
+	if ( delta > 0 ) {
 		const ftype d = Sqrt(delta);
 		const ftype q = ftype(-0.5) * ( b + MultSign(d,b) );
 		const ftype rv0 = q / a;
@@ -577,8 +578,9 @@ inline int QuadraticRoots( ftype roots[2], ftype const coef[3] )
 		roots[0] = Min( rv0, rv1 );
 		roots[1] = Max( rv0, rv1 );
 		return 2;
-	}
-	return 0;
+	} else if ( delta < 0 ) return 0;
+	roots[0] = ftype(-0.5) * b / a;
+	return a != 0;
 }
 
 template <typename ftype>
@@ -588,7 +590,7 @@ inline int QuadraticRoots( ftype roots[2], ftype const coef[3], ftype x0, ftype 
 	const ftype b = coef[1];
 	const ftype a = coef[2];
 	const ftype delta = b*b - 4*a*c;
-	if ( delta >= 0 ) {
+	if ( delta > 0 ) {
 		const ftype d = Sqrt(delta);
 		const ftype q = ftype(-0.5) * ( b + MultSign(d,b) );
 		const ftype rv0 = q / a;
@@ -600,8 +602,10 @@ inline int QuadraticRoots( ftype roots[2], ftype const coef[3], ftype x0, ftype 
 		roots[ 0 ] = r0;
 		roots[r0i] = r1;
 		return r0i + r1i;
-	}
-	return 0;
+	} else if ( delta < 0 ) return 0;
+	const ftype r0 = ftype(-0.5) * b / a;
+	roots[0] = r0;
+	return ( r0 >= x0 ) & ( r0 <= x1 );
 }
 
 //-------------------------------------------------------------------------------
@@ -617,7 +621,7 @@ inline int QuadraticRoots( float roots[2], float const *coef, RootCallback callb
 	__m128 _2c2a_bb = _mm_shuffle_ps( _0abc, _02a2b2c, _MM_SHUFFLE(0,2,1,1) );
 	__m128 _4ac_b2  = _mm_mul_ps( _2a2c_bb, _2c2a_bb );
 	__m128 _4ac     = _mm_shuffle_ps( _4ac_b2, _4ac_b2, _MM_SHUFFLE(2,2,2,2) );
-	if ( _mm_comige_ss( _4ac_b2, _4ac ) ) {
+	if ( _mm_comigt_ss( _4ac_b2, _4ac ) ) {
 		__m128 delta  = _mm_sub_ps( _4ac_b2, _4ac );
 		__m128 sqrtd  = _mm_sqrt_ss(delta);
 		__m128 signb  = _mm_set_ps(-0.0f,-0.0f,-0.0f,-0.0f);
@@ -630,8 +634,9 @@ inline int QuadraticRoots( float roots[2], float const *coef, RootCallback callb
 		__m128 r0     = _mm_min_ps( rv, _mm_shuffle_ps( rv, rv, _MM_SHUFFLE(3,2,1,2) ) );
 		__m128 r      = _mm_max_ps( r0, _mm_shuffle_ps( r0, r0, _MM_SHUFFLE(3,2,2,0) ) );
 		return callback(r);
-	}
-	return 0;
+	} else if ( _mm_comilt_ss( _4ac_b2, _4ac ) ) return 0;
+	__m128 r = _mm_div_ps( _2a2c_bb, _mm_shuffle_ps( _2a2c_bb, _2a2c_bb, _MM_SHUFFLE(1,0,3,3) ) );
+	return callback(r) * (coef[2]!=0);
 }
 
 
@@ -1224,9 +1229,10 @@ inline bool CubicForEachRoot( RootCallback callback, ftype const coef[4], ftype 
 template <int N, typename ftype, bool boundError, typename RootFinder>
 inline int PolynomialRoots( ftype roots[N], ftype const coef[N+1], ftype x0, ftype x1, ftype xError )
 {
-	if      constexpr ( N == 1 ) return LinearRoot    <ftype                      >( *roots, coef, x0, x1 );
-	else if constexpr ( N == 2 ) return QuadraticRoots<ftype                      >(  roots, coef, x0, x1 );
-	else if constexpr ( N == 3 ) return CubicRoots    <ftype,boundError,RootFinder>(  roots, coef, x0, x1, xError );
+	if      constexpr ( N == 1 ) return LinearRoot     <    ftype                      >( *roots, coef, x0, x1 );
+	else if constexpr ( N == 2 ) return QuadraticRoots <    ftype                      >(  roots, coef, x0, x1 );
+	else if constexpr ( N == 3 ) return CubicRoots     <    ftype,boundError,RootFinder>(  roots, coef, x0, x1, xError );
+	else if     ( coef[N] == 0 ) return PolynomialRoots<N-1,ftype,boundError,RootFinder>(  roots, coef, x0, x1, xError );
 	else {
 		ftype y0 = PolynomialEval<N,ftype>( coef, x0 );
 		ftype deriv[N];
@@ -1253,9 +1259,10 @@ inline int PolynomialRoots( ftype roots[N], ftype const coef[N+1], ftype x0, fty
 template <int N, typename ftype, bool boundError, typename RootFinder>
 inline int PolynomialRoots( ftype roots[N], ftype const coef[N+1], ftype xError )
 {
-	if      constexpr ( N == 1 ) return LinearRoot    <ftype                      >( *roots, coef );
-	else if constexpr ( N == 2 ) return QuadraticRoots<ftype                      >(  roots, coef );
-	else if constexpr ( N == 3 ) return CubicRoots    <ftype,boundError,RootFinder>(  roots, coef, xError );
+	if      constexpr ( N == 1 ) return LinearRoot     <    ftype                      >( *roots, coef );
+	else if constexpr ( N == 2 ) return QuadraticRoots <    ftype                      >(  roots, coef );
+	else if constexpr ( N == 3 ) return CubicRoots     <    ftype,boundError,RootFinder>(  roots, coef, xError );
+	else if     ( coef[N] == 0 ) return PolynomialRoots<N-1,ftype,boundError,RootFinder>(  roots, coef, xError );
 	else {
 		ftype deriv[N];
 		PolynomialDerivative<N,ftype>( deriv, coef );
@@ -1296,9 +1303,10 @@ inline int PolynomialRoots( ftype roots[N], ftype const coef[N+1], ftype xError 
 template <int N, typename ftype, bool boundError, typename RootFinder>
 inline bool PolynomialFirstRoot( ftype &root, ftype const coef[N+1], ftype x0, ftype x1, ftype xError )
 {
-	if      constexpr ( N == 1 ) return LinearRoot        <ftype                      >( root, coef, x0, x1 );
-	if      constexpr ( N == 2 ) return QuadraticFirstRoot<ftype                      >( root, coef, x0, x1 );
-	else if constexpr ( N == 3 ) return CubicFirstRoot    <ftype,boundError,RootFinder>( root, coef, x0, x1, xError );
+	if      constexpr ( N == 1 ) return LinearRoot         <    ftype                      >( root, coef, x0, x1 );
+	if      constexpr ( N == 2 ) return QuadraticFirstRoot <    ftype                      >( root, coef, x0, x1 );
+	else if constexpr ( N == 3 ) return CubicFirstRoot     <    ftype,boundError,RootFinder>( root, coef, x0, x1, xError );
+	else if     ( coef[N] == 0 ) return PolynomialFirstRoot<N-1,ftype,boundError,RootFinder>( root, coef, x0, x1, xError );
 	else {
 		ftype y0 = PolynomialEval<N,ftype>( coef, x0 );
 		ftype deriv[N];
@@ -1332,7 +1340,7 @@ inline bool PolynomialFirstRoot( ftype &root, ftype const coef[N+1], ftype xErro
 	if      constexpr ( N == 1 ) return LinearRoot         <    ftype                      >( root, coef );
 	if      constexpr ( N == 2 ) return QuadraticFirstRoot <    ftype                      >( root, coef );
 	else if constexpr ( N == 3 ) return CubicFirstRoot     <    ftype,boundError,RootFinder>( root, coef, xError );
-	else if ( coef[N] == 0 )     return PolynomialFirstRoot<N-1,ftype,boundError,RootFinder>( root, coef, xError );
+	else if     ( coef[N] == 0 ) return PolynomialFirstRoot<N-1,ftype,boundError,RootFinder>( root, coef, xError );
 	else {
 		ftype x0 = -std::numeric_limits<ftype>::infinity();
 		ftype y0 = ( ((N&1)==0) ^ (coef[N]<0) ) ? std::numeric_limits<ftype>::infinity() : -std::numeric_limits<ftype>::infinity();
@@ -1373,8 +1381,9 @@ inline bool PolynomialFirstRoot( ftype &root, ftype const coef[N+1], ftype xErro
 template <int N, typename ftype, bool boundError, typename RootFinder>
 inline bool PolynomialHasRoot( ftype const coef[N+1], ftype x0, ftype x1, ftype xError )
 {
-	if      constexpr ( N == 2 ) return QuadraticHasRoot<ftype>( coef, x0, x1 );
-	else if constexpr ( N == 3 ) return CubicHasRoot    <ftype>( coef, x0, x1 );
+	if      constexpr ( N == 2 ) return QuadraticHasRoot <    ftype>                      ( coef, x0, x1 );
+	else if constexpr ( N == 3 ) return CubicHasRoot     <    ftype>                      ( coef, x0, x1 );
+	else if     ( coef[N] == 0 ) return PolynomialHasRoot<N-1,ftype,boundError,RootFinder>( coef, x0, x1, xError );
 	else {
 		ftype y0 = PolynomialEval<N,ftype>( coef, x0 );
 		ftype y1 = PolynomialEval<N,ftype>( coef, x1 );
@@ -1415,8 +1424,9 @@ inline bool PolynomialHasRoot( ftype const coef[N+1], ftype xError )
 template <int N, typename ftype, bool boundError, typename RootFinder, typename RootCallback>
 inline bool PolynomialForEachRoot( RootCallback callback, ftype const coef[N+1], ftype x0, ftype x1, ftype xError )
 {
-	if      constexpr ( N == 2 ) return QuadraticForEachRoot<ftype,                      RootCallback>( callback, coef, x0, x1         );
-	else if constexpr ( N == 3 ) return CubicForEachRoot    <ftype,boundError,RootFinder,RootCallback>( callback, coef, x0, x1, xError );
+	if      constexpr ( N == 2 ) return QuadraticForEachRoot <    ftype,                      RootCallback>( callback, coef, x0, x1         );
+	else if constexpr ( N == 3 ) return CubicForEachRoot     <    ftype,boundError,RootFinder,RootCallback>( callback, coef, x0, x1, xError );
+	else if     ( coef[N] == 0 ) return PolynomialForEachRoot<N-1,ftype,boundError,RootFinder,RootCallback>( callback, coef, x0, x1, xError );
 	else {
 		ftype y0 = PolynomialEval<N,ftype>( coef, x0 );
 		ftype deriv[N];
@@ -1450,7 +1460,7 @@ inline bool PolynomialForEachRoot( RootCallback callback, ftype const coef[N+1],
 {
 	if      constexpr ( N == 2 ) return QuadraticForEachRoot <    ftype,                      RootCallback>( callback, coef         );
 	else if constexpr ( N == 3 ) return CubicForEachRoot     <    ftype,boundError,RootFinder,RootCallback>( callback, coef, xError );
-	else if ( coef[N] == 0 )     return PolynomialForEachRoot<N-1,ftype,boundError,RootFinder,RootCallback>( callback, coef, xError );
+	else if     ( coef[N] == 0 ) return PolynomialForEachRoot<N-1,ftype,boundError,RootFinder,RootCallback>( callback, coef, xError );
 	else {
 		ftype x0 = -std::numeric_limits<ftype>::infinity();
 		ftype y0 = ( ((N&1)==0) ^ (coef[N]<0) ) ? std::numeric_limits<ftype>::infinity() : -std::numeric_limits<ftype>::infinity();
