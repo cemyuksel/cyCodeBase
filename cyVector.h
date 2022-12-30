@@ -541,42 +541,87 @@ public:
 	CY_NODISCARD Vec2<T> XX() const { return Vec2<T>(x,x); }
 	CY_NODISCARD Vec2<T> XY() const { return Vec2<T>(*this); }
 	CY_NODISCARD Vec2<T> XZ() const { return Vec2<T>(x,z); }
+	CY_NODISCARD Vec2<T> XW() const { return Vec2<T>(x,w); }
 	CY_NODISCARD Vec2<T> YX() const { return Vec2<T>(y,x); }
 	CY_NODISCARD Vec2<T> YY() const { return Vec2<T>(y,y); }
 	CY_NODISCARD Vec2<T> YZ() const { return Vec2<T>(y,z); }
+	CY_NODISCARD Vec2<T> YW() const { return Vec2<T>(y,w); }
 	CY_NODISCARD Vec2<T> ZX() const { return Vec2<T>(z,x); }
 	CY_NODISCARD Vec2<T> ZY() const { return Vec2<T>(z,y); }
 	CY_NODISCARD Vec2<T> ZZ() const { return Vec2<T>(z,z); }
+	CY_NODISCARD Vec2<T> ZW() const { return Vec2<T>(z,w); }
+	CY_NODISCARD Vec2<T> WX() const { return Vec2<T>(w,x); }
+	CY_NODISCARD Vec2<T> WY() const { return Vec2<T>(w,y); }
+	CY_NODISCARD Vec2<T> WZ() const { return Vec2<T>(w,z); }
+	CY_NODISCARD Vec2<T> WW() const { return Vec2<T>(w,w); }
 
 	CY_NODISCARD Vec3<T> XXX() const { return Vec3<T>(x,x,x); }
 	CY_NODISCARD Vec3<T> XXY() const { return Vec3<T>(x,x,y); }
 	CY_NODISCARD Vec3<T> XXZ() const { return Vec3<T>(x,x,z); }
+	CY_NODISCARD Vec3<T> XXW() const { return Vec3<T>(x,x,w); }
 	CY_NODISCARD Vec3<T> XYX() const { return Vec3<T>(x,y,x); }
 	CY_NODISCARD Vec3<T> XYY() const { return Vec3<T>(x,y,y); }
 	CY_NODISCARD Vec3<T> XYZ() const { return Vec3<T>(*this); }
+	CY_NODISCARD Vec3<T> XYW() const { return Vec3<T>(x,y,w); }
 	CY_NODISCARD Vec3<T> XZX() const { return Vec3<T>(x,z,x); }
 	CY_NODISCARD Vec3<T> XZY() const { return Vec3<T>(x,z,y); }
 	CY_NODISCARD Vec3<T> XZZ() const { return Vec3<T>(x,z,z); }
+	CY_NODISCARD Vec3<T> XZW() const { return Vec3<T>(x,z,w); }
+	CY_NODISCARD Vec3<T> XWX() const { return Vec3<T>(x,w,x); }
+	CY_NODISCARD Vec3<T> XWY() const { return Vec3<T>(x,w,y); }
+	CY_NODISCARD Vec3<T> XWZ() const { return Vec3<T>(x,w,z); }
+	CY_NODISCARD Vec3<T> XWW() const { return Vec3<T>(x,w,w); }
 
 	CY_NODISCARD Vec3<T> YXX() const { return Vec3<T>(y,x,x); }
 	CY_NODISCARD Vec3<T> YXY() const { return Vec3<T>(y,x,y); }
 	CY_NODISCARD Vec3<T> YXZ() const { return Vec3<T>(y,x,z); }
+	CY_NODISCARD Vec3<T> YXW() const { return Vec3<T>(y,x,w); }
 	CY_NODISCARD Vec3<T> YYX() const { return Vec3<T>(y,y,x); }
 	CY_NODISCARD Vec3<T> YYY() const { return Vec3<T>(y,y,y); }
 	CY_NODISCARD Vec3<T> YYZ() const { return Vec3<T>(y,y,z); }
+	CY_NODISCARD Vec3<T> YYW() const { return Vec3<T>(y,y,w); }
 	CY_NODISCARD Vec3<T> YZX() const { return Vec3<T>(y,z,x); }
 	CY_NODISCARD Vec3<T> YZY() const { return Vec3<T>(y,z,y); }
 	CY_NODISCARD Vec3<T> YZZ() const { return Vec3<T>(y,z,z); }
+	CY_NODISCARD Vec3<T> YZW() const { return Vec3<T>(y,z,w); }
+	CY_NODISCARD Vec3<T> YWX() const { return Vec3<T>(y,w,x); }
+	CY_NODISCARD Vec3<T> YWY() const { return Vec3<T>(y,w,y); }
+	CY_NODISCARD Vec3<T> YWZ() const { return Vec3<T>(y,w,z); }
+	CY_NODISCARD Vec3<T> YWW() const { return Vec3<T>(y,w,w); }
 
 	CY_NODISCARD Vec3<T> ZXX() const { return Vec3<T>(z,x,x); }
 	CY_NODISCARD Vec3<T> ZXY() const { return Vec3<T>(z,x,y); }
 	CY_NODISCARD Vec3<T> ZXZ() const { return Vec3<T>(z,x,z); }
+	CY_NODISCARD Vec3<T> ZXW() const { return Vec3<T>(z,x,w); }
 	CY_NODISCARD Vec3<T> ZYX() const { return Vec3<T>(z,y,x); }
 	CY_NODISCARD Vec3<T> ZYY() const { return Vec3<T>(z,y,y); }
 	CY_NODISCARD Vec3<T> ZYZ() const { return Vec3<T>(z,y,z); }
+	CY_NODISCARD Vec3<T> ZYW() const { return Vec3<T>(z,y,w); }
 	CY_NODISCARD Vec3<T> ZZX() const { return Vec3<T>(z,z,x); }
 	CY_NODISCARD Vec3<T> ZZY() const { return Vec3<T>(z,z,y); }
 	CY_NODISCARD Vec3<T> ZZZ() const { return Vec3<T>(z,z,z); }
+	CY_NODISCARD Vec3<T> ZZW() const { return Vec3<T>(z,z,w); }
+	CY_NODISCARD Vec3<T> ZWX() const { return Vec3<T>(z,w,x); }
+	CY_NODISCARD Vec3<T> ZWY() const { return Vec3<T>(z,w,y); }
+	CY_NODISCARD Vec3<T> ZWZ() const { return Vec3<T>(z,w,z); }
+	CY_NODISCARD Vec3<T> ZWW() const { return Vec3<T>(z,w,w); }
+
+	CY_NODISCARD Vec3<T> WXX() const { return Vec3<T>(w,x,x); }
+	CY_NODISCARD Vec3<T> WXY() const { return Vec3<T>(w,x,y); }
+	CY_NODISCARD Vec3<T> WXZ() const { return Vec3<T>(w,x,z); }
+	CY_NODISCARD Vec3<T> WXW() const { return Vec3<T>(w,x,w); }
+	CY_NODISCARD Vec3<T> WYX() const { return Vec3<T>(w,y,x); }
+	CY_NODISCARD Vec3<T> WYY() const { return Vec3<T>(w,y,y); }
+	CY_NODISCARD Vec3<T> WYZ() const { return Vec3<T>(w,y,z); }
+	CY_NODISCARD Vec3<T> WYW() const { return Vec3<T>(w,y,w); }
+	CY_NODISCARD Vec3<T> WZX() const { return Vec3<T>(w,z,x); }
+	CY_NODISCARD Vec3<T> WZY() const { return Vec3<T>(w,z,y); }
+	CY_NODISCARD Vec3<T> WZZ() const { return Vec3<T>(w,z,z); }
+	CY_NODISCARD Vec3<T> WZW() const { return Vec3<T>(w,z,w); }
+	CY_NODISCARD Vec3<T> WWX() const { return Vec3<T>(w,w,x); }
+	CY_NODISCARD Vec3<T> WWY() const { return Vec3<T>(w,w,y); }
+	CY_NODISCARD Vec3<T> WWZ() const { return Vec3<T>(w,w,z); }
+	CY_NODISCARD Vec3<T> WWW() const { return Vec3<T>(w,w,w); }
 
 	CY_NODISCARD Vec3<T> GetNonHomogeneous() const { return Vec3<T>(*this)/w; }
 };
