@@ -172,10 +172,7 @@ class Vec2
 public:
 
 	//!@name Components of the vector
-	union {
-		struct { T x, y; };
-		T elem[2];	//!< Array-type access to the vector elements x and y
-	};
+	T x, y;
 
 	//!@name Constructors
 	Vec2() CY_CLASS_FUNCTION_DEFAULT
@@ -187,11 +184,11 @@ public:
 	template <typename S> explicit Vec2( Vec2<S> const &p ) : x(T(p.x)), y(T(p.y)) {}
 	template <typename S> explicit Vec2( Vec3<S> const &p );
 	template <typename S> explicit Vec2( Vec4<S> const &p );
-	template <int N            > explicit Vec2( Vec<T,N> const &p ) { p.template CopyData<2>(elem); }
-	template <int N, typename S> explicit Vec2( Vec<S,N> const &p ) { p.template ConvertData<T,2>(elem); }
+	template <int N            > explicit Vec2( Vec<T,N> const &p ) { p.template CopyData<2>(&x); }
+	template <int N, typename S> explicit Vec2( Vec<S,N> const &p ) { p.template ConvertData<T,2>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                      { MemClear(elem,2); }				//!< Sets the coordinates as zero.
+	void Zero()                      { x=0; y=0; }						//!< Sets the coordinates as zero.
 	void Get( T * restrict p ) const { ((Vec2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
 	void Set( T const * restrict p ) { operator=(*((Vec2*)p)); }		//!< Sets the coordinates using the values in the given array.
 	void Set( T v )                  { x=v; y=v; }						//!< Sets all coordinates using the given value
@@ -212,8 +209,8 @@ public:
 	CY_NODISCARD bool IsUnit          () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }	//!< Returns true if the length of the vector is close to 1.
 	CY_NODISCARD Vec2 Sqrt            () const { return Vec2(cy::Sqrt(x),cy::Sqrt(y)); }				//!< Returns the square root of the vector.
 	CY_NODISCARD Vec2 Abs             () const { return Vec2(std::abs(x),std::abs(y)); }				//!< Returns a vector containing the absolute values of all components.
-	CY_NODISCARD Vec2 SortAsc         () const { Vec2 v; Sort2<true >( v.elem, elem ); return v; }		//!< Returns a vector with components sorted in ascending order.
-	CY_NODISCARD Vec2 SortDesc        () const { Vec2 v; Sort2<false>( v.elem, elem ); return v; }		//!< Returns a vector with components sorted in descending order.
+	CY_NODISCARD Vec2 SortAsc         () const { Vec2 v; Sort2<true >( v.x, v.y, x, y ); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD Vec2 SortDesc        () const { Vec2 v; Sort2<false>( v.x, v.y, x, y ); return v; }	//!< Returns a vector with components sorted in descending order.
 	CY_NODISCARD Vec2 GetPerpendicular() const { return Vec2(-y,x); }									//!< Returns a perpendicular vector (rotated by 90 degrees in counter clockwise direction).
 
 	//!@name Limit methods
@@ -252,10 +249,10 @@ public:
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
 	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
-	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<2); return elem[i]; }
-	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<2); return elem[i]; }
-	CY_NODISCARD T*       Elements    ()              { return elem; }
-	CY_NODISCARD T const* Elements    ()        const { return elem; }
+	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<2); return (&x)[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<2); return (&x)[i]; }
+	CY_NODISCARD T*       Elements    ()              { return &x; }
+	CY_NODISCARD T const* Elements    ()        const { return &x; }
 
 	//!@name Cross product and dot product
 	CY_NODISCARD T Cross      ( Vec2 const &p ) const { Vec2 r(-y,x); return r.Dot(p); }	//!< Cross product
@@ -284,10 +281,7 @@ class Vec3
 public:
 
 	//!@name Components of the vector
-	union {
-		struct { T x, y, z; };
-		T elem[3];	//!< Array-type access to the vector elements x, y, and z
-	};
+	T x, y, z;
 
 	//!@name Constructors
 	Vec3() CY_CLASS_FUNCTION_DEFAULT
@@ -299,11 +293,11 @@ public:
 	template <typename S> explicit Vec3( Vec3<S> const &p )         : x(T(p.x)), y(T(p.y)), z(T(p.z)) {}
 	template <typename S> explicit Vec3( Vec2<S> const &p, T _z=0 ) : x(T(p.x)), y(T(p.y)), z(   _z ) {}
 	template <typename S> explicit Vec3( Vec4<S> const &p );
-	template <int N            > explicit Vec3( Vec<T,N> const &p ) { p.template CopyData<3>(elem); }
-	template <int N, typename S> explicit Vec3( Vec<S,N> const &p ) { p.template ConvertData<T,3>(elem); }
+	template <int N            > explicit Vec3( Vec<T,N> const &p ) { p.template CopyData<3>(&x); }
+	template <int N, typename S> explicit Vec3( Vec<S,N> const &p ) { p.template ConvertData<T,3>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                            { MemClear(elem,3); }				//!< Sets the coordinates as zero.
+	void Zero()                            { x=0; y=0; z=0; }					//!< Sets the coordinates as zero.
 	void Get( T       * restrict p ) const { ((Vec3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
 	void Set( T const * restrict p )       { operator=(*((Vec3*)p)); }			//!< Sets the coordinates using the values in the given array.
 	void Set( T v )                        { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value.
@@ -325,8 +319,8 @@ public:
 	CY_NODISCARD bool IsUnit          () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }	//!< Returns true if the length of the vector is close to 1.
 	CY_NODISCARD Vec3 Sqrt            () const { return Vec3(cy::Sqrt(x),cy::Sqrt(y),cy::Sqrt(z)); }	//!< Returns the square root of the vector.
 	CY_NODISCARD Vec3 Abs             () const { return Vec3(std::abs(x),std::abs(y),std::abs(z)); }	//!< Returns a vector containing the absolute values of all components.
-	CY_NODISCARD Vec3 SortAsc         () const { Vec3 v; Sort3<true >( v.elem, elem ); return v; }		//!< Returns a vector with components sorted in ascending order.
-	CY_NODISCARD Vec3 SortDesc        () const { Vec3 v; Sort3<false>( v.elem, elem ); return v; }		//!< Returns a vector with components sorted in descending order.
+	CY_NODISCARD Vec3 SortAsc         () const { Vec3 v; Sort3<true >(v.x,v.y,v.z,x,y,z); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD Vec3 SortDesc        () const { Vec3 v; Sort3<false>(v.x,v.y,v.z,x,y,z); return v; }	//!< Returns a vector with components sorted in descending order.
 	CY_NODISCARD Vec3 GetPerpendicular() const { Vec3 v0,v1; GetOrthonormals(v0,v1); return v0; }		//!< Returns a perpendicular vector
 
 	void GetOrthonormals ( Vec3 &v0, Vec3 &v1 ) const	//!< Returns two orthogonal vectors to this vector, forming an orthonormal basis
@@ -380,10 +374,10 @@ public:
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
 	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
-	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<3); return elem[i]; }
-	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<3); return elem[i]; }
-	CY_NODISCARD T*       Elements    ()              { return elem; }
-	CY_NODISCARD T const* Elements    ()        const { return elem; }
+	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<3); return (&x)[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<3); return (&x)[i]; }
+	CY_NODISCARD T*       Elements    ()              { return &x; }
+	CY_NODISCARD T const* Elements    ()        const { return &x; }
 
 	//!@name Cross product and dot product
 	CY_NODISCARD Vec3 Cross      ( Vec3 const &p ) const { return Vec3(y*p.z-z*p.y, z*p.x-x*p.z, x*p.y-y*p.x); }	//!< Cross product
@@ -447,10 +441,7 @@ class Vec4
 public:
 
 	//!@name Components of the vector
-	union {
-		struct { T x, y, z, w; };
-		T elem[4];	//!< Array-type access to the vector elements x, y, z, and w
-	};
+	T x, y, z, w;
 
 	//!@name Constructors
 	Vec4() CY_CLASS_FUNCTION_DEFAULT
@@ -462,11 +453,11 @@ public:
 	template <typename S> explicit Vec4( Vec2<S> const &p, T _z=0, T _w=1 ) : x(T(p.x)), y(T(p.y)), z(   _z ), w(   _w ) {}
 	template <typename S> explicit Vec4( Vec3<S> const &p,         T _w=1 ) : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(   _w ) {}
 	template <typename S> explicit Vec4( Vec4<S> const &p )                 : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(T(p.w)) {}
-	template <int N            > explicit Vec4( Vec<T,N> const &p ) { p.template CopyData<4>(elem); }
-	template <int N, typename S> explicit Vec4( Vec<S,N> const &p ) { p.template ConvertData<T,4>(elem); }
+	template <int N            > explicit Vec4( Vec<T,N> const &p ) { p.template CopyData<4>(&x); }
+	template <int N, typename S> explicit Vec4( Vec<S,N> const &p ) { p.template ConvertData<T,4>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                                { MemClear(elem,4); }				//!< Sets the coordinates as zero
+	void Zero()                                { x=0; y=0; z=0; w=0; }				//!< Sets the coordinates as zero
 	void Get( T       * restrict p ) const     { ((Vec4*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
 	void Set( T const * restrict p )           { operator=(*((Vec4*)p)); }			//!< Sets the coordinates using the values in the given array
 	void Set( T v )                            { x=v; y=v; z=v; w=v; }				//!< Sets all coordinates using the given value
@@ -483,14 +474,14 @@ public:
 	CY_NODISCARD bool IsZero       () const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
 	CY_NODISCARD T    Min          () const { return cy::Min(x,y,z,w); }							//!< Returns the minimum component of the vector.
 	CY_NODISCARD T    Max          () const { return cy::Max(x,y,z,w); }							//!< Returns the maximum component of the vector.
-	CY_NODISCARD int  MinComp      () const { int xy=x>y; int zw=(z>w)+2; return elem[xy]<elem[zw]?xy:zw; }	//!< Returns the index of the minimum component of the vector.
-	CY_NODISCARD int  MaxComp      () const { int xy=x<y; int zw=(z<w)+2; return elem[xy]>elem[zw]?xy:zw; }	//!< Returns the index of the maximum component of the vector.
+	CY_NODISCARD int  MinComp      () const { int xy=x>y; int zw=(z>w)+2; return cy::Min(x,y)<cy::Min(z,w)?xy:zw; }	//!< Returns the index of the minimum component of the vector.
+	CY_NODISCARD int  MaxComp      () const { int xy=x<y; int zw=(z<w)+2; return cy::Max(x,y)<cy::Max(z,w)?zw:xy; }	//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD bool IsFinite     () const { return cy::IsFinite(x) && cy::IsFinite(y) && cy::IsFinite(z) && cy::IsFinite(w); }	//!< Returns true if all components are finite real numbers.
 	CY_NODISCARD bool IsUnit       () const { return std::abs(LengthSquared()-T(1)) < T(0.001); }				//!< Returns true if the length of the vector is close to 1.
 	CY_NODISCARD Vec4 Sqrt         () const { return Vec4(cy::Sqrt(x),cy::Sqrt(y),cy::Sqrt(z),cy::Sqrt(w)); }	//!< Returns the square root of the vector.
 	CY_NODISCARD Vec4 Abs          () const { return Vec4(std::abs(x),std::abs(y),std::abs(z),std::abs(w)); }	//!< Returns a vector containing the absolute values of all components.
-	CY_NODISCARD Vec4 SortAsc      () const { Vec4 v; Sort4<true >( v.elem, elem ); return v; }		//!< Returns a vector with components sorted in ascending order.
-	CY_NODISCARD Vec4 SortDesc     () const { Vec4 v; Sort4<false>( v.elem, elem ); return v; }		//!< Returns a vector with components sorted in descending order.
+	CY_NODISCARD Vec4 SortAsc      () const { Vec4 v; Sort4<true >(v.x,v.y,v.z,v.w,x,y,z,w); return v; }		//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD Vec4 SortDesc     () const { Vec4 v; Sort4<false>(v.x,v.y,v.z,v.w,x,y,z,w); return v; }		//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
 	void Clamp   ( T minLimit, T maxLimit ) { ClampMin(minLimit); ClampMax(maxLimit); }		//!< Ensures that all components of the vector are within the given limits.
@@ -528,10 +519,10 @@ public:
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
 	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
-	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<4); return elem[i]; }
-	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<4); return elem[i]; }
-	CY_NODISCARD T*       Elements    ()              { return elem; }
-	CY_NODISCARD T const* Elements    ()        const { return elem; }
+	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<4); return (&x)[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<4); return (&x)[i]; }
+	CY_NODISCARD T*       Elements    ()              { return &x; }
+	CY_NODISCARD T const* Elements    ()        const { return &x; }
 
 	//!@name Dot product
 	CY_NODISCARD T Dot        ( Vec4 const &p ) const { return x*p.x + y*p.y + z*p.z + w*p.w; }	//!< Dot product

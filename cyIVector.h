@@ -184,10 +184,7 @@ class IVec2
 public:
 
 	//!@name Components of the vector
-	union {
-		struct { T x, y; };
-		T elem[2];
-	};
+	T x, y;
 
 	//!@name Constructors
 	IVec2() CY_CLASS_FUNCTION_DEFAULT
@@ -200,8 +197,8 @@ public:
 	template <typename S> explicit IVec2( IVec2<S> const &p ) : x(T(p.x)), y(T(p.y)) {}
 	template <typename S> explicit IVec2( IVec3<S> const &p );
 	template <typename S> explicit IVec2( IVec4<S> const &p );
-	template <            int M> explicit IVec2( IVec<T,M> const &p ) { p.CopyData<2>(elem); }
-	template <typename S, int M> explicit IVec2( IVec<S,M> const &p ) { p.ConvertData<T,2>(elem); }
+	template <            int M> explicit IVec2( IVec<T,M> const &p ) { p.CopyData<2>(&x); }
+	template <typename S, int M> explicit IVec2( IVec<S,M> const &p ) { p.ConvertData<T,2>(&x); }
 	template <typename P> explicit IVec2( P const &p ) : x(T(p[0])), y(T(p[1])) {}
 
 	//!@name Conversion
@@ -210,7 +207,7 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()                      { MemClear(elem,2); }				//!< Sets the coordinates as zero.
+	void Zero()                      { x=0; y=0; }						//!< Sets the coordinates as zero.
 	void Get( T * restrict p ) const { ((IVec2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
 	void Set( T const * restrict p ) { operator=(*((IVec2*)p)); }		//!< Sets the coordinates using the values in the given array.
 	void Set( T v )                  { x=v; y=v; }						//!< Sets all coordinates using the given value
@@ -224,8 +221,8 @@ public:
 	CY_NODISCARD int   MinComp () const { return x<y ? 0 : 1; }				//!< Returns the index of the minimum component of the vector.
 	CY_NODISCARD int   MaxComp () const { return x>y ? 0 : 1; }				//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD IVec2 Abs     () const { return IVec2(std::abs(x),std::abs(y)); }	//!< Returns a vector containing the absolute values of all components.
-	CY_NODISCARD IVec2 SortAsc () const { IVec2 v; Sort2<true >( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in ascending order.
-	CY_NODISCARD IVec2 SortDesc() const { IVec2 v; Sort2<false>( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in descending order.
+	CY_NODISCARD IVec2 SortAsc () const { IVec2 v; Sort2<true >(v.x,v.y,x,y); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD IVec2 SortDesc() const { IVec2 v; Sort2<false>(v.x,v.y,x,y); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
 	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
@@ -287,10 +284,10 @@ public:
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
 	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
-	CY_NODISCARD T&       Element     ( int i )       { return elem[i]; }
-	CY_NODISCARD T const& Element     ( int i ) const { return elem[i]; }
-	CY_NODISCARD T*       Data        ()              { return elem; }
-	CY_NODISCARD T const* Data        ()        const { return elem; }
+	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<2); return (&x)[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<2); return (&x)[i]; }
+	CY_NODISCARD T*       Data        ()              { return &x; }
+	CY_NODISCARD T const* Data        ()        const { return &x; }
 
 	//!@name Cross product and dot product
 	CY_NODISCARD T Dot        ( IVec2 const &p ) const { IVec2 r=operator*(p); return r.Sum(); }	//!< Dot product
@@ -311,10 +308,7 @@ class IVec3
 public:
 
 	//!@name Components of the vector
-	union {
-		struct { T x, y, z; };
-		T elem[3];
-	};
+	T x, y, z;
 
 	//!@name Constructors
 	IVec3() CY_CLASS_FUNCTION_DEFAULT
@@ -326,8 +320,8 @@ public:
 	template <typename S> explicit IVec3( IVec3<S> const &p )         : x(T(p.x)), y(T(p.y)), z(T(p.z)) {}
 	template <typename S> explicit IVec3( IVec2<S> const &p, T _z=0 ) : x(T(p.x)), y(T(p.y)), z(   _z ) {}
 	template <typename S> explicit IVec3( IVec4<S> const &p );
-	template <            int M> explicit IVec3( IVec<T,M> const &p ) { p.CopyData<3>(elem); }
-	template <typename S, int M> explicit IVec3( IVec<S,M> const &p ) { p.ConvertData<T,3>(elem); }
+	template <            int M> explicit IVec3( IVec<T,M> const &p ) { p.CopyData<3>(&x); }
+	template <typename S, int M> explicit IVec3( IVec<S,M> const &p ) { p.ConvertData<T,3>(&x); }
 	template <typename P> explicit IVec3( P const &p ) : x((T)p[0]), y((T)p[1]), z((T)p[2]) {}
 
 	//!@name Conversion
@@ -336,7 +330,7 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()                      { MemClear(elem,3); }				//!< Sets the coordinates as zero
+	void Zero()                      { x=0; y=0; z=0; }					//!< Sets the coordinates as zero
 	void Get( T * restrict p ) const { ((IVec3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
 	void Set( T const * restrict p ) { operator=(*((IVec3*)p)); }		//!< Sets the coordinates using the values in the given array
 	void Set( T v )                  { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value
@@ -345,13 +339,13 @@ public:
 	//!@name Length and Normalize methods
 	CY_NODISCARD T     Sum     () const { return x+y+z; }										//!< Returns the sum of its components
 	CY_NODISCARD bool  IsZero  () const { return x==T(0) && y==T(0) && z==T(0); }				//!< Returns true if all components are exactly zero
-	CY_NODISCARD T     Min     () const { return elem[MinComp()]; }								//!< Returns the minimum component of the vector.
-	CY_NODISCARD T     Max     () const { return elem[MaxComp()]; }								//!< Returns the maximum component of the vector.
+	CY_NODISCARD T     Min     () const { return cy::Min(x,y,z); }								//!< Returns the minimum component of the vector.
+	CY_NODISCARD T     Max     () const { return cy::Max(x,y,z); }								//!< Returns the maximum component of the vector.
 	CY_NODISCARD int   MinComp () const { int yx=y<x; int zx=z<x; int zy=z<y; return (yx|zx)+(zx&zy); }	//!< Returns the index of the minimum component of the vector.
 	CY_NODISCARD int   MaxComp () const { int xy=x<y; int xz=x<z; int yz=y<z; return (xy|xz)+(xz&yz); }	//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD IVec3 Abs     () const { return IVec3(std::abs(x),std::abs(y),std::abs(z)); }	//!< Returns a vector containing the absolute values of all components.
-	CY_NODISCARD IVec3 SortAsc () const { IVec3 v; Sort3<true >( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in ascending order.
-	CY_NODISCARD IVec3 SortDesc() const { IVec3 v; Sort3<false>( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in descending order.
+	CY_NODISCARD IVec3 SortAsc () const { IVec3 v; Sort3<true >(v.x,v.y,v.z,x,y,z); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD IVec3 SortDesc() const { IVec3 v; Sort3<false>(v.x,v.y,v.z,x,y,z); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
 	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
@@ -413,10 +407,10 @@ public:
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
 	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
-	CY_NODISCARD T&       Element     ( int i )       { return elem[i]; }
-	CY_NODISCARD T const& Element     ( int i ) const { return elem[i]; }
-	CY_NODISCARD T*       Data        ()              { return elem; }
-	CY_NODISCARD T const* Data        ()        const { return elem; }
+	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<3); return (&x)[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<3); return (&x)[i]; }
+	CY_NODISCARD T*       Data        ()              { return &x; }
+	CY_NODISCARD T const* Data        ()        const { return &x; }
 
 	//!@name Cross product and dot product
 	CY_NODISCARD T   Dot        ( IVec3 const &p ) const { IVec3 r=operator*(p); return r.Sum(); }	//!< Dot product
@@ -440,10 +434,7 @@ class IVec4
 public:
 
 	//!@name Components of the vector
-	union {
-		struct { T x, y, z, w; };
-		T elem[4];
-	};
+	T x, y, z, w;
 
 	//!@name Constructors
 	IVec4() CY_CLASS_FUNCTION_DEFAULT
@@ -452,11 +443,11 @@ public:
 	explicit IVec4( IVec3<T> const &p,         T _w=0 ) : x(p.x), y(p.y), z(p.z), w( _w) {}
 	explicit IVec4( IVec2<T> const &p, T _z=0, T _w=0 ) : x(p.x), y(p.y), z( _z), w( _w) {}
 	explicit IVec4( T const * restrict v ) { Set( v ); }
-	template <typename S> explicit IVec4( IVec4<S> const &p )                  : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(T(p.w)) {}
-	template <typename S> explicit IVec4( IVec3<S> const &p,         T _w=0 )  : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(   _w ) {}
-	template <typename S> explicit IVec4( IVec2<S> const &p, T _z=0, T _w=0 )  : x(T(p.x)), y(T(p.y)), z(   _z ), z(   _w ) {}
-	template <            int M> explicit IVec4( IVec<T,M> const &p ) { p.CopyData<3>(elem); }
-	template <typename S, int M> explicit IVec4( IVec<S,M> const &p ) { p.ConvertData<T,3>(elem); }
+	template <typename S> explicit IVec4( IVec4<S> const &p )                 : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(T(p.w)) {}
+	template <typename S> explicit IVec4( IVec3<S> const &p,         T _w=0 ) : x(T(p.x)), y(T(p.y)), z(T(p.z)), z(   _w ) {}
+	template <typename S> explicit IVec4( IVec2<S> const &p, T _z=0, T _w=0 ) : x(T(p.x)), y(T(p.y)), z(   _z ), z(   _w ) {}
+	template <            int M> explicit IVec4( IVec<T,M> const &p ) { p.CopyData<3>(&x); }
+	template <typename S, int M> explicit IVec4( IVec<S,M> const &p ) { p.ConvertData<T,3>(&x); }
 	template <typename P> explicit IVec4( P const &p ) : x((T)p[0]), y((T)p[1]), z((T)p[2]) {}
 
 	//!@name Conversion
@@ -465,7 +456,7 @@ public:
 #endif
 
 	//!@name Set & Get value methods
-	void Zero()                            { MemClear(elem,4); }				//!< Sets the coordinates as zero
+	void Zero()                            { x=0; y=0; z=0; w=0; }				//!< Sets the coordinates as zero
 	void Get( T       * restrict p ) const { ((IVec4*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
 	void Set( T const * restrict p )       { operator=(*((IVec4*)p)); }			//!< Sets the coordinates using the values in the given array
 	void Set( T v )                        { x=v; y=v; z=v; w=v; }				//!< Sets all coordinates using the given value
@@ -474,13 +465,13 @@ public:
 	//!@name Length and Normalize methods
 	CY_NODISCARD T     Sum     () const { return x+y+z+w; }										//!< Returns the sum of its components
 	CY_NODISCARD bool  IsZero  () const { return x==T(0) && y==T(0) && z==T(0) && w==T(0); }	//!< Returns true if all components are exactly zero
-	CY_NODISCARD T     Min     () const { T   mxy = x<y ? x : y; T   mzw = z<w ? z : w; return mxy<mzw ? mxy : mzw; }				//!< Returns the minimum component of the vector.
-	CY_NODISCARD T     Max     () const { T   mxy = x>y ? x : y; T   mzw = z>w ? z : w; return mxy>mzw ? mxy : mzw; }				//!< Returns the maximum component of the vector.
-	CY_NODISCARD int   MinComp () const { int ixy = x<y ? 0 : 1; int izw = z<w ? 2 : 3; return elem[ixy]<elem[izw] ? ixy : izw; }	//!< Returns the index of the minimum component of the vector.
-	CY_NODISCARD int   MaxComp () const { int ixy = x>y ? 0 : 1; int izw = z>w ? 2 : 3; return elem[ixy]>elem[izw] ? ixy : izw; }	//!< Returns the index of the maximum component of the vector.
+	CY_NODISCARD T     Min     () const { return cy::Min(x,y,z,w); }							//!< Returns the minimum component of the vector.
+	CY_NODISCARD T     Max     () const { return cy::Max(x,y,z,w); }							//!< Returns the maximum component of the vector.
+	CY_NODISCARD int   MinComp () const { int xy=x>y; int zw=(z>w)+2; return cy::Min(x,y)<cy::Min(z,w)?xy:zw; }	//!< Returns the index of the minimum component of the vector.
+	CY_NODISCARD int   MaxComp () const { int xy=x<y; int zw=(z<w)+2; return cy::Max(x,y)<cy::Max(z,w)?zw:xy; }	//!< Returns the index of the maximum component of the vector.
 	CY_NODISCARD IVec4 Abs     () const { return IVec4(std::abs(x),std::abs(y),std::abs(z),std::abs(w)); }	//!< Returns a vector containing the absolute values of all components.
-	CY_NODISCARD IVec4 SortAsc () const { IVec4 v; Sort4<true >( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in ascending order.
-	CY_NODISCARD IVec4 SortDesc() const { IVec4 v; Sort4<false>( v.elem, elem ); return v; }	//!< Returns a vector with components sorted in descending order.
+	CY_NODISCARD IVec4 SortAsc () const { IVec4 v; Sort4<true >(v.x,v.y,v.z,v.w,x,y,z,w); return v; }	//!< Returns a vector with components sorted in ascending order.
+	CY_NODISCARD IVec4 SortDesc() const { IVec4 v; Sort4<false>(v.x,v.y,v.z,v.w,x,y,z,w); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
 	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }		//!< Ensures that all components of the vector are within the given limits.
@@ -542,10 +533,10 @@ public:
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
 	CY_NODISCARD T const& operator [] ( int i ) const { return Element(i); }
-	CY_NODISCARD T&       Element     ( int i )       { return elem[i]; }
-	CY_NODISCARD T const& Element     ( int i ) const { return elem[i]; }
-	CY_NODISCARD T*       Data        ()              { return elem; }
-	CY_NODISCARD T const* Data        ()        const { return elem; }
+	CY_NODISCARD T&       Element     ( int i )       { assert(i>=0 && i<4); return (&x)[i]; }
+	CY_NODISCARD T const& Element     ( int i ) const { assert(i>=0 && i<4); return (&x)[i]; }
+	CY_NODISCARD T*       Data        ()              { return &x; }
+	CY_NODISCARD T const* Data        ()        const { return &x; }
 
 	//!@name Cross product and dot product
 	CY_NODISCARD T   Dot        ( IVec4 const &p ) const { IVec4 r=operator*(p); return r.Sum(); }	//!< Dot product

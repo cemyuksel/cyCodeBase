@@ -293,10 +293,38 @@ template <typename T> inline void Swap     ( T &v1, T &v2 ) { if ( std::is_trivi
 /////////////////////////////////////////////////////////////////////////////////
 
 template <bool ascending, typename T>
+inline void Sort2( T &r0, T &r1, T const &v0, T const &v1 )
+{
+	if ( ascending ) {
+		r0 = Min( v0, v1 );
+		r1 = Max( v0, v1 );
+	} else {
+		r0 = Max( v0, v1 );
+		r1 = Min( v0, v1 );
+	}
+}
+
+template <bool ascending, typename T>
 inline void Sort2( T r[2], T const v[2] )
 {
 	r[1-ascending] = Min( v[0], v[1] );
 	r[  ascending] = Max( v[0], v[1] );
+}
+
+template <bool ascending, typename T>
+void Sort3( T &r0, T &r1, T &r2, T const &v0, T const &v1, T const &v2 )
+{
+	T n01   = Min( v0,  v1    );
+	T x01   = Max( v0,  v1    );
+	T n2x01 = Min( v2,  x01   );
+	r1      = Max( n01, n2x01 );
+	if ( ascending ) {
+		r0  = Min( n2x01, n01 );
+		r2  = Max( x01,   v2  );
+	} else {
+		r0  = Max( x01,   v2  );
+		r2  = Min( n2x01, n01 );
+	}
 }
 
 template <bool ascending, typename T>
@@ -305,11 +333,33 @@ void Sort3( T r[3], T const v[3] )
 	T n01   = Min( v[0], v[1] );
 	T x01   = Max( v[0], v[1] );
 	T n2x01 = Min( v[2], x01  );
-	T r2    = Max( x01,  v[2] );
 	T r0    = Min( n2x01, n01 );
 	T r1    = Max( n01, n2x01 );
-	if ( ascending ) { r[0]=r0; r[1]=r1; r[2]=r2;  }
+	T r2    = Max( x01,  v[2] );
+	if ( ascending ) { r[0]=r0; r[1]=r1; r[2]=r2; }
 	else             { r[0]=r2; r[1]=r1; r[2]=r0; }
+}
+
+template <bool ascending, typename T>
+inline void Sort4( T &r0, T &r1, T &r2, T &r3, T const &v0, T const &v1, T const &v2, T const &v3 )
+{
+	T n01  = Min( v0,  v1  );
+	T x01  = Max( v0,  v1  );
+	T n23  = Min( v2,  v3  );
+	T x23  = Max( v2,  v3  );
+	T x02  = Max( n23, n01 );
+	T n13  = Min( x01, x23 );
+	if ( ascending ) {
+		r0 = Min( n01, n23 );
+		r1 = Min( x02, n13 );
+		r2 = Max( n13, x02 );
+		r3 = Max( x23, x01 );
+	} else {
+		r0 = Max( x23, x01 );
+		r1 = Max( n13, x02 );
+		r2 = Min( x02, n13 );
+		r3 = Min( n01, n23 );
+	}
 }
 
 template <bool ascending, typename T>
@@ -319,12 +369,12 @@ inline void Sort4( T r[4], T const v[4] )
 	T x01 = Max( v[0], v[1] );
 	T n23 = Min( v[2], v[3] );
 	T x23 = Max( v[2], v[3] );
-	T r0  = Min( n01, n23 );
 	T x02 = Max( n23, n01 );
 	T n13 = Min( x01, x23 );
-	T r3  = Max( x23, x01 );
+	T r0  = Min( n01, n23 );
 	T r1  = Min( x02, n13 );
 	T r2  = Max( n13, x02 );
+	T r3  = Max( x23, x01 );
 	if ( ascending ) { r[0]=r0; r[1]=r1; r[2]=r2; r[3]=r3; }
 	else             { r[0]=r3; r[1]=r2; r[2]=r1; r[3]=r0; }
 }
