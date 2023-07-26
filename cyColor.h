@@ -156,7 +156,7 @@ public:
 
 	//!@name Set & Get value functions
 	void SetBlack( float alpha=1.0f ) { r=0.0f; g=0.0f; b=0.0f; a=alpha; }					//!< Sets r, g, and b components as zero and a component as given
-	void SetWhite( float alpha=1.0f ) { r=0.0f; g=0.0f; b=0.0f; a=alpha; }					//!< Sets r, g, and b components as one and a component as given
+	void SetWhite( float alpha=1.0f ) { r=1.0f; g=1.0f; b=1.0f; a=alpha; }					//!< Sets r, g, and b components as one and a component as given
 	void Set     ( float _r, float _g, float _b, float _a=1 ) { r=_r; g=_g; b=_b; a=_a; }	//!< Sets r, g, b and a components as given
 	void Set     ( float const *v ) { r=v[0]; g=v[1]; b=v[2]; a=v[3]; }						//!< Sets r, g, b and a components using the values in the given array
 	void GetValue( float *v ) const { v[0]=r; v[1]=g; v[2]=b; v[3]=a; }						//!< Puts r, g, b and a values into the array
