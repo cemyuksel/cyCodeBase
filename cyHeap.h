@@ -57,7 +57,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////
 	//!@name Constructor and Destructor
 
-	Heap() : size(0), heapItemCount(0), data(nullptr), heap(nullptr), heapPos(nullptr), deleteData(false) {}
+	Heap() : size(0), heapSize(0), heapItemCount(0), data(nullptr), heap(nullptr), heapPos(nullptr), deleteData(false) {}
 	~Heap() { Clear(); }
 
 	/////////////////////////////////////////////////////////////////////////////////
@@ -109,10 +109,13 @@ public:
 	//! before calling the Build method.
 	void Build()
 	{
-		ClearHeap();
+		if ( heapSize < size ) {
+			ClearHeap();
+			heapSize = size;
+			heap     = new SIZE_TYPE[ heapSize + 1 ];
+			heapPos  = new SIZE_TYPE[ heapSize ];
+		}
 		heapItemCount = size;
-		heap    = new SIZE_TYPE[ size + 1 ];
-		heapPos = new SIZE_TYPE[ size ];
 		for ( SIZE_TYPE i=SIZE_TYPE(0); i< heapItemCount; i++ ) heapPos[i] = i+1;
 		for ( SIZE_TYPE i=SIZE_TYPE(1); i<=heapItemCount; i++ ) heap   [i] = i-1;
 		if ( heapItemCount <= 1 ) return;
@@ -143,6 +146,17 @@ public:
 	//! This method is useful for fixing the heap position after an item is modified externally to decrease its priority.
 	//! Returns false if the item is not in the heap anymore (removed by Pop) or if its heap position is not changed.
 	bool MoveItemDown( SIZE_TYPE id ) { return HeapMoveDown(heapPos[id]); }
+
+	//! Removes the item with the given id from the heap.
+	//! Returns false if the item is not in the heap anymore (removed by Pop) or if its heap position is not changed.
+	bool RemoveItem( SIZE_TYPE id )
+	{
+		SIZE_TYPE p = heapPos[id];
+		if ( p > heapItemCount ) return false;
+		SwapItems( p, heapItemCount );
+		heapItemCount--;
+		return HeapMoveDown(p);
+	}
 
 	//! Returns if the item with the given id is in the heap or removed by Pop.
 	bool IsInHeap( SIZE_TYPE id ) const { assert(id<size); return heapPos[id]<=heapItemCount; }
@@ -202,6 +216,7 @@ private:
 	SIZE_TYPE *heapPos;			// The heap position of each item.
 	SIZE_TYPE heapItemCount;	// The number of items in the heap.
 	SIZE_TYPE size;				// The total item count, including the ones removed from the heap.
+	SIZE_TYPE heapSize;			// The size of the heap data when it was built.
 	bool deleteData;			// Determines whether the data pointer owns the memory it points to.
 
 	// Clears the data pointer and deallocates memory if the data is owned.
@@ -219,6 +234,7 @@ private:
 		delete [] heap;    heap    = nullptr;
 		delete [] heapPos; heapPos = nullptr;
 		heapItemCount = SIZE_TYPE(0);
+		heapSize      = SIZE_TYPE(0);
 	}
 
 	// Checks if the item should be moved.
