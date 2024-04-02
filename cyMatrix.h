@@ -249,6 +249,13 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
+	//!@name ND Transform Methods
+
+	//! Transforms the given vector by multiplying it with the matrix.
+	void Transform( Vec<T,N> &p ) const { p = *this * p; }
+
+
+	//////////////////////////////////////////////////////////////////////////
 	//!@name Assignment Operators
 
 	Matrix2 const & operator += ( Matrix2 const &right ) { _CY_FOR_4i( cell[i] += right.cell[i] ); return *this; }	//!< add two Matrices modify this
@@ -743,6 +750,13 @@ public:
 
 	CY_NODISCARD Matrix3 operator + ( T value ) const { Matrix3 r=*this; r.cell[0]+=value; r.cell[4]+=value; r.cell[8]+=value; return r; }	//!< add a value times identity matrix
 	CY_NODISCARD Matrix3 operator - ( T value ) const { Matrix3 r=*this; r.cell[0]-=value; r.cell[4]-=value; r.cell[8]-=value; return r; }	//!< subtract a value times identity matrix
+
+
+	//////////////////////////////////////////////////////////////////////////
+	//!@name 3D Transform Methods
+
+	//! Transforms the given vector by multiplying it with the matrix.
+	void Transform( Vec3<T> &p ) const { p = *this * p; }
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1410,7 +1424,10 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	//!@name 3D Vector Transform Methods
+	//!@name 3D Transform Methods
+
+	//! Transforms the given vector by multiplying it with the matrix.
+	void Transform( Vec3<T> &p ) const { p = *this * p; }
 
 	//! Transforms the vector by multiplying it with the matrix, ignoring the translation component.
 	CY_NODISCARD Vec3<T> VectorTransform( Vec3<T> const &p ) const
@@ -2056,7 +2073,10 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	//!@name 3D Vector Transform Methods
+	//!@name Transform Methods
+
+	//! Transforms the given vector by multiplying it with the matrix.
+	void Transform( Vec4<T> &p ) const { p = *this * p; }
 
 	//! Transforms the vector by multiplying it with the matrix, ignoring the translation component.
 	CY_NODISCARD Vec4<T> VectorTransform( Vec3<T> const &p ) const
