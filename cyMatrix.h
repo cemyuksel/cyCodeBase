@@ -252,7 +252,7 @@ public:
 	//!@name ND Transform Methods
 
 	//! Transforms the given vector by multiplying it with the matrix.
-	void Transform( Vec<T,N> &p ) const { p = *this * p; }
+	void Transform( Vec2<T> &p ) const { p = *this * p; }
 
 
 	//////////////////////////////////////////////////////////////////////////
