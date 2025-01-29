@@ -1209,7 +1209,37 @@ inline void GL::CheckError( char const *sourcefile, int line, char const *call, 
 	while ( (error = glGetError()) != GL_NO_ERROR) {
 		*outStream << "OpenGL ERROR: " << sourcefile << " (line " << line << "): ";
 		if ( call ) *outStream << call << " triggered ";
+		// gluErrorString() is deprecated and appears to not work on Apple devices.
+		#if !defined(__APPLE__)
 		*outStream << gluErrorString(error) << std::endl;
+		#else
+		// Manually reimplements these error messages as I've found them described here:
+		// https://github.com/gustafsson/freq/blob/master/lib/gpumisc/gluerrorstring.cpp
+		switch(error) {
+			case GL_NO_ERROR: *outStream << "GL_NO_ERROR: No error has been recorded" << std::endl;
+			
+			case GL_INVALID_ENUM: *outStream << "GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag" << std::endl;
+		
+			case GL_INVALID_VALUE: *outStream << "GL_INVALID_VALUE: A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag" << std::endl;
+		
+			case GL_INVALID_OPERATION: *outStream <<  "GL_INVALID_OPERATION: The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag" << std::endl;
+		
+			#ifdef LEGACY_OPENGL
+			case GL_STACK_OVERFLOW: *outStream <<  "GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow" << std::endl;
+			
+			case GL_STACK_UNDERFLOW: *outStream << "GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow" << std::endl;
+			#endif
+			
+			case GL_OUT_OF_MEMORY: *outStream << "GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded" << std::endl;
+			
+			case GL_INVALID_FRAMEBUFFER_OPERATION: *outStream <<  "GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag" << std::endl;
+		
+			#ifdef ARB_KHR_robustness
+			// https://www.opengl.org/wiki/OpenGL_Error
+			case GL_CONTEXT_LOST: *outStream << "GL_CONTEXT_LOST: Given if the OpenGL context has been lost, due to a graphics card reset" << std::endl;
+			#endif
+		}
+		#endif
 	}
 }
 
