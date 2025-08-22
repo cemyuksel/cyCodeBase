@@ -283,7 +283,7 @@ private:
 
 	// If max-heap, returns if the item at ix1 is smaller than the one at ix2.
 	// If min-heap, returns if the item at ix1 is greater than the one at ix2.
-	bool NotInOrder( SIZE_TYPE ix1, SIZE_TYPE ix2 ) { return MAX_HEAP ? ( data[heap[ix1]] < data[heap[ix2]] ) : ( data[heap[ix1]] > data[heap[ix2]] ); }
+	bool NotInOrder( SIZE_TYPE ix1, SIZE_TYPE ix2 ) { return MAX_HEAP ? ( data[heap[ix1]] < data[heap[ix2]] ) : ( data[heap[ix2]] < data[heap[ix1]] ); }
 
 	// Swaps the heap positions of items at ix1 and ix2.
 	void SwapItems( SIZE_TYPE ix1, SIZE_TYPE ix2 )
