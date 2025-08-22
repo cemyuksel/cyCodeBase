@@ -81,6 +81,8 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <regex>
+#include <filesystem>
 
 //-------------------------------------------------------------------------------
 
@@ -351,6 +353,20 @@ public:
 	template <typename T> void SetImageRG  ( T const *data, GLsizei width, int level=0 ) { SetImage(data,2,width,level); }	//!< Sets the texture image with 2 channels.
 	template <typename T> void SetImageR   ( T const *data, GLsizei width, int level=0 ) { SetImage(data,1,width,level); }	//!< Sets the texture image with 1 channel.
 
+	//! Sets the part of the texture image using the given data format and data type.
+	void SetSubImage( GLenum dataFormat, GLenum dataType, void const *data, GLint offset, GLsizei width, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexSubImage1D(TEXTURE_TYPE,level,offset,width,dataFormat,dataType,data); }
+
+	//! Sets the part of the texture image using the given data format. The data type is determined by the data pointer type.
+	template <typename T> void SetSubImage( GLenum dataFormat, T const *data, GLint offset, GLsizei width, int level=0 ) { SetSubImage(dataFormat,GL::GetGLType(data),data,offset,width,level); }
+
+	//! Sets the part of the texture image. The texture format uses the matching data pointer type.
+	template <typename T> void SetSubImage( T const *data, int numChannels, GLint offset, GLsizei width, int level=0 ) { SetSubImage(GL::GetType(data),data,numChannels,offset,width,level); }
+
+	template <typename T> void SetSubImageRGBA( T const *data, GLint offset, GLsizei width, int level=0 ) { SetSubImage(data,4,offset,width,level); }	//!< Sets the part of the texture image with 4 channels.
+	template <typename T> void SetSubImageRGB ( T const *data, GLint offset, GLsizei width, int level=0 ) { SetSubImage(data,3,offset,width,level); }	//!< Sets the part of the texture image with 3 channels.
+	template <typename T> void SetSubImageRG  ( T const *data, GLint offset, GLsizei width, int level=0 ) { SetSubImage(data,2,offset,width,level); }	//!< Sets the part of the texture image with 2 channels.
+	template <typename T> void SetSubImageR   ( T const *data, GLint offset, GLsizei width, int level=0 ) { SetSubImage(data,1,offset,width,level); }	//!< Sets the part of the texture image with 1 channel.
+
 	//! Sets the texture wrapping parameter.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
 	void SetWrappingMode(GLenum wrapS) { GLTexture<TEXTURE_TYPE>::Bind(); glTexParameteri(TEXTURE_TYPE, GL_TEXTURE_WRAP_S, wrapS); }
@@ -398,6 +414,20 @@ public:
 	template <typename T> void SetImageRGB ( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,3,width,height,level); }	//!< Sets the texture image with 3 channels.
 	template <typename T> void SetImageRG  ( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,2,width,height,level); }	//!< Sets the texture image with 2 channels.
 	template <typename T> void SetImageR   ( T const *data, GLsizei width, GLsizei height, int level=0 ) { SetImage(data,1,width,height,level); }	//!< Sets the texture image with 1 channel.
+
+	//! Sets the part of the texture image using the given data format and data type.
+	void SetSubImage( GLenum dataFormat, GLenum dataType, void const *data, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexSubImage2D(TEXTURE_TYPE,level,xOffset,yOffset,width,height,dataFormat,dataType,data); }
+
+	//! Sets the part of the texture image using the given data format. The data type is determined by the data pointer type.
+	template <typename T> void SetSubImage( GLenum dataFormat, T const *data, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { SetSubImage(dataFormat,GL::GetGLType(data),data,xOffset,yOffset,width,height,level); }
+
+	//! Sets the part of the texture image. The texture format uses the matching data pointer type.
+	template <typename T> void SetSubImage( T const *data, int numChannels, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { SetSubImage(GL::GetType(data),data,numChannels,xOffset,yOffset,width,height,level); }
+
+	template <typename T> void SetSubImageRGBA( T const *data, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { SetSubImage(data,4,xOffset,yOffset,width,height,level); }	//!< Sets the part of the texture image with 4 channels.
+	template <typename T> void SetSubImageRGB ( T const *data, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { SetSubImage(data,3,xOffset,yOffset,width,height,level); }	//!< Sets the part of the texture image with 3 channels.
+	template <typename T> void SetSubImageRG  ( T const *data, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { SetSubImage(data,2,xOffset,yOffset,width,height,level); }	//!< Sets the part of the texture image with 2 channels.
+	template <typename T> void SetSubImageR   ( T const *data, GLint xOffset, GLint yOffset, GLsizei width, GLsizei height, int level=0 ) { SetSubImage(data,1,xOffset,yOffset,width,height,level); }	//!< Sets the part of the texture image with 1 channel.
 
 	//! Sets the texture wrapping parameter.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
@@ -452,6 +482,20 @@ public:
 	template <typename T> void SetImageRGB ( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,3,width,height,depth,level); }	//!< Sets the texture image with 3 channels.
 	template <typename T> void SetImageRG  ( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,2,width,height,depth,level); }	//!< Sets the texture image with 2 channels.
 	template <typename T> void SetImageR   ( T const *data, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetImage(data,1,width,height,depth,level); }	//!< Sets the texture image with 1 channel.
+
+	//! Sets the part of the texture image using the given data format and data type.
+	void SetSubImage( GLenum dataFormat, GLenum dataType, void const *data, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { GLTexture<TEXTURE_TYPE>::Bind(); glTexSubImage3D(TEXTURE_TYPE,level,xOffset,yOffset,zOffset,width,height,depth,dataFormat,dataType,data); }
+
+	//! Sets the part of the texture image using the given data format. The data type is determined by the data pointer type.
+	template <typename T> void SetSubImage( GLenum dataFormat, T const *data, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetSubImage(dataFormat,GL::GetGLType(data),data,xOffset,yOffset,zOffset,width,height,depth,level); }
+
+	//! Sets the part of the texture image. The data format and type are determined by the data pointer type and the number of channels.
+	template <typename T> void SetSubImage( T const *data, int numChannels, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetSubImage(GL::TextureDataFormat(GL::GetType(data),numChannels),data,xOffset,yOffset,zOffset,width,height,depth,level); }
+
+	template <typename T> void SetSubImageRGBA( T const *data, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetSubImage(data,4,xOffset,yOffset,zOffset,width,height,depth,level); }	//!< Sets the part of the texture image with 4 channels.
+	template <typename T> void SetSubImageRGB ( T const *data, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetSubImage(data,3,xOffset,yOffset,zOffset,width,height,depth,level); }	//!< Sets the part of the texture image with 3 channels.
+	template <typename T> void SetSubImageRG  ( T const *data, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetSubImage(data,2,xOffset,yOffset,zOffset,width,height,depth,level); }	//!< Sets the part of the texture image with 2 channels.
+	template <typename T> void SetSubImageR   ( T const *data, GLint xOffset, GLint yOffset, GLint zOffset, GLsizei width, GLsizei height, GLsizei depth, int level=0 ) { SetSubImage(data,1,xOffset,yOffset,zOffset,width,height,depth,level); }	//!< Sets the part of the texture image with 1 channel.
 
 	//! Sets the texture wrapping parameter.
 	//! The acceptable values are GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP, and GL_CLAMP_TO_BORDER.
@@ -719,7 +763,24 @@ public:
 	//! Compiles the shader using the given file.
 	//! If the shader was previously compiled, it is deleted.
 	//! The prependSources strings are added to the beginning of the shader code, so the first string must begin with "#version" statement.
-	bool CompileFile( char const *filename, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout );
+	bool CompileFile( char const *filename, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout ) { return Compile<true,false>(filename,shaderType,prependSourceCount,prependSources,outStream); }
+
+	//! Compiles the shader using the given file.
+	//! If the shader was previously compiled, it is deleted.
+	//! Unlike the CompileFile method, it parses the source code for include statements and recursively inserts the included files.
+	bool CompileFileEx( char const *filename, GLenum shaderType, std::ostream *outStream=&std::cout ) { return CompileFileEx(filename,shaderType,0,nullptr,outStream); }
+
+	//! Compiles the shader using the given file.
+	//! If the shader was previously compiled, it is deleted.
+	//! The prependSource string is added to the beginning of the shader code, so it must begin with the "#version" statement.
+	//! Unlike the CompileFile method, it parses the source code for include statements and recursively inserts the included files.
+	bool CompileFileEx( char const *filename, GLenum shaderType, char const *prependSource, std::ostream *outStream=&std::cout ) { return CompileFileEx(filename,shaderType,1,&prependSource,outStream); }
+
+	//! Compiles the shader using the given file.
+	//! If the shader was previously compiled, it is deleted.
+	//! The prependSources strings are added to the beginning of the shader code, so the first string must begin with "#version" statement.
+	//! Unlike the CompileFile method, it parses the source code for include statements and recursively inserts the included files.
+	bool CompileFileEx( char const *filename, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout ) { return Compile<true,true>(filename,shaderType,prependSourceCount,prependSources,outStream); }
 
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
@@ -733,7 +794,45 @@ public:
 	//! Compiles the shader using the given source code.
 	//! If the shader was previously compiled, it is deleted.
 	//! The prependSources strings are added to the beginning of the shader code, so the first string must begin with "#version" statement.
-	bool Compile( char const *shaderSourceCode, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout );
+	bool Compile( char const *shaderSourceCode, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout ) { return Compile<false,false>(shaderSourceCode,shaderType,prependSourceCount,prependSources,outStream); }
+
+	//! Compiles the shader using the given file or source code.
+	//! If the shader was previously compiled, it is deleted.
+	//! The prependSources strings are added to the beginning of the shader code, so the first string must begin with "#version" statement.
+	//! If file is true, the source is treated as a file name, otherwise it is treated as the source code.
+	//! If parse is true, it parses the source code for include statements and recursively inserts the included files.
+	template <bool file, bool parse>
+	bool Compile( char const *shaderSource, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream=&std::cout );
+
+	//!@name Source File Management
+
+	//! GLSL Shader Source class.
+	//!
+	//! This class is derived from std::string.
+	//! It includes a function for loading source files.
+	class Source : public std::string
+	{
+	public:
+		//! Loads the given source file.
+		bool LoadFile( char const *filename, std::ostream *outStream=&std::cout );
+
+		//! Returns the contents as a const char pointer.
+		operator char const * () const { return data(); }
+
+		//! Loads the given source file and parses it for include statements.
+		//! The contents of all included files are recursively added to the list.
+		//! This method does not avoid possible infinite loops with nested include statements.
+		static bool ParseIncludesFile( std::vector<std::string> &sources, char const *filename, std::string const &includePath, std::ostream *outStream=&std::cout );
+
+		//! Parses the given for include statements. Together with parts of the given string,
+		//! the contents of all included files are recursively added to the returned vector.
+		//! This method does not avoid possible infinite loops with nested include statements.
+		static bool ParseIncludes( std::vector<std::string> &sources, char const *sourceString, std::string const &includePath, std::ostream *outStream=&std::cout );
+	};
+
+	//! Loads the given source file into a source string and returns it.
+	//! If load fails, an error message is printed to the given out stream and an empty string is returned.
+	static Source LoadSourceFile( char const *filename, std::ostream *outStream=&std::cout ) { Source s; s.LoadFile(filename,outStream); return s; }
 };
 
 //-------------------------------------------------------------------------------
@@ -795,6 +894,22 @@ public:
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
+	//! The prependSources strings are added to the beginning of each shader code, so the first string must begin with "#version" statement.
+	//! if files is true, it reads the source code from the given file names.
+	//! If parse is true, it parses the source files for include directives and recursively includes them to the source.
+	template <bool files, bool parse>
+	bool Build( char const *vertexShader, 
+                char const *fragmentShader,
+	            char const *geometryShader=nullptr,
+	            char const *tessControlShader=nullptr,
+	            char const *tessEvaluationShader=nullptr,
+	            int         prependSourceCount=0,
+	            char const **prependSource=nullptr,
+	            std::ostream *outStream=&std::cout );
+
+	//! Creates a program, compiles the given shaders, and links them.
+	//! Returns true if all compilation and link operations are successful.
+	//! Writes any error or warning messages to the given output stream.
 	bool BuildFiles( char const *vertexShaderFile, 
                      char const *fragmentShaderFile,
 	                 char const *geometryShaderFile=nullptr,
@@ -827,7 +942,49 @@ public:
 	                 char const *tessEvaluationShaderFile,
 	                 int         prependSourceCount,
 	                 char const **prependSource,
-	                 std::ostream *outStream=&std::cout );
+	                 std::ostream *outStream=&std::cout )
+	{ return Build<true,false>(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,prependSourceCount,prependSource,outStream); }
+
+	//! Creates a program, compiles the given shaders, and links them.
+	//! Returns true if all compilation and link operations are successful.
+	//! Writes any error or warning messages to the given output stream.
+	//! Unlike the BuildFiles method, it parses the source files for include directives and recursively includes them to the source.
+	bool BuildFilesEx( char const *vertexShaderFile, 
+                       char const *fragmentShaderFile,
+	                   char const *geometryShaderFile=nullptr,
+	                   char const *tessControlShaderFile=nullptr,
+	                   char const *tessEvaluationShaderFile=nullptr,
+	                   std::ostream *outStream=&std::cout )
+	{ return BuildFilesEx(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,0,nullptr,outStream); }
+
+	//! Creates a program, compiles the given shaders, and links them.
+	//! Returns true if all compilation and link operations are successful.
+	//! Writes any error or warning messages to the given output stream.
+	//! The prependSource string is added to the beginning of each shader code, so it must begin with the "#version" statement.
+	//! Unlike the BuildFiles method, it parses the source files for include directives and recursively includes them to the source.
+	bool BuildFilesEx( char const *vertexShaderFile, 
+                       char const *fragmentShaderFile,
+	                   char const *geometryShaderFile,
+	                   char const *tessControlShaderFile,
+	                   char const *tessEvaluationShaderFile,
+	                   char const *prependSource,
+	                   std::ostream *outStream=&std::cout )
+	{ return BuildFiles(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,1,&prependSource,outStream); }
+
+	//! Creates a program, compiles the given shaders, and links them.
+	//! Returns true if all compilation and link operations are successful.
+	//! Writes any error or warning messages to the given output stream.
+	//! The prependSources strings are added to the beginning of each shader code, so the first string must begin with "#version" statement.
+	//! Unlike the BuildFiles method, it parses the source files for include directives and recursively includes them to the source.
+	bool BuildFilesEx( char const *vertexShaderFile, 
+                       char const *fragmentShaderFile,
+	                   char const *geometryShaderFile,
+	                   char const *tessControlShaderFile,
+	                   char const *tessEvaluationShaderFile,
+	                   int         prependSourceCount,
+	                   char const **prependSource,
+	                   std::ostream *outStream=&std::cout )
+	{ return Build<true,true>(vertexShaderFile,fragmentShaderFile,geometryShaderFile,tessControlShaderFile,tessEvaluationShaderFile,prependSourceCount,prependSource,outStream); }
 
 	//! Creates a program, compiles the given shaders, and links them.
 	//! Returns true if all compilation and link operations are successful.
@@ -864,7 +1021,8 @@ public:
 	                   char const *tessEvaluationShaderSourceCode,
 	                   int         prependSourceCount,
 	                   char const **prependSource,
-	                   std::ostream *outStream=&std::cout );
+	                   std::ostream *outStream=&std::cout )
+	{ return Build<false,false>(vertexShaderSourceCode,fragmentShaderSourceCode,geometryShaderSourceCode,tessControlShaderSourceCode,tessEvaluationShaderSourceCode,prependSourceCount,prependSource,outStream); }
 
 	//!@name Uniform Parameter Methods
 
@@ -1302,6 +1460,8 @@ inline void _CY_APIENTRY GLDebugCallback::Callback( GLenum source,
                                                     GLchar const* message,
                                                     void const* userParam )
 {
+	length;
+
 	std::ostream *outStream = (std::ostream*) userParam;
 
 	*outStream << std::endl;
@@ -1503,33 +1663,83 @@ inline bool GLRenderDepth<TEXTURE_TYPE>::Resize( GLsizei width, GLsizei height, 
 // GLSLShader Implementation
 //-------------------------------------------------------------------------------
 
-inline bool GLSLShader::CompileFile( char const *filename, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream )
+inline bool GLSLShader::Source::LoadFile( char const *filename, std::ostream *outStream )
 {
 	std::ifstream shaderStream(filename, std::ios::in);
-	if(! shaderStream.is_open()) {
-		if ( outStream ) *outStream << "ERROR: Cannot open file." << std::endl;
+	if( ! shaderStream.is_open() ) {
+		if ( outStream ) *outStream << "ERROR: Cannot open file \"" << filename << "\"" << std::endl;
 		return false;
 	}
-
-	std::string shaderSourceCode((std::istreambuf_iterator<char>(shaderStream)), std::istreambuf_iterator<char>());
+	assign( (std::istreambuf_iterator<char>(shaderStream)), std::istreambuf_iterator<char>() );
 	shaderStream.close();
-
-	return Compile( shaderSourceCode.data(), shaderType, prependSourceCount, prependSources, outStream );
+	return true;
 }
 
-inline bool GLSLShader::Compile( char const *shaderSourceCode, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream )
+inline bool GLSLShader::Source::ParseIncludesFile( std::vector<std::string> &sources, char const *filename, std::string const &includePath, std::ostream *outStream )
 {
-	Delete();
+	Source source;
+	if ( source.LoadFile( filename, outStream ) ) return source.ParseIncludes( sources, source.data(), includePath, outStream );
+	else return false;
+}
 
-	shaderID = glCreateShader( shaderType );
-	if ( prependSourceCount > 0 ) {
-		std::vector<char const*> sources(prependSourceCount+1);
-		for ( int i=0; i<prependSourceCount; i++ ) sources[i] = prependSources[i];
-		sources[prependSourceCount] = shaderSourceCode;
-		glShaderSource(shaderID, prependSourceCount+1, sources.data(), nullptr);
-	} else {
-		glShaderSource(shaderID, 1, &shaderSourceCode, nullptr);
+inline bool GLSLShader::Source::ParseIncludes( std::vector<std::string> &sources, char const *sourceString, std::string const &includePath, std::ostream *outStream )
+{
+	std::regex includeRegex(R"(\#include\s+\"([^\"]+)\")");
+	std::smatch matches;
+	std::string remainingSource = sourceString;
+	size_t lastIndex = 0;
+
+	while ( std::regex_search(remainingSource, matches, includeRegex) ) {
+		sources.push_back( remainingSource.substr(0, matches.position()) );
+		std::string includeFileName = includePath;
+		includeFileName += matches[1];
+		if ( ! ParseIncludesFile( sources, includeFileName.data(), includePath, outStream ) ) return false;
+		lastIndex = matches.position() + matches.length();
+		remainingSource = remainingSource.substr(lastIndex);
 	}
+
+	if (!remainingSource.empty()) {
+		sources.push_back(remainingSource);
+	}
+
+	return true;
+}
+
+template <bool file, bool parse>
+inline bool GLSLShader::Compile( char const *shaderSource, GLenum shaderType, int prependSourceCount, char const **prependSources, std::ostream *outStream )
+{
+	Source source;
+	char const *shaderSourceCode = shaderSource;
+	std::string includePath = "";
+	if ( file ) {
+		if ( ! source.LoadFile(shaderSource,outStream) ) return false;
+		shaderSourceCode = source.data();
+		if ( parse ) {
+			includePath = shaderSource;
+			size_t pos = includePath.find_last_of("/\\");
+			includePath.erase( pos+1 );
+		}
+	}
+
+	std::vector<std::string> sources;
+	std::vector<char const*> pSources;
+
+	char const **sourceData = &shaderSourceCode;
+	GLsizei sourceDataCount = 1;
+	bool addSources = parse || (prependSourceCount > 0);
+	if ( addSources ) {
+		if ( parse ) if ( ! Source::ParseIncludes( sources, shaderSourceCode, includePath, outStream ) ) return false;
+		sourceDataCount = (parse ? (int)sources.size() : 1 ) + prependSourceCount;
+		pSources.resize( sourceDataCount );
+		for ( int i=0; i<prependSourceCount; i++ ) pSources[i] = prependSources[i];
+		if ( parse ) for ( int i=0; i<(int)sources.size(); i++ ) pSources[i+prependSourceCount] = sources[i].data();
+		else pSources[prependSourceCount] = shaderSourceCode;
+		sourceData = pSources.data();
+	}
+
+	Delete();
+	shaderID = glCreateShader( shaderType );
+	glShaderSource(shaderID, sourceDataCount, sourceData, nullptr);
 	glCompileShader(shaderID);
 
 	GLint result = GL_FALSE;
@@ -1600,94 +1810,44 @@ inline bool GLSLProgram::Build( GLSLShader const *vertexShader,
 	return Link(outStream);
 }
 
-inline bool GLSLProgram::BuildFiles( char const *vertexShaderFile, 
-                                     char const *fragmentShaderFile,
-	                                 char const *geometryShaderFile,
-	                                 char const *tessControlShaderFile,
-	                                 char const *tessEvaluationShaderFile,
-	                                 int         prependSourceCount,
-	                                 char const **prependSource,
-	                                 std::ostream *outStream )
+template <bool files, bool parse>
+inline bool GLSLProgram::Build( char const *vertexShader, 
+                                char const *fragmentShader,
+	                            char const *geometryShader,
+	                            char const *tessControlShader,
+	                            char const *tessEvaluationShader,
+	                            int         prependSourceCount,
+	                            char const **prependSource,
+	                            std::ostream *outStream )
 {
+	auto compile = [&]( GLSLShader &s, char const *source, GLenum type, char const *typeStr )
+	{
+		std::stringstream shaderOutput;
+		if ( s.Compile<files,parse>( source, type, prependSourceCount, prependSource, &shaderOutput ) ) return true;
+		if ( outStream ) {
+			*outStream << "ERROR: Failed compiling " << typeStr;
+			if ( files ) *outStream << " \"" << source << "\"";
+			*outStream << std::endl << shaderOutput.str();
+		}
+		return false;
+	};
+
 	CreateProgram();
 	GLSLShader vs, fs, gs, tcs, tes;
-	std::stringstream shaderOutput;
-	if ( ! vs.CompileFile(vertexShaderFile, GL_VERTEX_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-		if ( outStream ) *outStream << "ERROR: Failed compiling vertex shader \"" << vertexShaderFile << ".\"" << std::endl << shaderOutput.str();
-		return false;
-	}
+	if ( ! compile( vs, vertexShader, GL_VERTEX_SHADER, "vertex shader" ) ) return false;
 	AttachShader(vs);
-	if ( ! fs.CompileFile(fragmentShaderFile, GL_FRAGMENT_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-		if ( outStream ) *outStream << "ERROR: Failed compiling fragment shader \"" << fragmentShaderFile << ".\"" <<  std::endl << shaderOutput.str();
-		return false;
-	}
+	if ( ! compile( fs, fragmentShader, GL_FRAGMENT_SHADER, "fragment shader" ) ) return false;
 	AttachShader(fs);
-	if ( geometryShaderFile ) {
-		if ( ! gs.CompileFile(geometryShaderFile, GL_GEOMETRY_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-			if ( outStream ) *outStream << "ERROR: Failed compiling geometry shader \"" << geometryShaderFile << ".\"" <<  std::endl << shaderOutput.str();
-			return false;
-		}
+	if ( geometryShader ) {
+		if ( ! compile( gs, geometryShader, GL_GEOMETRY_SHADER, "geometry shader" ) ) return false;
 		AttachShader(gs);
 	}
-	if ( tessControlShaderFile ) {
-		if ( ! tcs.CompileFile(tessControlShaderFile, GL_TESS_CONTROL_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-			if ( outStream ) *outStream << "ERROR: Failed compiling tessellation control shader \"" << tessControlShaderFile << ".\"" <<  std::endl << shaderOutput.str();
-			return false;
-		}
+	if ( tessControlShader ) {
+		if ( ! compile( tcs, tessControlShader, GL_TESS_CONTROL_SHADER, "tessellation control shader" ) ) return false;
 		AttachShader(tcs);
 	}
-	if ( tessEvaluationShaderFile ) {
-		if ( ! tes.CompileFile(tessEvaluationShaderFile, GL_TESS_EVALUATION_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-			if ( outStream ) *outStream << "ERROR: Failed compiling tessellation evaluation shader \"" << tessEvaluationShaderFile << ".\"" <<  std::endl << shaderOutput.str();
-			return false;
-		}
-		AttachShader(tes);
-	}
-	return Link(outStream);
-}
-
-
-inline bool GLSLProgram::BuildSources( char const *vertexShaderSourceCode, 
-                                       char const *fragmentShaderSourceCode,
-	                                   char const *geometryShaderSourceCode,
-	                                   char const *tessControlShaderSourceCode,
-	                                   char const *tessEvaluationShaderSourceCode,
-	                                   int         prependSourceCount,
-	                                   char const **prependSource,
-	                                   std::ostream *outStream )
-{
-	CreateProgram();
-	GLSLShader vs, fs, gs, tcs, tes;
-	std::stringstream shaderOutput;
-	if ( ! vs.Compile(vertexShaderSourceCode, GL_VERTEX_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-		if ( outStream ) *outStream << "ERROR: Failed compiling vertex shader." << std::endl << shaderOutput.str();
-		return false;
-	}
-	AttachShader(vs);
-	if ( ! fs.Compile(fragmentShaderSourceCode, GL_FRAGMENT_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-		if ( outStream ) *outStream << "ERROR: Failed compiling fragment shader." << std::endl << shaderOutput.str();
-		return false;
-	}
-	AttachShader(fs);
-	if ( geometryShaderSourceCode ) {
-		if ( ! gs.Compile(geometryShaderSourceCode, GL_GEOMETRY_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-			if ( outStream ) *outStream << "ERROR: Failed compiling geometry shader." << std::endl << shaderOutput.str();
-			return false;
-		}
-		AttachShader(gs);
-	}
-	if ( tessControlShaderSourceCode ) {
-		if ( ! tcs.Compile(tessControlShaderSourceCode, GL_TESS_CONTROL_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-			if ( outStream ) *outStream << "ERROR: Failed compiling tessellation control shader." << std::endl << shaderOutput.str();
-			return false;
-		}
-		AttachShader(tcs);
-	}
-	if ( tessEvaluationShaderSourceCode ) {
-		if ( ! tes.Compile(tessEvaluationShaderSourceCode, GL_TESS_EVALUATION_SHADER, prependSourceCount, prependSource, &shaderOutput) ) {
-			if ( outStream ) *outStream << "ERROR: Failed compiling tessellation evaluation shader." << std::endl << shaderOutput.str();
-			return false;
-		}
+	if ( tessEvaluationShader ) {
+		if ( ! compile( tes, tessEvaluationShader, GL_TESS_EVALUATION_SHADER, "tessellation evaluation shader" ) ) return false;
 		AttachShader(tes);
 	}
 	return Link(outStream);
