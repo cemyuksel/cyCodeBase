@@ -289,6 +289,11 @@ public:
 	void operator -= ( Polynomial<ftype,N> const &p ) { for ( int i=0; i<=N; ++i ) coef[i] -= p[i]; }	//!< Subtracts another polynomial from this one.
 	void operator *= ( ftype s )                      { for ( int i=0; i<=N; ++i ) coef[i] *= s; }		//!< Multiplies this polynomial with a scalar.
 
+	template <int M> CY_NODISCARD Polynomial<ftype,(N>M?N:M)> operator + ( Polynomial<ftype,M> const &p ) const { Polynomial<ftype,(N>M?N:M)> r; for ( int i=0; i<=(N>M?M:N); ++i ) r[i] = coef[i] + p[i]; for ( int i=(N>M?M:N); i<=N; ++i ) r[i] = coef[i]; for ( int i=(N>M?M:N); i<=M; ++i ) r[i] =  p[i]; return r; }	//!< Adds two polynomials.
+	template <int M> CY_NODISCARD Polynomial<ftype,(N>M?N:M)> operator - ( Polynomial<ftype,M> const &p ) const { Polynomial<ftype,(N>M?N:M)> r; for ( int i=0; i<=(N>M?M:N); ++i ) r[i] = coef[i] - p[i]; for ( int i=(N>M?M:N); i<=N; ++i ) r[i] = coef[i]; for ( int i=(N>M?M:N); i<=M; ++i ) r[i] = -p[i]; return r; }	//!< Subtracts two polynomials.
+	template <int M> void operator += ( Polynomial<ftype,M> const &p ) { static_assert(M<=N,"The operand polynomial's degree cannot be greater."); for ( int i=0; i<=M; ++i ) coef[i] += p[i]; }	//!< Adds another polynomial to this one.
+	template <int M> void operator -= ( Polynomial<ftype,M> const &p ) { static_assert(M<=N,"The operand polynomial's degree cannot be greater."); for ( int i=0; i<=M; ++i ) coef[i] -= p[i]; }	//!< Subtracts another polynomial from this one.
+
 	//! Multiplies two polynomials and returns the resulting polynomial.
 	template <int M> Polynomial<ftype,N+M> operator * ( Polynomial<ftype,M> const &p ) const
 	{
@@ -316,6 +321,18 @@ public:
 		return r;
 	}
 
+	//! Multiplies the polynomial with itself as many times as the given power and returns the resulting polynomial
+	template <int pwr>
+	CY_NODISCARD Polynomial<ftype,pwr*N> Power() const
+	{
+		Polynomial<ftype,pwr*N> r;
+		if      constexpr ( pwr == 0 ) r[0] = ftype(1);
+		else if constexpr ( pwr == 1 ) r = *this;
+		else if constexpr ( pwr == 2 ) r = Squared();
+		else r = Power<pwr/2>() * Power<pwr-pwr/2>();
+		return r;
+	}
+
 	CY_NODISCARD Polynomial<ftype,N-1> Derivative()          const { Polynomial<ftype,N-1> d; PolynomialDerivative<N,ftype>(d.coef,coef     ); return d; }	//!< Returns the derivative of the polynomial.
 	CY_NODISCARD Polynomial<ftype,N-1> Deflate( ftype root ) const { Polynomial<ftype,N-1> p; PolynomialDeflate   <N,ftype>(p.coef,coef,root); return p; }	//!< Returns the deflation of the polynomial with the given root.
 	CY_NODISCARD Polynomial<ftype,N+1> Inflate( ftype root ) const { Polynomial<ftype,N+1> p; PolynomialInflate   <N,ftype>(p.coef,coef,root); return p; }	//!< Returns the inflated polynomial using the given root.
@@ -323,12 +340,12 @@ public:
 	_CY_POLY_TEMPLATE_B  int  Roots      ( ftype roots[N], ftype xError=DefaultError() ) const { return PolynomialRoots      <N,ftype,boundError>(roots,coef,xError); }	//!< Finds all roots of the polynomial and returns the number of roots found.
 	_CY_POLY_TEMPLATE_B  bool FirstRoot  ( ftype &root,    ftype xError=DefaultError() ) const { return PolynomialFirstRoot  <N,ftype,boundError>(root, coef,xError); }	//!< Finds the first root of the polynomial and returns true if a root is found.
 	_CY_POLY_TEMPLATE_B  bool HasRoot    (                 ftype xError=DefaultError() ) const { return PolynomialHasRoot    <N,ftype,boundError>(      coef,xError); }	//!< Returns true if the polynomial has a root.
-	_CY_POLY_TEMPLATE_BC void ForEachRoot( RootCallback c, ftype xError=DefaultError() ) const { return PolynomialForEachRoot<N,ftype,boundError>(c,    coef,xError); }	//!< Calls the given callback function for each root of the polynomial.
+	_CY_POLY_TEMPLATE_BC bool ForEachRoot( RootCallback c, ftype xError=DefaultError() ) const { return PolynomialForEachRoot<N,ftype,boundError>(c,    coef,xError); }	//!< Calls the given callback function for each root of the polynomial.
 
 	_CY_POLY_TEMPLATE_B  int  Roots      ( ftype roots[N], ftype xMin, ftype xMax, ftype xError=DefaultError() ) const { return PolynomialRoots      <N,ftype,boundError>(roots,coef,xMin,xMax,xError); }	//!< Finds all roots of the polynomial between `xMin` and `xMax` and returns the number of roots found.
 	_CY_POLY_TEMPLATE_B  bool FirstRoot  ( ftype &root,    ftype xMin, ftype xMax, ftype xError=DefaultError() ) const { return PolynomialFirstRoot  <N,ftype,boundError>(root, coef,xMin,xMax,xError); }	//!< Finds the first root of the polynomial between `xMin` and `xMax` and returns true if a root is found.
 	_CY_POLY_TEMPLATE_B  bool HasRoot    (                 ftype xMin, ftype xMax, ftype xError=DefaultError() ) const { return PolynomialHasRoot    <N,ftype,boundError>(      coef,xMin,xMax,xError); }	//!< Returns true if the polynomial has a root between `xMin` and `xMax`.
-	_CY_POLY_TEMPLATE_BC void ForEachRoot( RootCallback c, ftype xMin, ftype xMax, ftype xError=DefaultError() ) const { return PolynomialForEachRoot<N,ftype,boundError>(c,    coef,xMin,xMax,xError); }	//!< Calls the given callback function for each root of the polynomial between `xMin` and `xMax`.
+	_CY_POLY_TEMPLATE_BC bool ForEachRoot( RootCallback c, ftype xMin, ftype xMax, ftype xError=DefaultError() ) const { return PolynomialForEachRoot<N,ftype,boundError>(c,    coef,xMin,xMax,xError); }	//!< Calls the given callback function for each root of the polynomial between `xMin` and `xMax`.
 
 	CY_NODISCARD bool IsFinite() const { for ( int i=0; i<=N; ++i ) if ( ! cy::IsFinite(coef[i]) ) return false; return true; }	//!< Returns true if all coefficients are finite real numbers.
 
@@ -342,8 +359,8 @@ protected:
 /////////////////////////////////////////////////////////////////////////////////
 //-------------------------------------------------------------------------------
 
-template <typename T, typename S> inline T    MultSign       ( T v, S sign ) { return v * (sign<0 ? T(-1) : T(1)); }	//!< Multiplies the given value with the given sign
-template <typename T, typename S> inline bool IsDifferentSign( T a, S b )    { return a<0 != b<0; }						//!< Returns true if the sign bits are different
+template <typename T, typename S> inline T    MultSign       ( T v, S sign ) { return sign<0 ? -v : v; }	//!< Multiplies the given value with the given sign
+template <typename T, typename S> inline bool IsDifferentSign( T a, S b )    { return a<0 != b<0; }			//!< Returns true if the sign bits are different
 
 //-------------------------------------------------------------------------------
 /////////////////////////////////////////////////////////////////////////////////
@@ -612,7 +629,7 @@ inline int QuadraticRoots( ftype roots[2], ftype const coef[3], ftype x0, ftype 
 #ifdef _INCLUDED_IMM
 
 template <typename RootCallback>
-inline int QuadraticRoots( float roots[2], float const *coef, RootCallback callback )
+inline int QuadraticRoots( float const *coef, RootCallback callback )
 {
 	//__m128 _0abc    = _mm_set_ps( 0.0f, coef[2], coef[1], coef[0] );
 	__m128 _0abc    = _mm_load_ps(coef);
@@ -643,7 +660,7 @@ inline int QuadraticRoots( float roots[2], float const *coef, RootCallback callb
 template <>
 inline int QuadraticRoots<float>( float roots[2], float const *coef )
 {
-	return QuadraticRoots( roots, coef, [&](__m128 r){
+	return QuadraticRoots( coef, [&](__m128 r){
 		roots[0] = _mm_cvtss_f32(r);
 		roots[1] = _mm_cvtss_f32( _mm_shuffle_ps(r,r,_MM_SHUFFLE(3,2,0,1)) );
 		return 2;
@@ -653,7 +670,7 @@ inline int QuadraticRoots<float>( float roots[2], float const *coef )
 template <>
 inline int QuadraticRoots<float>( float roots[2], float const * coef, float x0, float x1 )
 {
-	return QuadraticRoots( roots, coef, [&](__m128 r){
+	return QuadraticRoots( coef, [&](__m128 r){
 		__m128 range  = _mm_set_ps( x1, x1, x0, x0 );
 		__m128 minT   = _mm_cmpge_ps( r, range );
 		__m128 maxT   = _mm_cmple_ps( r, _mm_shuffle_ps( range, range, _MM_SHUFFLE(3,2,2,2) ) );
@@ -1388,7 +1405,6 @@ inline bool PolynomialHasRoot( ftype const coef[N+1], ftype x0, ftype x1, ftype 
 		ftype y0 = PolynomialEval<N,ftype>( coef, x0 );
 		ftype y1 = PolynomialEval<N,ftype>( coef, x1 );
 		if ( IsDifferentSign(y0,y1) ) return true;
-		bool foundRoot = false;
 		ftype deriv[N];
 		PolynomialDerivative<N,ftype>( deriv, coef );
 		return PolynomialForEachRoot<N-1,ftype,boundError,RootFinder>( [&]( ftype xa ) {
