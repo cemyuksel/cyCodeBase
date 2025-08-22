@@ -333,10 +333,10 @@ protected:
 //-------------------------------------------------------------------------------
 
 inline Color  ::Color  ( ColorA  const &c ) : r(c.r), g(c.g), b(c.b) {}
-inline Color  ::Color  ( Color24 const &c ) { *this = c.ToColor(); }
-inline Color  ::Color  ( Color32 const &c ) { *this = c.ToColor(); }
+inline Color  ::Color  ( Color24 const &c ) : Color( c.ToColor() ) {}
+inline Color  ::Color  ( Color32 const &c ) : Color( c.ToColor() ) {}
 inline ColorA ::ColorA ( Color24 const &c, float alpha ) { Color rgb = c.ToColor(); r = rgb.r; g = rgb.g; b = rgb.b; a = alpha; }
-inline ColorA ::ColorA ( Color32 const &c ) { *this = c.ToColorA(); }
+inline ColorA ::ColorA ( Color32 const &c ) : ColorA( c.ToColorA() ) {}
 inline Color24::Color24( Color32 const &c ) : r(c.r), g(c.g), b(c.b) {}
 
 //-------------------------------------------------------------------------------
