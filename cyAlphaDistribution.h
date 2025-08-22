@@ -125,7 +125,7 @@ public:
 	template <typename SAMPLE_MASK_TYPE=unsigned char>
 	static void GenerateSampleMaskTextureRGBA( SAMPLE_MASK_TYPE *sampleMask, unsigned char const *image, int width, int height, int spp )
 	{
-		GenSampleMaskTexture<4>(sampleMask,alpha,width,height,spp);
+		GenSampleMaskTexture<4>(sampleMask,image,width,height,spp);
 	}
 
 #if defined(__gl_h_) || defined(__GL_H__) || defined(_GL_H) || defined(__X_GL_H)
@@ -192,7 +192,7 @@ private:
 			int a = image[ix] + err;
 			if ( a < 0 ) a = 0;
 			if ( a > 255 ) a = 255;
-			image[ix] = a;
+			image[ix] = static_cast<unsigned char>(a);
 		};
 
 		for ( int i=0, ih=0; ih<height; ih++ ) {
@@ -207,7 +207,7 @@ private:
 					}
 					if ( a1 > 255 ) a1 = 255;
 				}
-				image[i*NUM_CHANNELS+(NUM_CHANNELS-1)] = a1;
+				image[i*NUM_CHANNELS+(NUM_CHANNELS-1)] = static_cast<unsigned char>(a1);
 				int err = a0 - a1;
 				int e[4] = { 7*err/16, 3*err/16, 5*err/16, 1*err/16 };
 				int de = err - (e[0]+e[1]+e[2]+e[3]);
@@ -353,7 +353,6 @@ private:
 		int ph = height / 2;
 		if ( pw>0 && ph>0 ) {
 			// First level
-			uint32_t total_alpha = 0;
 			AlphaPyramidLevel *lev = new AlphaPyramidLevel;
 			lev->SetData( pw, ph, width, height, [&](int i){ return image[i*NUM_CHANNELS+(NUM_CHANNELS-1)]; } );
 			pyramid.push_back(lev);
@@ -364,7 +363,7 @@ private:
 				int hh = ph;
 				pw /= 2;
 				ph /= 2;
-				AlphaPyramidLevel *lev = new AlphaPyramidLevel;
+				lev = new AlphaPyramidLevel;
 				lev->SetData( pw, ph, ww, hh, [&](int i){ return pLev->alpha[i]; } );
 				pyramid.push_back(lev);
 				pLev = lev;
@@ -424,7 +423,7 @@ private:
 						if ( inc == 0 ) break;
 						int new_a = a[max_i] + (256/spp);
 						if ( new_a > 255 ) new_a = 255;
-						a[max_i] = new_a;
+						a[max_i] = static_cast<unsigned char>(new_a);
 						remSum -= inc;
 						if ( rem < uint32_t(256/spp) ) rem = 0;
 						else rem -= uint32_t(256/spp);
@@ -439,7 +438,7 @@ private:
 					for ( int j=0; j<n; j++ ) {
 						int av = ((a[j] + 128 / spp) / (256/spp)) * (256/spp) + 1;
 						if ( av > 255 ) av = 255;
-						image[ ix[j]*NUM_CHANNELS+(NUM_CHANNELS-1) ] = av;
+						image[ ix[j]*NUM_CHANNELS+(NUM_CHANNELS-1) ] = static_cast<unsigned char>(av);
 					}
 				} else {
 					for ( int j=0; j<n; j++ ) image[ ix[j]*NUM_CHANNELS+(NUM_CHANNELS-1) ] = a[j] ? 255 : 0;
