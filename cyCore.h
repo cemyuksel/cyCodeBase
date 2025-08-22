@@ -234,13 +234,19 @@ static _cy_nullptr_t nullptr;
 
 //!@name Common math function templates
 
-template <typename T> CY_NODISCARD inline T Max      ( T v1, T v2 ) { return v1 >= v2 ? v1 : v2; }
-template <typename T> CY_NODISCARD inline T Min      ( T v1, T v2 ) { return v1 <= v2 ? v1 : v2; }
-template <typename T> CY_NODISCARD inline T Max      ( T v1, T v2, T v3 ) { return Max( Max(v1,v2), v3 ); }
-template <typename T> CY_NODISCARD inline T Min      ( T v1, T v2, T v3 ) { return Min( Min(v1,v2), v3 ); }
-template <typename T> CY_NODISCARD inline T Max      ( T v1, T v2, T v3, T const v4 ) { return Max( Max(v1,v2), Max(v3,v4) ); }
-template <typename T> CY_NODISCARD inline T Min      ( T v1, T v2, T v3, T const v4 ) { return Min( Min(v1,v2), Min(v3,v4) ); }
-template <typename T> CY_NODISCARD inline T Clamp    ( T v, T minVal=T(0), T maxVal=T(1) ) { return Min(maxVal,Max(minVal,v)); }
+template <typename T>                CY_NODISCARD inline T Max  ( T const &v1, T const &v2 ) { return v1 >= v2 ? v1 : v2; }
+template <typename T>                CY_NODISCARD inline T Min  ( T const &v1, T const &v2 ) { return v1 <= v2 ? v1 : v2; }
+template <typename T, typename... R> CY_NODISCARD inline T Max  ( T const &v, R... rest )    { return Max(v,Max(rest...)); }
+template <typename T, typename... R> CY_NODISCARD inline T Min  ( T const &v, R... rest )    { return Min(v,Min(rest...)); }
+template <typename T>                CY_NODISCARD inline T Clamp( T const &v, T const &minVal, T const &maxVal ) { return Min(maxVal,Max(minVal,v)); }
+template <typename T>                CY_NODISCARD inline T Clamp( T const &v ) { return Clamp(v,T(0),T(1)); }
+
+template <typename T> struct _Pow {
+	template <unsigned int N> static T Eval( T const &v ) { return v * _Pow<T>::Eval<N-1>(v); }
+	template <> static T Eval<1u>( T const &v ) { return v; }
+	template <> static T Eval<0u>( T const &v ) { return T(1); }
+};
+template <unsigned int N, typename T> CY_NODISCARD inline T Pow( T const &v ) { return _Pow<T>::Eval<N>(v); }
 
 template <typename T> CY_NODISCARD inline T ACosSafe ( T v ) { return (T) std::acos(Clamp(v,T(-1),T(1))); }
 template <typename T> CY_NODISCARD inline T ASinSafe ( T v ) { return (T) std::asin(Clamp(v,T(-1),T(1))); }
@@ -255,6 +261,11 @@ template<> CY_NODISCARD inline double SqrtSafe<double>( double v ) { __m128d t=_
 #endif
 
 template<typename T> constexpr inline T Pi() { return T(3.141592653589793238462643383279502884197169); }
+
+CY_NODISCARD inline float  Deg2Rad( float  degrees ) { return degrees*(cy::Pi<float >()/180.0f); }
+CY_NODISCARD inline double Deg2Rad( double degrees ) { return degrees*(cy::Pi<double>()/180.0 ); }
+CY_NODISCARD inline float  Rad2Deg( float  radians ) { return radians*(180.0f/cy::Pi<float >()); }
+CY_NODISCARD inline double Rad2Deg( double radians ) { return radians*(180.0 /cy::Pi<double>()); }
 
 template <typename T> CY_NODISCARD inline bool IsFinite( T v ) { return std::numeric_limits<T>::is_integer || std::isfinite(v); }
 
@@ -276,7 +287,7 @@ inline void MemCopy( T * restrict dest, T const * restrict src, size_t count )
 template <typename T, typename S>
 inline void MemConvert( T * restrict dest, S const * restrict src, size_t count )
 {
-	for ( size_t i=0; i<count; ++i ) dest[i] = reinterpret_cast<T>(src[i]);
+	for ( size_t i=0; i<count; ++i ) dest[i] = static_cast<T>(src[i]);
 }
 
 template <typename T>
