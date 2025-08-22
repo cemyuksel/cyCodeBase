@@ -378,10 +378,10 @@ template <typename T, typename S> inline bool IsDifferentSign( T a, S b )    { r
 class RootFinderNewton
 {
 public:
-	template <int N, typename ftype, bool boundError=false> static inline ftype FindClosed ( ftype const coef[N+1], ftype const deriv[N], ftype x0, ftype x1, ftype y0, ftype y1, ftype xError );	//!< @private Finds the single root within a closed interval between `x0` and `x1`.
-	template <int N, typename ftype, bool boundError=false> static inline ftype FindOpen   ( ftype const coef[N+1], ftype const deriv[N],                                         ftype xError );	//!< @private Finds the single root in an infinite interval.
-	template <int N, typename ftype, bool boundError=false> static inline ftype FindOpenMin( ftype const coef[N+1], ftype const deriv[N],           ftype x1,           ftype y1, ftype xError );	//!< @private Finds the single root from negative infinity to the given x bound `x1`.
-	template <int N, typename ftype, bool boundError=false> static inline ftype FindOpenMax( ftype const coef[N+1], ftype const deriv[N], ftype x0,           ftype y0,           ftype xError );	//!< @private Finds the single root from the given x bound `x0` to positive infinity.
+	template <int N, typename ftype, bool boundError=false> static inline ftype FindClosed ( ftype const coef[N+1], ftype const deriv[N], ftype x0, ftype x1, ftype y0, ftype xError );	//!< @private Finds the single root within a closed interval between `x0` and `x1`.
+	template <int N, typename ftype, bool boundError=false> static inline ftype FindOpen   ( ftype const coef[N+1], ftype const deriv[N],                               ftype xError );	//!< @private Finds the single root in an infinite interval.
+	template <int N, typename ftype, bool boundError=false> static inline ftype FindOpenMin( ftype const coef[N+1], ftype const deriv[N],           ftype x1, ftype y1, ftype xError );	//!< @private Finds the single root from negative infinity to the given x bound `x1`.
+	template <int N, typename ftype, bool boundError=false> static inline ftype FindOpenMax( ftype const coef[N+1], ftype const deriv[N], ftype x0,           ftype y0, ftype xError );	//!< @private Finds the single root from the given x bound `x0` to positive infinity.
 protected:
 	template <int N, typename ftype, bool boundError, bool openMin>
 	static inline ftype FindOpen( ftype const coef[N+1], ftype const deriv[N], ftype xs, ftype ys, ftype xr, ftype xError );	//!< @private The implementation of FindOpenMin and FindOpenMax
@@ -393,11 +393,11 @@ protected:
 //!
 //! It combines Newton iterations with bisection to ensure convergence.
 //! It takes a polynomial's coefficients `coef` and its derivative's coefficients `deriv` along with the x bounds `x0` and `x1`
-//! and the values of the polynomial `y0` and `y1` computed at `x0` and `x1` respectively.
+//! and the value of the polynomial `y0` at `x0`.
 //! It almost always satisfies the given error bound `xError` but this is not guaranteed unless `boundError` is set to `true`.
 //! If `boundError` is `true`, it performs additional operations to bound the error.
 template <int N, typename ftype, bool boundError>
-inline ftype RootFinderNewton::FindClosed( ftype const coef[N+1], ftype const deriv[N], ftype x0, ftype x1, ftype y0, ftype y1, ftype xError )
+inline ftype RootFinderNewton::FindClosed( ftype const coef[N+1], ftype const deriv[N], ftype x0, ftype x1, ftype y0, ftype xError )
 {
 	ftype ep2 = 2*xError;
 	ftype xr = (x0 + x1) / 2;	// mid point
@@ -515,9 +515,9 @@ inline ftype RootFinderNewton::FindOpen( ftype const coef[N+1], ftype const deri
 	while ( yr != 0 ) {
 		if ( otherside ) {
 			if constexpr ( openMin ) {
-				return FindClosed<N,ftype,boundError>( coef, deriv, xr, xm, yr, ym, xError );
+				return FindClosed<N,ftype,boundError>( coef, deriv, xr, xm, yr, xError );
 			} else {
-				return FindClosed<N,ftype,boundError>( coef, deriv, xm, xr, ym, yr, xError );
+				return FindClosed<N,ftype,boundError>( coef, deriv, xm, xr, ym, xError );
 			}
 		} else {
 		open_interval:
@@ -824,7 +824,7 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype x0, ftype x1, 
 
 		if ( IsDifferentSign(y0,y1) ) {
 			if ( xa >= x1 || xb <= x0 || ( xa <= x0 && xb >= x1 ) ) {	// first, last, or middle interval only
-				roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError );
+				roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError );
 				return 1;
 			}
 		} else {
@@ -835,7 +835,7 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype x0, ftype x1, 
 		if ( xa > x0 ) {
 			const ftype ya = PolynomialEval<3,ftype>( coef, xa );
 			if ( IsDifferentSign(y0,ya) ) {
-				roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError );	// first interval
+				roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xa, y0, xError );	// first interval
 				if constexpr ( !boundError ) {
 					if ( IsDifferentSign(ya,y1) || ( xb < x1 &&  IsDifferentSign( ya, PolynomialEval<3,ftype>(coef,xb) ) ) ) {
 						ftype defPoly[4];
@@ -847,7 +847,7 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype x0, ftype x1, 
 			if ( xb < x1 ) {
 				const ftype yb = PolynomialEval<3,ftype>( coef, xb );
 				if ( IsDifferentSign(ya,yb) ) {
-					roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, yb, xError );
+					roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, xError );
 					if constexpr ( !boundError ) {
 						if ( IsDifferentSign(yb,y1) ) {
 							ftype defPoly[4];
@@ -857,19 +857,19 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype x0, ftype x1, 
 					}
 				}
 				if ( IsDifferentSign(yb,y1) ) {
-					roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, y1, xError );	// last interval
+					roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, xError );	// last interval
 					if constexpr ( !boundError ) return 1;
 				}
 			} else {
 				if ( IsDifferentSign(ya,y1) ) {
-					roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, x1, ya, y1, xError );
+					roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, x1, ya, xError );
 					if ( !boundError ) return 1;
 				}
 			}
 		} else {
 			const ftype yb = PolynomialEval<3,ftype>( coef, xb );
 			if ( IsDifferentSign(y0,yb) ) {
-				roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xb, y0, yb, xError );
+				roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xb, y0, xError );
 				if constexpr ( !boundError ) {
 					if ( IsDifferentSign(yb,y1) ) {
 						ftype defPoly[4];
@@ -880,7 +880,7 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype x0, ftype x1, 
 				else numRoots++;
 			}
 			if ( IsDifferentSign(yb,y1) ) {
-				roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, y1, xError );	// last interval
+				roots[ !boundError ? 0 : numRoots++ ] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, xError );	// last interval
 				if constexpr ( !boundError ) return 1;
 			}
 		}
@@ -888,7 +888,7 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype x0, ftype x1, 
 
 	} else {
 		if ( IsDifferentSign(y0,y1) ) {
-			roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError );
+			roots[0] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError );
 			return 1;
 		}
 		return 0;
@@ -930,7 +930,7 @@ inline int CubicRoots( ftype roots[3], ftype const coef[4], ftype xError )
 					}
 				} else {
 					if ( IsDifferentSign(ya,yb) ) {
-						roots[1] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, yb, xError );
+						roots[1] = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, xError );
 						roots[2] = RootFinder::template FindOpenMax<3,ftype,boundError>( coef, deriv, xb, yb, xError );
 						return 3;
 					}
@@ -979,7 +979,7 @@ inline bool CubicFirstRoot( ftype &root, ftype const coef[4], ftype x0, ftype x1
 
 		if ( IsDifferentSign(y0,y1) ) {
 			if ( xa >= x1 || xb <= x0 || ( xa <= x0 && xb >= x1 ) ) {	// first, last, or middle interval only
-				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError );	// first/last interval
+				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError );	// first/last interval
 				return true;
 			}
 		} else {
@@ -989,40 +989,40 @@ inline bool CubicFirstRoot( ftype &root, ftype const coef[4], ftype x0, ftype x1
 		if ( xa > x0 ) {
 			const ftype ya = PolynomialEval<3,ftype>( coef, xa );
 			if ( IsDifferentSign(y0,ya) ) {
-				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError );	// first interval
+				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xa, y0, xError );	// first interval
 				return true;
 			}
 			if ( xb < x1 ) {
 				const ftype yb = PolynomialEval<3,ftype>( coef, xb );
 				if ( IsDifferentSign(ya,yb) ) {
-					root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, yb, xError );
+					root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, xError );
 					return true;
 				}
 				if ( IsDifferentSign(yb,y1) ) {
-					root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, y1, xError );	// last interval
+					root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, xError );	// last interval
 					return true;
 				}
 			} else {
 				if ( IsDifferentSign(ya,y1) ) {
-					root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, x1, ya, y1, xError );
+					root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, x1, ya, xError );
 					return true;
 				}
 			}
 		} else {
 			const ftype yb = PolynomialEval<3,ftype>( coef, xb );
 			if ( IsDifferentSign(y0,yb) ) {
-				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xb, y0, yb, xError );
+				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xb, y0, xError );
 				return true;
 			}
 			if ( IsDifferentSign(yb,y1) ) {
-				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, y1, xError );	// last interval
+				root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, xError );	// last interval
 				return true;
 			}
 		}
 
 	} else {
 		if ( IsDifferentSign(y0,y1) ) {
-			root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError );
+			root = RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError );
 			return true;
 		}
 	}
@@ -1138,43 +1138,43 @@ inline bool CubicForEachRoot( RootCallback callback, ftype const coef[4], ftype 
 
 		if ( xa >= x1 || xb <= x0 ) {
 			if ( IsDifferentSign(y0,y1) ) {
-				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError ) ) ) return true;	// first/last interval
+				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError ) ) ) return true;	// first/last interval
 			}
 		} else if ( xa <= x0 && xb >= x1 ) {
 			if ( IsDifferentSign(y0,y1) ) {
-				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError ) ) ) return true;
+				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError ) ) ) return true;
 			}
 		} else if ( xa > x0 ) {
 			const ftype ya = PolynomialEval<3,ftype>( coef, xa );
 			if ( IsDifferentSign(y0,ya) ) {
-				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError ) ) ) return true;	// first interval
+				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xa, y0, xError ) ) ) return true;	// first interval
 			}
 			if ( xb < x1 ) {
 				const ftype yb = PolynomialEval<3,ftype>( coef, xb );
 				if ( IsDifferentSign(ya,yb) ) {
-					if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, yb, xError ) ) ) return true;
+					if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, xb, ya, xError ) ) ) return true;
 				}
 				if ( IsDifferentSign(yb,y1) ) {
-					if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, y1, xError ) ) ) return true;	// last interval
+					if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, xError ) ) ) return true;	// last interval
 				}
 			} else {
 				if ( IsDifferentSign(ya,y1) ) {
-					if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, x1, ya, y1, xError ) ) ) return true;
+					if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xa, x1, ya, xError ) ) ) return true;
 				}
 			}
 		} else {
 			const ftype yb = PolynomialEval<3,ftype>( coef, xb );
 			if ( IsDifferentSign(y0,yb) ) {
-				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xb, y0, yb, xError ) ) ) return true;
+				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, xb, y0, xError ) ) ) return true;
 			}
 			if ( IsDifferentSign(yb,y1) ) {
-				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, y1, xError ) ) ) return true;	// last interval
+				if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, xb, x1, yb, xError ) ) ) return true;	// last interval
 			}
 		}
 
 	} else {
 		if ( IsDifferentSign(y0,y1) ) {
-			if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError ) ) ) return true;
+			if ( callback( RootFinder::template FindClosed<3,ftype,boundError>( coef, deriv, x0, x1, y0, xError ) ) ) return true;
 		}
 	}
 	return false;
@@ -1217,8 +1217,8 @@ inline bool CubicForEachRoot( RootCallback callback, ftype const coef[4], ftype 
 					}
 				} else {
 					if ( IsDifferentSign(ya,yb) ) {
-						if ( callback( RootFinder::template FindClosed <3,ftype,boundError>( coef, deriv, xa, xb, ya, yb, xError ) ) ) return true;
-						if ( callback( RootFinder::template FindOpenMax<3,ftype,boundError>( coef, deriv, xb, yb,         xError ) ) ) return true;
+						if ( callback( RootFinder::template FindClosed <3,ftype,boundError>( coef, deriv, xa, xb, ya, xError ) ) ) return true;
+						if ( callback( RootFinder::template FindOpenMax<3,ftype,boundError>( coef, deriv, xb, yb,     xError ) ) ) return true;
 						return false;
 					}
 				}
@@ -1264,7 +1264,7 @@ inline int PolynomialRoots( ftype roots[N], ftype const coef[N+1], ftype x0, fty
 		int nr = 0;
 		for ( int i=0; i<=nd; ++i ) {
 			if ( IsDifferentSign(y[i],y[i+1]) ) {
-				roots[nr++] = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x[i], x[i+1], y[i], y[i+1], xError );
+				roots[nr++] = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x[i], x[i+1], y[i], xError );
 			}
 		}
 		return nr;
@@ -1297,7 +1297,7 @@ inline int PolynomialRoots( ftype roots[N], ftype const coef[N+1], ftype xError 
 				ftype xb = derivRoots[i];
 				ftype yb = PolynomialEval<N,ftype>( coef, xb );
 				if ( IsDifferentSign(ya,yb) ) {
-					roots[nr++] = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, xa, xb, ya, yb, xError );
+					roots[nr++] = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, xa, xb, ya, xError );
 				}
 				xa = xb;
 				ya = yb;
@@ -1331,7 +1331,7 @@ inline bool PolynomialFirstRoot( ftype &root, ftype const coef[N+1], ftype x0, f
 		bool done = PolynomialForEachRoot<N-1,ftype,boundError,RootFinder>( [&]( ftype xa ) {
 			ftype ya = PolynomialEval<N,ftype>( coef, xa );
 			if ( IsDifferentSign(y0,ya) ) {
-				root = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError );
+				root = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, xa, y0, xError );
 				return true;
 			}
 			x0 = xa;
@@ -1342,7 +1342,7 @@ inline bool PolynomialFirstRoot( ftype &root, ftype const coef[N+1], ftype x0, f
 		else {
 			ftype y1 = PolynomialEval<N,ftype>( coef, x1 );
 			if ( IsDifferentSign(y0,y1) ) {
-				root = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError );
+				root = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, x1, y0, xError );
 				return true;
 			} else return false;
 		}
@@ -1368,9 +1368,9 @@ inline bool PolynomialFirstRoot( ftype &root, ftype const coef[N+1], ftype xErro
 			ftype ya = PolynomialEval<N,ftype>( coef, xa );
 			if ( IsDifferentSign(y0,ya) ) {
 				if ( firstInterval ) {
-					root = RootFinder::template FindOpenMin<N,ftype,boundError>( coef, deriv,     xa,     ya, xError );
+					root = RootFinder::template FindOpenMin<N,ftype,boundError>( coef, deriv,     xa, ya, xError );
 				} else {
-					root = RootFinder::template FindClosed <N,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError );
+					root = RootFinder::template FindClosed <N,ftype,boundError>( coef, deriv, x0, xa, y0, xError );
 				}
 				return true;
 			}
@@ -1451,7 +1451,7 @@ inline bool PolynomialForEachRoot( RootCallback callback, ftype const coef[N+1],
 			ftype ya = PolynomialEval<N,ftype>( coef, xa );
 			if ( IsDifferentSign(y0,ya) ) {
 				ftype root;
-				root = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError );
+				root = RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, xa, y0, xError );
 				if ( callback(root) ) return true;
 			}
 			x0 = xa;
@@ -1462,7 +1462,7 @@ inline bool PolynomialForEachRoot( RootCallback callback, ftype const coef[N+1],
 		else {
 			ftype y1 = PolynomialEval<N,ftype>( coef, x1 );
 			if ( IsDifferentSign(y0,y1) ) {
-				return callback( RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, x1, y0, y1, xError ) );
+				return callback( RootFinder::template FindClosed<N,ftype,boundError>( coef, deriv, x0, x1, y0, xError ) );
 			}
 			return false;
 		}
@@ -1488,9 +1488,9 @@ inline bool PolynomialForEachRoot( RootCallback callback, ftype const coef[N+1],
 			if ( IsDifferentSign(y0,ya) ) {
 				ftype root;
 				if ( firstInterval ) {
-					root = RootFinder::template FindOpenMin<N,ftype,boundError>( coef, deriv,     xa,     ya, xError );
+					root = RootFinder::template FindOpenMin<N,ftype,boundError>( coef, deriv,     xa, ya, xError );
 				} else {
-					root = RootFinder::template FindClosed <N,ftype,boundError>( coef, deriv, x0, xa, y0, ya, xError );
+					root = RootFinder::template FindClosed <N,ftype,boundError>( coef, deriv, x0, xa, y0, xError );
 				}
 				if ( callback(root) ) return true;
 			}
