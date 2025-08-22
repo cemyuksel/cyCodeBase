@@ -620,12 +620,12 @@ public:
 //-------------------------------------------------------------------------------
 
 // Definitions of the conversion constructors
-template <typename T, int N>                       Vec<T,N>::Vec( Vec2<T> const &p ) { if (N<=2) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,2); MemClear(elem,N-2); } }
-template <typename T, int N>                       Vec<T,N>::Vec( Vec3<T> const &p ) { if (N<=3) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,3); MemClear(elem,N-3); } }
-template <typename T, int N>                       Vec<T,N>::Vec( Vec4<T> const &p ) { if (N<=4) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,4); MemClear(elem,N-4); } }
-template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec2<S> const &p ) { if (N<=2) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,2); MemClear(elem,N-2); } }
-template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec3<S> const &p ) { if (N<=3) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,3); MemClear(elem,N-3); } }
-template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec4<S> const &p ) { if (N<=4) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,4); MemClear(elem,N-4); } }
+template <typename T, int N>                       Vec<T,N>::Vec( Vec2<T> const &p ) { if constexpr (N<=2) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,2); MemClear(elem,N-2); } }
+template <typename T, int N>                       Vec<T,N>::Vec( Vec3<T> const &p ) { if constexpr (N<=3) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,3); MemClear(elem,N-3); } }
+template <typename T, int N>                       Vec<T,N>::Vec( Vec4<T> const &p ) { if constexpr (N<=4) { MemCopy   (elem,&p.x,N); } else { MemCopy   (elem,&p.x,4); MemClear(elem,N-4); } }
+template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec2<S> const &p ) { if constexpr (N<=2) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,2); MemClear(elem,N-2); } }
+template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec3<S> const &p ) { if constexpr (N<=3) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,3); MemClear(elem,N-3); } }
+template <typename T, int N> template <typename S> Vec<T,N>::Vec( Vec4<S> const &p ) { if constexpr (N<=4) { MemConvert(elem,&p.x,N); } else { MemConvert(elem,&p.x,4); MemClear(elem,N-4); } }
 template <typename T>                              Vec2<T>::Vec2( Vec3<T> const &p ) : x(  p.x ), y(  p.y )            {}
 template <typename T>                              Vec2<T>::Vec2( Vec4<T> const &p ) : x(  p.x ), y(  p.y )            {}
 template <typename T>                              Vec3<T>::Vec3( Vec4<T> const &p ) : x(  p.x ), y(  p.y ), z(  p.z ) {}
