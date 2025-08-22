@@ -97,7 +97,7 @@ public:
 	//!@name Constructors
 
 	Matrix2() CY_CLASS_FUNCTION_DEFAULT										//!< Default constructor
-	template <typename TT> explicit Matrix2<T>( const Matrix2<TT> &matrix ) { MemConvert(cell,matrix.cell,4); }	//!< Copy constructor for different types
+	template <typename S> explicit Matrix2( const Matrix2<S> &matrix ) { MemConvert(cell,matrix.cell,4); }	//!< Copy constructor for different types
 	explicit Matrix2( T const * restrict values ) { Set(values); }			//!< Initialize the matrix using an array of 4 values
 	explicit Matrix2( T v )                       { SetScale(v); }			//!< Initialize the matrix as identity scaled by v
 	explicit Matrix2( Vec2<T> const &x, Vec2<T> const &y ) { Set(x,y); }	//!< Initialize the matrix using two vectors as columns
@@ -466,7 +466,7 @@ public:
 	//!@name Constructors
 
 	Matrix3() CY_CLASS_FUNCTION_DEFAULT															//!< Default constructor
-	template <typename TT> explicit Matrix3<T>( Matrix3<TT> const &matrix ) { MemConvert(cell,matrix.cell,9); }	//!< Copy constructor for different types
+	template <typename S> explicit Matrix3( Matrix3<S> const &matrix ) { MemConvert(cell,matrix.cell,9); }	//!< Copy constructor for different types
 	explicit Matrix3( T const * restrict values ) { Set(values); }								//!< Initialize the matrix using an array of 9 values
 	explicit Matrix3( T v )                       { SetScale(v); }								//!< Initialize the matrix as identity scaled by v
 	explicit Matrix3( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z ) { Set(x,y,z); }	//!< Initialize the matrix using x,y,z vectors as columns
@@ -962,7 +962,6 @@ public:
 	Vec3<T> GetEigenvectors( Vec3<T> &evec0, Vec3<T> &evec1, Vec3<T> &evec2, T tollerance=T(_CY_VEC_DEFAULT_ERROR_TOLERANCE) ) const
 	{
 		static auto setVectors = [&]( Vec3<T> &e0, Vec3<T> &e1, Vec3<T> &e2, Matrix3 const &v20, Matrix3 const &v12, Matrix3 const &v01 ) {
-			int i = 0;
 			Matrix3 v2 = v20 * v12;
 			e2 = v2.Column(0) + v2.Column(1) + v2.Column(2);
 			if ( (e2 ^ v01.Column(0)).LengthSquared() < tollerance ) {
@@ -1104,7 +1103,7 @@ public:
 	//!@name Constructors
 
 	Matrix34() CY_CLASS_FUNCTION_DEFAULT												//!< Default constructor
-	template <typename TT> explicit Matrix34<T>( Matrix34<TT> const &matrix ) { MemConvert(cell,matrix.cell,12); }	//!< Copy constructor for different types
+	template <typename S> explicit Matrix34( Matrix34<S> const &matrix ) { MemConvert(cell,matrix.cell,12); }	//!< Copy constructor for different types
 	explicit Matrix34( T const * restrict values ) { Set(values); }						//!< Initialize the matrix using an array of 9 values
 	explicit Matrix34( T v )                       { SetScale(v); }						//!< Initialize the matrix as identity scaled by v
 	explicit Matrix34( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
@@ -1699,7 +1698,7 @@ public:
 	//!@name Constructors
 
 	Matrix4() CY_CLASS_FUNCTION_DEFAULT																					//!< Default constructor
-	template <typename TT> explicit Matrix4<T>( Matrix4<TT> const &matrix ) { MemConvert(cell,matrix.cell,16); }		//!< Copy constructor for different types
+	template <typename S> explicit Matrix4( Matrix4<S> const &matrix ) { MemConvert(cell,matrix.cell,16); }		//!< Copy constructor for different types
 	explicit Matrix4( T const * restrict values ) { Set(values); }														//!< Initialize the matrix using an array of 9 values
 	explicit Matrix4( T v )                      { SetScale(v); }														//!< Initialize the matrix as identity scaled by v
 	explicit Matrix4( Vec3<T> const &x, Vec3<T> const &y, Vec3<T> const &z, Vec3<T> const &pos ) { Set(x,y,z,pos); }	//!< Initialize the matrix using x,y,z vectors and coordinate center
