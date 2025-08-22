@@ -189,7 +189,7 @@ public:
 
 	//! Returns the closest points to the given position within the given radius.
 	//! It returns the number of points found.
-	int GetPoints( PointType const &position, FType radius, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
+	int GetPoints( PointType const &position, FType radius, int maxCount, PointInfo *closestPoints ) const
 	{
 		int pointsFound = 0;
 		GetPoints( position, radius, [&](SIZE_TYPE i, PointType const &p, FType d2, FType &r2) {
@@ -216,7 +216,7 @@ public:
 
 	//! Returns the closest points to the given position.
 	//! It returns the number of points found.
-	int GetPoints( PointType const &position, SIZE_TYPE maxCount, PointInfo *closestPoints ) const
+	int GetPoints( PointType const &position, int maxCount, PointInfo *closestPoints ) const
 	{
 		return GetPoints( position, (std::numeric_limits<FType>::max)(), maxCount, closestPoints );
 	}
@@ -409,9 +409,9 @@ private:
 
 		// empty the stack
 		while ( stackPos > 0 ) {
-			SIZE_TYPE nodeID = stack[ --stackPos ];
+			SIZE_TYPE nid = stack[ --stackPos ];
 			// check the internal node point
-			PointData const &p = points[nodeID];
+			PointData const &p = points[nid];
 			PointType const pos = p.Pos();
 			int axis = p.Plane();
 			FType dist1 = position[axis] - pos[axis];
@@ -420,9 +420,9 @@ private:
 				FType d2 = (position - pos).LengthSquared();
 				if ( d2 < dist2 ) pointFound( p.Index(), pos, d2, dist2 );
 				// traverse down the other child node
-				SIZE_TYPE child = 2*nodeID;
-				nodeID = dist1 < 0 ? child+1 : child;
-				TraverseCloser( position, dist2, pointFound, nodeID, stack, stackPos );
+				SIZE_TYPE child = 2*nid;
+				nid = dist1 < 0 ? child+1 : child;
+				TraverseCloser( position, dist2, pointFound, nid, stack, stackPos );
 			}
 		}
 	}

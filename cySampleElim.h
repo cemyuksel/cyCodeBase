@@ -245,23 +245,23 @@ public:
 		) const
 	{
 		if ( d_max <= FType(0) ) d_max = 2 * GetMaxPoissonDiskRadius( dimensions, outputSize );
-		FType alpha = this->alpha;
+		FType a = alpha;
 		if ( weightLimiting ) {
 			FType d_min = d_max * GetWeightLimitFraction( inputSize, outputSize );
 			Eliminate( inputPoints, inputSize, outputPoints, outputSize, progressive, d_max, dimensions,
-				[d_min, alpha] (PointType const &, PointType const &, FType d2, FType d_max)
+				[d_min, a] (PointType const &, PointType const &, FType d2, FType d_max)
 				{
 					FType d = Sqrt(d2);
 					if ( d < d_min ) d = d_min;
-					return std::pow( FType(1) - d/d_max, alpha );
+					return std::pow( FType(1) - d/d_max, a );
 				}
 			);
 		} else {
 			Eliminate( inputPoints, inputSize, outputPoints, outputSize, progressive, d_max, dimensions,
-				[alpha] (PointType const &, PointType const &, FType d2, FType d_max)
+				[a] (PointType const &, PointType const &, FType d2, FType d_max)
 				{
 					FType d = Sqrt(d2);
-					return std::pow( FType(1) - d/d_max, alpha );
+					return std::pow( FType(1) - d/d_max, a );
 				}
 			);
 		}

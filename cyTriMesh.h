@@ -278,7 +278,7 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 	public:
 		int ReadLine(FILE *fp)
 		{
-			char c = fgetc(fp);
+			int c = fgetc(fp);
 			while ( !feof(fp) ) {
 				while ( isspace(c) && ( !feof(fp) || c!='\0' ) ) c = fgetc(fp);	// skip empty space
 				if ( c == '#' ) while ( !feof(fp) && c!='\n' && c!='\r' && c!='\0' ) c = fgetc(fp);	// skip comment line
@@ -293,7 +293,7 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 				} else {
 					if ( inspace ) data[i++] = ' ';
 					inspace = false;
-					data[i++] = c;
+					data[i++] = static_cast<char>(c);
 				}
 				c = fgetc(fp);
 			}
@@ -467,9 +467,9 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 
 	if ( mtlList.mtlData.size() > 0 ) {
 		unsigned int fid = 0;
-		for ( int m=0; m<(int)mtlList.mtlData.size(); m++ ) {
-			for ( unsigned int i=mtlList.mtlData[m].firstFace, j=0; j<mtlList.mtlData[m].faceCount && i<_f.size(); i++ ) {
-				if ( faceMtlIndex[i] == m ) {
+		for ( int mi=0; mi<(int)mtlList.mtlData.size(); mi++ ) {
+			for ( unsigned int i=mtlList.mtlData[mi].firstFace, j=0; j<mtlList.mtlData[mi].faceCount && i<_f.size(); i++ ) {
+				if ( faceMtlIndex[i] == mi ) {
 					f[fid] = _f[i];
 					if ( fn ) fn[fid] = _fn[i];
 					if ( ft ) ft[fid] = _ft[i];
@@ -477,7 +477,7 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 					j++;
 				}
 			}
-			mcfc[m] = fid;
+			mcfc[mi] = fid;
 		}
 		if ( fid <_f.size() ) {
 			for ( unsigned int i=0; i<_f.size(); i++ ) {
@@ -510,13 +510,13 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 		}
 		for ( unsigned int mi=0; mi<mtlFiles.size(); mi++ ) {
 			std::string mtlFilename = ( mtlPathName ) ? std::string(mtlPathName) + mtlFiles[mi].filename : mtlFiles[mi].filename;
-			FILE *fp = fopen(mtlFilename.data(),"r");
-			if ( !fp ) {
+			FILE *fpm = fopen(mtlFilename.data(),"r");
+			if ( !fpm ) {
 				if ( outStream ) *outStream << "ERROR: Cannot open file " << mtlFilename.c_str() << std::endl;
 				continue;
 			}
 			int mtlID = -1;
-			while ( buffer.ReadLine(fp) ) {
+			while ( buffer.ReadLine(fpm) ) {
 				if ( buffer.IsCommand("newmtl") ) {
 					mtlID = mtlList.GetMtlIndex(buffer.Data(7));
 					if ( mtlID >= 0 ) buffer.Copy( m[mtlID].name, 7 );
@@ -539,7 +539,7 @@ inline bool TriMesh::LoadFromFileObj( char const *filename, bool loadMtl, std::o
 					else if ( buffer.IsCommand("disp"    ) ) buffer.Copy( m[mtlID].map_disp, 5 );
 				}
 			}
-			fclose(fp);
+			fclose(fpm);
 		}
 		if ( mtlPathName ) delete [] mtlPathName;
 	}

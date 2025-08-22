@@ -95,11 +95,11 @@ public:
 	            const Color *lightIntensities, 	//!< Light intensities.
 	            int          numLights, 		//!< Number of lights.
 	            int          minLevelLights,	//!< The minimum number of lights permitted for the highest (coarsest) level of the hierarchy. The build stops if a higher (coarser) level would have fewer lights.
-	            float        cellSize,			//!< The size of a grid cell in the lowest (finest) level of the hierarchy.
+	            float        _cellSize,			//!< The size of a grid cell in the lowest (finest) level of the hierarchy.
 	            int          highestLevel		//!< The highest level permitted, where level 0 contains the original lights.
 	          )
 	{
-		return DoBuild( lightPos, lightIntensities, numLights, 0, minLevelLights, cellSize, highestLevel );
+		return DoBuild( lightPos, lightIntensities, numLights, 0, minLevelLights, _cellSize, highestLevel );
 	}
 
 	//! Builds the Lighting Grid Hierarchy for the given point light positions and intensities using the given parameters.
@@ -231,7 +231,7 @@ private:
 		return p;
 	}
 
-	bool DoBuild( const Vec3f *lightPos, const Color *lightColor, int numLights, float autoFitScale, int minLevelLights, float cellSize=0, int highestLevel=10 )
+	bool DoBuild( const Vec3f *lightPos, const Color *lightColor, int numLights, float autoFitScale, int minLevelLights, float _cellSize=0, int highestLevel=10 )
 	{
 		Clear();
 		if ( numLights <= 0 || highestLevel <= 0 ) return false;
@@ -258,11 +258,11 @@ private:
 			highestGridRes.Set(s,s,s);
 		} else {
 			int highestLevelMult = 1 << (highestLevel-1);
-			highestCellSize = cellSize * highestLevelMult;
+			highestCellSize = _cellSize * highestLevelMult;
 			while ( highestLevel>1 && highestCellSize > boundDifMin*2 ) {
 				highestLevel--;
 				highestLevelMult = 1 << (highestLevel-1);
-				highestCellSize = cellSize * highestLevelMult;
+				highestCellSize = _cellSize * highestLevelMult;
 			}
 			highestGridRes = IVec3i(boundDif / highestCellSize) + 2;
 		}
@@ -297,9 +297,9 @@ private:
 		numLevels = highestLevel+1;
 		std::vector< std::vector<Node> > nodes(numLevels);
 
-		auto gridIndex = []( IVec3i &index, const Vec3f &pos, float cellSize )
+		auto gridIndex = []( IVec3i &index, const Vec3f &pos, float _cellSize )
 		{
-			Vec3f normP = pos / cellSize;
+			Vec3f normP = pos / _cellSize;
 			index = IVec3i(normP);
 			return normP - Vec3f(index);
 		};
@@ -414,7 +414,6 @@ private:
 
 		// Copy light data
 		numLevels = highestLevel + 1 - levelSkip;
-		int levelBaseSkip = 0;
 		// Skip levels that have two few lights (based on minLevelLights).
 		for ( int level=1; level<numLevels; level++ ) {
 			std::vector<Node> &levelNodes = nodes[level+levelSkip];
@@ -464,7 +463,7 @@ private:
 			levels[0].colors[i] = lightColor[i];
 		}
 		levels[0].pc.Build( numLights, pos.data() );
-		this->cellSize = nodeCellSize;
+		cellSize = nodeCellSize;
 
 		return true;
 	}

@@ -268,7 +268,7 @@ public:
 
 protected:
 	static uint8_t FloatToByte(float r) { return ClampInt(int(r*255+0.5f)); }
-	static uint8_t ClampInt(int v) { return v<0 ? 0 : (v>255 ? 255 : v); }
+	static uint8_t ClampInt(int v) { return v<0 ? 0 : (v>255 ? 255 : static_cast<uint8_t>(v)); }
 };
 
 //-------------------------------------------------------------------------------
@@ -327,7 +327,7 @@ public:
 
 protected:
 	static uint8_t FloatToByte(float r) { return ClampInt(int(r*255+0.5f)); }
-	static uint8_t ClampInt(int v) { return v<0 ? 0 : (v>255 ? 255 : v); }
+	static uint8_t ClampInt(int v) { return v<0 ? 0 : (v>255 ? 255 : static_cast<uint8_t>(v)); }
 };
 
 //-------------------------------------------------------------------------------

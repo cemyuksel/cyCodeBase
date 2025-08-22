@@ -162,9 +162,9 @@ protected:
 	//! Returns zero, if the node is not to be split.
 	//! The default implementation splits the temporary node down the middle of the
 	//! widest axis of its bounding box.
-	virtual unsigned int FindSplit( unsigned int elementCount, unsigned int *elements, float const *box, unsigned int maxElementsPerNode )
+	virtual unsigned int FindSplit( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode )
 	{
-		return MeanSplit(elementCount,elements,box,maxElementsPerNode);
+		return MeanSplit(elementCount,_elements,box,maxElementsPerNode);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
@@ -359,10 +359,10 @@ protected:
 		cyVec3f p = mesh->V( f.v[0] );
 		box[0]=box[3]=p.x; box[1]=box[4]=p.y; box[2]=box[5]=p.z;
 		for ( int j=1; j<3; j++ ) { // for each triangle
-			cyVec3f p = mesh->V( f.v[j] );
+			cyVec3f q = mesh->V( f.v[j] );
 			for ( int k=0; k<3; k++ ) { // for each dimension
-				if ( box[k] > p[k] ) box[k] = p[k];
-				if ( box[k+3] < p[k] ) box[k+3] = p[k];
+				if ( box[k] > q[k] ) box[k] = q[k];
+				if ( box[k+3] < q[k] ) box[k+3] = q[k];
 			}
 		}
 	}
