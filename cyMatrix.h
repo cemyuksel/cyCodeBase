@@ -84,14 +84,7 @@ public:
 	//! Elements of the matrix are column-major: \n
 	//! | 0  2 | \n
 	//! | 1  3 | \n
-#ifdef __cpp_unrestricted_unions
-	union {
-		T       cell[4];
-		Vec2<T> column[2];	// column vectors
-	};
-#else
 	T cell[4];
-#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
@@ -165,18 +158,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-#ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec2<T>       * Columns()               { return column; }
-	CY_NODISCARD Vec2<T> const * Columns()         const { return column; }
-	CY_NODISCARD Vec2<T>       & Column ( int ci )       { return column[ci]; }
-	CY_NODISCARD Vec2<T> const & Column ( int ci ) const { return column[ci]; }
-#else
 	CY_NODISCARD Vec2<T>       * Columns()               { return ((Vec2<T>*)cell); }
 	CY_NODISCARD Vec2<T> const * Columns()         const { return ((Vec2<T>*)cell); }
-	CY_NODISCARD Vec2<T>       & Column ( int ci )       { return Columns()[ci]; }
-	CY_NODISCARD Vec2<T> const & Column ( int ci ) const { return Columns()[ci]; }
-#endif
-	CY_NODISCARD Vec2<T>         GetRow ( int ri ) const { return Vec2<T>( cell[ri], cell[ri+2] ); }		//!< Returns a row of the matrix
+	CY_NODISCARD Vec2<T>       & Column ( int ci )       { assert( ci>=0 && ci<2 ); return Columns()[ci]; }
+	CY_NODISCARD Vec2<T> const & Column ( int ci ) const { assert( ci>=0 && ci<2 ); return Columns()[ci]; }
+	CY_NODISCARD Vec2<T>         GetRow ( int ri ) const { assert( ri>=0 && ri<2 ); return Vec2<T>( cell[ri], cell[ri+2] ); }	//!< Returns a row of the matrix
 	CY_NODISCARD Vec2<T>         GetDiagonal()     const { return Vec2<T>( cell[0], cell[3] ); }			//!< Returns the diagonal of the matrix
 	CY_NODISCARD Matrix2         GetRotation()     const { Matrix2 s, r; GetComponents(s,r); return r; }	//!< Returns the rotation portion of the transformation
 
@@ -453,14 +439,7 @@ public:
 	//! | 0  3  6 | \n
 	//! | 1  4  7 | \n
 	//! | 2  5  8 | \n
-#ifdef __cpp_unrestricted_unions
-	union {
-		T       cell[9];
-		Vec3<T> column[3];	// column vectors
-	};
-#else
 	T cell[9];
-#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
@@ -640,18 +619,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 	
-#ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec3<T>       * Columns()               { return column; }
-	CY_NODISCARD Vec3<T> const * Columns()         const { return column; }
-	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return column[ci]; }
-	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return column[ci]; }
-#else
 	CY_NODISCARD Vec3<T>       * Columns()               { return ((Vec3<T>*)cell); }
 	CY_NODISCARD Vec3<T> const * Columns()         const { return ((Vec3<T>*)cell); }
-	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return Columns()[ci]; }
-	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return Columns()[ci]; }
-#endif
-	CY_NODISCARD Vec3<T>         GetRow ( int ri ) const { return Vec3<T>( cell[ri], cell[ri+3], cell[ri+6] ); }	//!< Returns a row of the matrix
+	CY_NODISCARD Vec3<T>       & Column ( int ci )       { assert( ci>=0 && ci<3 ); return Columns()[ci]; }
+	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { assert( ci>=0 && ci<3 ); return Columns()[ci]; }
+	CY_NODISCARD Vec3<T>         GetRow ( int ri ) const { assert( ri>=0 && ri<3 ); return Vec3<T>( cell[ri], cell[ri+3], cell[ri+6] ); }	//!< Returns a row of the matrix
 	CY_NODISCARD Vec3<T>         GetDiagonal()     const { return Vec3<T>( cell[0], cell[4], cell[8] ); }			//!< Returns the diagonal of the matrix
 	CY_NODISCARD Matrix3         GetRotation()     const { Matrix3 s, r; GetComponents(s,r); return r; }			//!< Returns the rotation portion of the transformation
 
@@ -1089,15 +1061,7 @@ public:
 	//! | 0   3   6   9 | \n
 	//! | 1   4   7  10 | \n
 	//! | 2   5   8  11 | \n
-#ifdef __cpp_unrestricted_unions
-	union {
-		T       cell[12];
-		Vec3<T> column[4];	// column vectors
-	};
-#else
 	T cell[12];
-#endif
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
@@ -1286,18 +1250,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-#ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec3<T>       * Columns()               { return column; }
-	CY_NODISCARD Vec3<T> const * Columns()         const { return column; }
-	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return column[ci]; }
-	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return column[ci]; }
-#else
 	CY_NODISCARD Vec3<T>       * Columns()               { return ((Vec3<T>*)cell); }
 	CY_NODISCARD Vec3<T> const * Columns()         const { return ((Vec3<T>*)cell); }
-	CY_NODISCARD Vec3<T>       & Column ( int ci )       { return Columns()[ci]; }
-	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { return Columns()[ci]; }
-#endif
-	CY_NODISCARD Vec4<T>         GetRow ( int ri ) const { return Vec4<T>( cell[ri], cell[ri+3], cell[ri+6], cell[ri+9] ); }	//!< Returns a row of the matrix
+	CY_NODISCARD Vec3<T>       & Column ( int ci )       { assert( ci>=0 && ci<4 ); return Columns()[ci]; }
+	CY_NODISCARD Vec3<T> const & Column ( int ci ) const { assert( ci>=0 && ci<4 ); return Columns()[ci]; }
+	CY_NODISCARD Vec4<T>         GetRow ( int ri ) const { assert( ri>=0 && ri<3 ); return Vec4<T>( cell[ri], cell[ri+3], cell[ri+6], cell[ri+9] ); }	//!< Returns a row of the matrix
 	CY_NODISCARD Vec3<T>         GetDiagonal()     const { return Vec3<T>( cell[0], cell[4], cell[8] ); }							//!< Returns the diagonal of the matrix
 
 
@@ -1678,21 +1635,7 @@ public:
 	//! | 1   5   9  13 | \n
 	//! | 2   6  10  14 | \n
 	//! | 3   7  11  15 | \n
-#ifdef __cpp_unrestricted_unions
-	struct ColVec3 {
-		Vec3<T> v;
-		T s;
-		void Set( Vec3<T> const &_v, T _s ) { v=_v; s=_s; }
-	};	// column vector plus scalar
-	union {
-		T       cell [16];
-		Vec4<T> column[4];	// column vectors
-		ColVec3 col3  [4];	// column vectors plus scalars
-	};
-#else
 	T cell [16];
-#endif
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Constructors
@@ -1915,22 +1858,13 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//!@name Get Row, Column, or Diagonal
 
-#ifdef __cpp_unrestricted_unions
-	CY_NODISCARD Vec4<T>       * Columns()               { return column; }
-	CY_NODISCARD Vec4<T> const * Columns()         const { return column; }
-	CY_NODISCARD Vec4<T>       & Column ( int ci )       { return column[ci]; }
-	CY_NODISCARD Vec4<T> const & Column ( int ci ) const { return column[ci]; }
-	CY_NODISCARD Vec3<T>       & Column3( int ci )       { return col3[ci].v; }
-	CY_NODISCARD Vec3<T> const & Column3( int ci ) const { return col3[ci].v; }
-#else
 	CY_NODISCARD Vec4<T>       * Columns()               { return ((Vec4<T>*)cell); }
 	CY_NODISCARD Vec4<T> const * Columns()         const { return ((Vec4<T>*)cell); }
-	CY_NODISCARD Vec4<T>       & Column ( int ci )       { return Columns()[ci]; }
-	CY_NODISCARD Vec4<T> const & Column ( int ci ) const { return Columns()[ci]; }
-	CY_NODISCARD Vec3<T>       & Column3( int ci )       { return (Vec3<T>       &)cell[ci*4]; }
-	CY_NODISCARD Vec3<T> const & Column3( int ci ) const { return (Vec3<T> const &)cell[ci*4]; }
-#endif
-	CY_NODISCARD Vec4<T>         GetRow ( int ri ) const { return Vec4<T>( cell[ri], cell[ri+4], cell[ri+8], cell[ri+12] ); }	//!< Returns a row of the matrix
+	CY_NODISCARD Vec4<T>       & Column ( int ci )       { assert( ci>=0 && ci<4 ); return Columns()[ci]; }
+	CY_NODISCARD Vec4<T> const & Column ( int ci ) const { assert( ci>=0 && ci<4 ); return Columns()[ci]; }
+	CY_NODISCARD Vec3<T>       & Column3( int ci )       { assert( ci>=0 && ci<4 ); return (Vec3<T>       &)cell[ci*4]; }
+	CY_NODISCARD Vec3<T> const & Column3( int ci ) const { assert( ci>=0 && ci<4 ); return (Vec3<T> const &)cell[ci*4]; }
+	CY_NODISCARD Vec4<T>         GetRow ( int ri ) const { assert( ri>=0 && ri<4 ); return Vec4<T>( cell[ri], cell[ri+4], cell[ri+8], cell[ri+12] ); }	//!< Returns a row of the matrix
 	CY_NODISCARD Vec4<T>         GetDiagonal()     const { return Vec4<T>( cell[0], cell[5], cell[10], cell[15] ); }				//!< Returns the diagonal of the matrix
 
 
