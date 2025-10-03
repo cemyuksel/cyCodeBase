@@ -52,7 +52,7 @@
 #include <type_traits>
 #include <limits>
 
-#if !defined(CY_NO_INTRIN_H) && !defined(CY_NO_EMMINTRIN_H) && !defined(CY_NO_IMMINTRIN_H)
+#if !defined(CY_NO_INTRIN_H) && !defined(CY_NO_EMMINTRIN_H) && !defined(CY_NO_IMMINTRIN_H) && !defined(__aarch64__)
 # include <immintrin.h>
 #endif
 
