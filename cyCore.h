@@ -250,16 +250,21 @@ template <int N, typename T> CY_NODISCARD inline T Pow( T const &v )
 	return ( (N&1) == 0 ) ? vv : v*vv;
 }
 
-template <typename T> CY_NODISCARD inline T ACosSafe ( T v ) { return (T) std::acos(Clamp(v,T(-1),T(1))); }
-template <typename T> CY_NODISCARD inline T ASinSafe ( T v ) { return (T) std::asin(Clamp(v,T(-1),T(1))); }
-template <typename T> CY_NODISCARD inline T Sqrt     ( T v ) { return (T) std::sqrt(v); }
-template <typename T> CY_NODISCARD inline T SqrtSafe ( T v ) { return (T) std::sqrt(Max(v,T(0))); }
+CY_NODISCARD inline float  ACosSafe ( float  v ) { return (float ) std::acos(Clamp(v,-1.0f,1.0f)); }
+CY_NODISCARD inline float  ASinSafe ( float  v ) { return (float ) std::asin(Clamp(v,-1.0f,1.0f)); }
+CY_NODISCARD inline double ACosSafe ( double v ) { return (double) std::acos(Clamp(v,-1.0, 1.0 )); }
+CY_NODISCARD inline double ASinSafe ( double v ) { return (double) std::asin(Clamp(v,-1.0, 1.0 )); }
 
 #ifdef _INCLUDED_IMM
-template<> CY_NODISCARD inline float  Sqrt    <float> ( float  v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(v))); }
-template<> CY_NODISCARD inline float  SqrtSafe<float> ( float  v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(Max(v,0.0f)))); }
-template<> CY_NODISCARD inline double Sqrt    <double>( double v ) { __m128d t=_mm_set1_pd(v);          return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
-template<> CY_NODISCARD inline double SqrtSafe<double>( double v ) { __m128d t=_mm_set1_pd(Max(v,0.0)); return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+CY_NODISCARD inline float  Sqrt    ( float  v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(v))); }
+CY_NODISCARD inline float  SqrtSafe( float  v ) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ps1(Max(v,0.0f)))); }
+CY_NODISCARD inline double Sqrt    ( double v ) { __m128d t=_mm_set1_pd(v);          return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+CY_NODISCARD inline double SqrtSafe( double v ) { __m128d t=_mm_set1_pd(Max(v,0.0)); return _mm_cvtsd_f64(_mm_sqrt_sd(t,t)); }
+#else
+CY_NODISCARD inline float  Sqrt    ( float  v ) { return (float ) std::sqrt(v); }
+CY_NODISCARD inline float  SqrtSafe( float  v ) { return (float ) std::sqrt(Max(v,0.0f)); }
+CY_NODISCARD inline double Sqrt    ( double v ) { return (double) std::sqrt(v); }
+CY_NODISCARD inline double SqrtSafe( double v ) { return (double) std::sqrt(Max(v,0.0 )); }
 #endif
 
 template<typename T> constexpr inline T Pi() { return T(3.141592653589793238462643383279502884197169); }
