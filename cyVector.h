@@ -190,12 +190,12 @@ public:
 	template <int N, typename S> explicit Vec2( Vec<S,N> const &p ) { p.template ConvertData<T,2>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                      { x=0; y=0; }						//!< Sets the coordinates as zero.
-	void Get( T * restrict p ) const { ((Vec2*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
-	void Set( T const * restrict p ) { operator=(*((Vec2*)p)); }		//!< Sets the coordinates using the values in the given array.
-	void Set( T v )                  { x=v; y=v; }						//!< Sets all coordinates using the given value
-	void Set( T _x, T _y )           { x=_x; y=_y; }					//!< Sets the coordinates using the given values
-	void Normalize()                 { *this /= Length(); }				//!< Normalizes the vector, such that its length becomes 1.
+	void Zero()             { x=0; y=0; }			//!< Sets the coordinates as zero.
+	void Get( T * p ) const { MemCopy(p,&x,2); }	//!< Puts the coordinate values into the array.
+	void Set( T const * p ) { MemCopy(&x,p,2); }	//!< Sets the coordinates using the values in the given array.
+	void Set( T v )         { x=v; y=v; }			//!< Sets all coordinates using the given value
+	void Set( T _x, T _y )  { x=_x; y=_y; }			//!< Sets the coordinates using the given values
+	void Normalize()        { *this /= Length(); }	//!< Normalizes the vector, such that its length becomes 1.
 
 	//!@name General methods
 	CY_NODISCARD Vec2 GetNormalized   () const { return *this / Length(); }								//!< Returns a normalized copy of the vector.
@@ -302,13 +302,13 @@ public:
 	template <int N, typename S> explicit Vec3( Vec<S,N> const &p ) { p.template ConvertData<T,3>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                            { x=0; y=0; z=0; }					//!< Sets the coordinates as zero.
-	void Get( T       * restrict p ) const { ((Vec3*)p)->operator=(*this); }	//!< Puts the coordinate values into the array.
-	void Set( T const * restrict p )       { operator=(*((Vec3*)p)); }			//!< Sets the coordinates using the values in the given array.
-	void Set( T v )                        { x=v; y=v; z=v; }					//!< Sets all coordinates using the given value.
-	void Set( T _x, T _y, T _z )           { x= _x; y= _y; z=_z; }				//!< Sets the coordinates using the given values.
-	void Set( Vec2<T> const &p, T _z )     { x=p.x; y=p.y; z=_z; }				//!< Sets the coordinates using the given values.
-	void Normalize()                       { *this /= Length(); }				//!< Normalizes the vector, such that its length becomes 1.
+	void Zero()                        { x=0; y=0; z=0; }		//!< Sets the coordinates as zero.
+	void Get( T       * p ) const      { MemCopy(p,&x,3); }		//!< Puts the coordinate values into the array.
+	void Set( T const * p )            { MemCopy(&x,p,3); }		//!< Sets the coordinates using the values in the given array.
+	void Set( T v )                    { x=v; y=v; z=v; }		//!< Sets all coordinates using the given value.
+	void Set( T _x, T _y, T _z )       { x= _x; y= _y; z=_z; }	//!< Sets the coordinates using the given values.
+	void Set( Vec2<T> const &p, T _z ) { x=p.x; y=p.y; z=_z; }	//!< Sets the coordinates using the given values.
+	void Normalize()                   { *this /= Length(); }	//!< Normalizes the vector, such that its length becomes 1.
 
 	//!@name General methods
 	CY_NODISCARD Vec3 GetNormalized   () const { return *this / Length(); }								//!< Returns a normalized copy of the vector.
@@ -465,14 +465,14 @@ public:
 	template <int N, typename S> explicit Vec4( Vec<S,N> const &p ) { p.template ConvertData<T,4>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                                { x=0; y=0; z=0; w=0; }				//!< Sets the coordinates as zero
-	void Get( T       * restrict p ) const     { ((Vec4*)p)->operator=(*this); }	//!< Puts the coordinate values into the array
-	void Set( T const * restrict p )           { operator=(*((Vec4*)p)); }			//!< Sets the coordinates using the values in the given array
-	void Set( T v )                            { x=v; y=v; z=v; w=v; }				//!< Sets all coordinates using the given value
-	void Set( T _x, T _y, T _z, T _w=1 )       { x= _x; y= _y; z= _z; w=_w; }		//!< Sets the coordinates using the given values
-	void Set( Vec2<T> const &p, T _z, T _w=1 ) { x=p.x; y=p.y; z= _z; w=_w; }		//!< Sets the coordinates using the given values
-	void Set( Vec3<T> const &p,       T _w=1 ) { x=p.x; y=p.y; z=p.z; w=_w; }		//!< Sets the coordinates using the given values
-	void Normalize()                           { *this /= Length(); }				//!< Normalizes the vector, such that its length becomes 1.
+	void Zero()                                { x=0; y=0; z=0; w=0; }			//!< Sets the coordinates as zero
+	void Get( T       * p ) const              { MemCopy(p,&x,4); }				//!< Puts the coordinate values into the array
+	void Set( T const * p )                    { MemCopy(&x,p,4); }				//!< Sets the coordinates using the values in the given array
+	void Set( T v )                            { x=v; y=v; z=v; w=v; }			//!< Sets all coordinates using the given value
+	void Set( T _x, T _y, T _z, T _w=1 )       { x= _x; y= _y; z= _z; w=_w; }	//!< Sets the coordinates using the given values
+	void Set( Vec2<T> const &p, T _z, T _w=1 ) { x=p.x; y=p.y; z= _z; w=_w; }	//!< Sets the coordinates using the given values
+	void Set( Vec3<T> const &p,       T _w=1 ) { x=p.x; y=p.y; z=p.z; w=_w; }	//!< Sets the coordinates using the given values
+	void Normalize()                           { *this /= Length(); }			//!< Normalizes the vector, such that its length becomes 1.
 
 	//!@name General methods
 	CY_NODISCARD Vec4 GetNormalized() const { return *this / Length(); }							//!< Returns a normalized copy of the vector.
