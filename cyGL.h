@@ -158,6 +158,9 @@ public:
 	//! Prints the OpenGL version to the given stream.
 	static void PrintVersion(std::ostream *outStream=&std::cout);
 
+	//! Returns OpenGL error in text format.
+	static const char* ErrorString(GLenum error);
+
 	//! Checks all previously triggered OpenGL errors and prints them to the given output stream.
 	static void CheckError( char const *sourcefile, int line, char const *call=nullptr, std::ostream *outStream=&std::cout );
 
@@ -1361,13 +1364,35 @@ inline void GL::PrintVersion(std::ostream *outStream)
 	}
 }
 
+inline const char *GL::ErrorString(GLenum error) {
+	switch (error) {
+	case GL_NO_ERROR:
+		return "GL_NO_ERROR: No error has been recorded";
+	case GL_INVALID_ENUM:
+		return "GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag";
+	case GL_INVALID_VALUE:
+		return "GL_INVALID_VALUE: A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag";
+	case GL_INVALID_OPERATION:
+		return "GL_INVALID_OPERATION: The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag";
+	case GL_STACK_OVERFLOW:
+		return "GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow";
+	case GL_STACK_UNDERFLOW:
+		return "GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow";
+	case GL_OUT_OF_MEMORY:
+		return "GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded";
+	default:
+		return "Unknown error";
+	}
+}
+
+
 inline void GL::CheckError( char const *sourcefile, int line, char const *call, std::ostream *outStream )
 {
 	GLenum error;
 	while ( (error = glGetError()) != GL_NO_ERROR) {
 		*outStream << "OpenGL ERROR: " << sourcefile << " (line " << line << "): ";
 		if ( call ) *outStream << call << " triggered ";
-		*outStream << gluErrorString(error) << std::endl;
+		*outStream << ErrorString(error) << std::endl;
 	}
 }
 
