@@ -269,6 +269,7 @@ CY_NODISCARD inline double SqrtSafe( double v ) { return (double) std::sqrt(Max(
 
 template<typename T> constexpr inline T Pi() { return T(3.141592653589793238462643383279502884197169); }
 
+CY_NODISCARD inline float  Deg2Rad( int    degrees ) { return degrees*(cy::Pi<float >()/180.0f); }
 CY_NODISCARD inline float  Deg2Rad( float  degrees ) { return degrees*(cy::Pi<float >()/180.0f); }
 CY_NODISCARD inline double Deg2Rad( double degrees ) { return degrees*(cy::Pi<double>()/180.0 ); }
 CY_NODISCARD inline float  Rad2Deg( float  radians ) { return radians*(180.0f/cy::Pi<float >()); }
