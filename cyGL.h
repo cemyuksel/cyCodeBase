@@ -885,7 +885,7 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	bool Build( GLSLShader const *vertexShader, 
-                GLSLShader const *fragmentShader,
+                GLSLShader const *fragmentShader=nullptr,
 	            GLSLShader const *geometryShader=nullptr,
 	            GLSLShader const *tessControlShader=nullptr,
 	            GLSLShader const *tessEvaluationShader=nullptr,
@@ -899,7 +899,7 @@ public:
 	//! If parse is true, it parses the source files for include directives and recursively includes them to the source.
 	template <bool files, bool parse>
 	bool Build( char const *vertexShader, 
-                char const *fragmentShader,
+                char const *fragmentShader=nullptr,
 	            char const *geometryShader=nullptr,
 	            char const *tessControlShader=nullptr,
 	            char const *tessEvaluationShader=nullptr,
@@ -911,7 +911,7 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	bool BuildFiles( char const *vertexShaderFile, 
-                     char const *fragmentShaderFile,
+                     char const *fragmentShaderFile=nullptr,
 	                 char const *geometryShaderFile=nullptr,
 	                 char const *tessControlShaderFile=nullptr,
 	                 char const *tessEvaluationShaderFile=nullptr,
@@ -950,7 +950,7 @@ public:
 	//! Writes any error or warning messages to the given output stream.
 	//! Unlike the BuildFiles method, it parses the source files for include directives and recursively includes them to the source.
 	bool BuildFilesEx( char const *vertexShaderFile, 
-                       char const *fragmentShaderFile,
+                       char const *fragmentShaderFile=nullptr,
 	                   char const *geometryShaderFile=nullptr,
 	                   char const *tessControlShaderFile=nullptr,
 	                   char const *tessEvaluationShaderFile=nullptr,
@@ -990,7 +990,7 @@ public:
 	//! Returns true if all compilation and link operations are successful.
 	//! Writes any error or warning messages to the given output stream.
 	bool BuildSources( char const *vertexShaderSourceCode, 
-                       char const *fragmentShaderSourceCode,
+                       char const *fragmentShaderSourceCode=nullptr,
 	                   char const *geometryShaderSourceCode=nullptr,
 	                   char const *tessControlShaderSourceCode=nullptr,
 	                   char const *tessEvaluationShaderSourceCode=nullptr,
@@ -1803,9 +1803,9 @@ inline bool GLSLProgram::Build( GLSLShader const *vertexShader,
 	CreateProgram();
 	std::stringstream output;
 	AttachShader(*vertexShader);
-	AttachShader(*fragmentShader);
-	if ( geometryShader ) AttachShader(*geometryShader);
-	if ( tessControlShader ) AttachShader(*tessControlShader);
+	if ( fragmentShader       ) AttachShader(*fragmentShader);
+	if ( geometryShader       ) AttachShader(*geometryShader);
+	if ( tessControlShader    ) AttachShader(*tessControlShader);
 	if ( tessEvaluationShader ) AttachShader(*tessEvaluationShader);
 	return Link(outStream);
 }
@@ -1836,8 +1836,10 @@ inline bool GLSLProgram::Build( char const *vertexShader,
 	GLSLShader vs, fs, gs, tcs, tes;
 	if ( ! compile( vs, vertexShader, GL_VERTEX_SHADER, "vertex shader" ) ) return false;
 	AttachShader(vs);
-	if ( ! compile( fs, fragmentShader, GL_FRAGMENT_SHADER, "fragment shader" ) ) return false;
-	AttachShader(fs);
+	if ( fragmentShader ) {
+		if ( ! compile( fs, fragmentShader, GL_FRAGMENT_SHADER, "fragment shader" ) ) return false;
+		AttachShader(fs);
+	}
 	if ( geometryShader ) {
 		if ( ! compile( gs, geometryShader, GL_GEOMETRY_SHADER, "geometry shader" ) ) return false;
 		AttachShader(gs);
