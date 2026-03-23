@@ -1385,7 +1385,6 @@ inline const char *GL::ErrorString(GLenum error) {
 	}
 }
 
-
 inline void GL::CheckError( char const *sourcefile, int line, char const *call, std::ostream *outStream )
 {
 	GLenum error;
