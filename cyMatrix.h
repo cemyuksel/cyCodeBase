@@ -137,6 +137,14 @@ public:
 	void SetRotation( T angle ) { SetRotation( std::sin(angle), std::cos(angle) ); }
 	//! Set a rotation matrix by cos and sin of angle
 	void SetRotation( T sinAngle, T cosAngle ) { cell[0]=cosAngle; cell[1]=-sinAngle; cell[2]=sinAngle; cell[3]=cosAngle; }
+	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
+	void SetRotation( Vec2<T> const &from, Vec2<T> const &to )
+	{
+		T c = from.Dot(to) / Sqrt( from.LengthSquared() * to.LengthSquared() );
+		c = Clamp( c, T(-1), T(1) );
+		T s = Sqrt(T(1) - c*c);
+		SetRotation( s, c );
+	}
 	//! Sets a Cartesian coordinate frame using the given x direction. x must be a unit vector.
 	void SetCartesianFrameX( Vec2<T> const &x ) { Set( x, x.GetPerpendicular() ); }
 	//! Sets a Cartesian coordinate frame using the given y direction. y must be a unit vector.
@@ -398,6 +406,8 @@ public:
 	CY_NODISCARD static Matrix2 Rotation( T angle ) { Matrix2 m; m.SetRotation(angle); return m; }
 	//! Returns a rotation matrix by cos and sin of the rotation angle
 	CY_NODISCARD static Matrix2 Rotation( T cosAngle, T sinAngle ) { Matrix2 m; m.SetRotation(cosAngle,sinAngle); return m; }
+	//! Returns a rotation matrix that sets [from] unit vector to [to] unit vector
+	CY_NODISCARD static Matrix2 Rotation( Vec2<T> const &from, Vec2<T> const &to ) { Matrix2 m; m.SetRotation(from,to); return m; }
 	//! Returns a uniform scale matrix
 	CY_NODISCARD static Matrix2 Scale( T uniformScale ) { Matrix2 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
@@ -569,14 +579,13 @@ public:
 	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
 	void SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 	{
-		assert( from.IsFinite() && to.IsUnit() );
+		T c = from.Dot(to) / Sqrt( from.LengthSquared() * to.LengthSquared() );
+		c = Clamp( c, T(-1), T(1) );
+		T s = Sqrt(T(1) - c*c);
 		Vec3<T> axis = from.Cross(to);
-		T s = axis.Length();
-		if ( s < T(0.000001) ) SetIdentity();
-		else {
-			T c = from.Dot(to);
-			SetRotation(axis/s, s, c);
-		}
+		T len = axis.Length();
+		if ( len > 0 ) SetRotation( axis/len, s, c );
+		else SetIdentity();
 	}
 	//! Set view matrix using position, target and approximate up vector
 	void SetView( Vec3<T> const &target, Vec3<T> const &up )
@@ -1190,13 +1199,13 @@ public:
 	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
 	void SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 	{
-		T c = from.Dot(to);
-		if ( c > T(0.9999999) ) SetIdentity();
-		else {
-			T s = Sqrt(T(1) - c*c);
-			Vec3<T> axis = from.Cross(to).GetNormalized();
-			SetRotation(axis, s, c);
-		}
+		T c = from.Dot(to) / Sqrt( from.LengthSquared() * to.LengthSquared() );
+		c = Clamp( c, T(-1), T(1) );
+		T s = Sqrt(T(1) - c*c);
+		Vec3<T> axis = from.Cross(to);
+		T len = axis.Length();
+		if ( len > 0 ) SetRotation( axis/len, s, c );
+		else SetIdentity();
 	}
 	//! Sets a translation matrix with no rotation or scale
 	void SetTranslation( Vec3<T> const &move ) { Column(0).Set(1,0,0); Column(1).Set(0,1,0); Column(2).Set(0,0,1); Column(3)=move; }
@@ -1784,13 +1793,13 @@ public:
 	//! Set a rotation matrix that sets [from] unit vector to [to] unit vector
 	void SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 	{
-		T c = from.Dot(to);
-		if ( c > T(0.9999999) ) SetIdentity();
-		else {
-			T s = Sqrt(T(1) - c*c);
-			Vec3<T> axis = from.Cross(to).GetNormalized();
-			SetRotation(axis, s, c);
-		}
+		T c = from.Dot(to) / Sqrt( from.LengthSquared() * to.LengthSquared() );
+		c = Clamp( c, T(-1), T(1) );
+		T s = Sqrt(T(1) - c*c);
+		Vec3<T> axis = from.Cross(to);
+		T len = axis.Length();
+		if ( len > 0 ) SetRotation( axis/len, s, c );
+		else SetIdentity();
 	}
 	//! Sets a translation matrix with no rotation or scale
 	void SetTranslation( Vec3<T> const &move ) { Column(0).Set(1,0,0,0); Column(1).Set(0,1,0,0); Column(2).Set(0,0,1,0); Column(3).Set(move,1); }
