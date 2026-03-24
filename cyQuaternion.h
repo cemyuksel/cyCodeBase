@@ -1,7 +1,7 @@
 // cyCodeBase by Cem Yuksel
 // [www.cemyuksel.com]
 //-------------------------------------------------------------------------------
-//! \file   cyQuat.h 
+//! \file   cyQuaternion.h 
 //! \author Cem Yuksel
 //! 
 //! \brief  Quaternion class
