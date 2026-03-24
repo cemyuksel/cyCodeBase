@@ -286,6 +286,11 @@ CY_NODISCARD inline double Rad2Deg( double radians ) { return radians*(180.0 /cy
 
 template <typename T> CY_NODISCARD inline bool IsFinite( T v ) { return std::numeric_limits<T>::is_integer || std::isfinite(v); }
 
+template<typename T>             inline bool SignBit ( T v )            { return signbit(v); }			//!< Returns the sign bit of the given value
+template<typename T, typename S> inline T    CopySign( T magn, S sign ) { return copysign(magn,sign); }	//!< Copies the sign bit to magn
+template<typename T, typename S> inline T    MultSign( T v,    S sign ) { return sign<0 ? -v : v; }		//!< Multiplies the given value with the given sign
+template<typename T, typename S> inline bool IsDifferentSign( T a, S b ) { return a<0 != b<0; }			//!< Returns true if the sign bits are different
+
 //////////////////////////////////////////////////////////////////////////
 // Memory Operations
 //////////////////////////////////////////////////////////////////////////
