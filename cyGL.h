@@ -1748,7 +1748,8 @@ inline bool GLSLShader::Compile( char const *shaderSource, GLenum shaderType, in
 	int infoLogLength;
 	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if ( infoLogLength > 1 ) {
-		std::vector<char> compilerMessage(infoLogLength);
+		std::string compilerMessage;
+		compilerMessage.resize(infoLogLength);
 		glGetShaderInfoLog( shaderID, infoLogLength, nullptr, compilerMessage.data() );
 		if ( outStream ) {
 			if ( !result ) *outStream << "ERROR: Cannot compile shader." << std::endl;
