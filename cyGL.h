@@ -1755,7 +1755,31 @@ inline bool GLSLShader::Compile( char const *shaderSource, GLenum shaderType, in
 			*outStream << "OpenGL Version: ";
 			GL::PrintVersion(outStream);
 			*outStream << std::endl;
-			*outStream << compilerMessage.data() << std::endl;
+			*outStream << compilerMessage.data(); // << std::endl;
+
+			std::regex re("([0-9]+)[:\\(]([0-9]+)[\\):]");	// Matches patterns like "0(11)" or "0:11" to get the source and line numbers
+			std::smatch match;
+			if ( std::regex_search(compilerMessage, match, re) ) {
+				int sourceIndex = std::stoi( match[1] );
+				int lineNumber  = std::stoi( match[2] );
+				size_t start = 0;
+				size_t currentLine = 0;
+				while ( currentLine < lineNumber-1) {
+					size_t newlinePos = sources[sourceIndex].find('\n', start);
+					if ( newlinePos == std::string::npos ) {
+						start = -1; // Index out of range
+						break;
+					}
+					start = newlinePos + 1;
+					currentLine++;
+				}
+				if ( start > 0 ) {
+					size_t end = sources[sourceIndex].find('\n', start);
+					std::string_view view(sources[sourceIndex]);
+					*outStream << "SOURCE LINE: " << std::endl;
+					*outStream << view.substr(start, end-start) <<std::endl;
+				}
+			}
 		}
 	}
 
