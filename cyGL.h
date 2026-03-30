@@ -1761,7 +1761,7 @@ inline bool GLSLShader::Compile( char const *shaderSource, GLenum shaderType, in
 			std::smatch match;
 			if ( std::regex_search(compilerMessage, match, re) ) {
 				int sourceIndex = std::stoi( match[1] );
-				int lineNumber  = std::stoi( match[2] );
+				int lineNumber  = std::stoi( match[2] );
 				size_t start = 0;
 				size_t currentLine = 0;
 				while ( currentLine < lineNumber-1) {
