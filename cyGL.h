@@ -1758,27 +1758,29 @@ inline bool GLSLShader::Compile( char const *shaderSource, GLenum shaderType, in
 			*outStream << std::endl;
 			*outStream << compilerMessage.data(); // << std::endl;
 
+			// Add the source line with error to the output stream
 			std::regex re("([0-9]+)[:\\(]([0-9]+)[\\):]");	// Matches patterns like "0(11)" or "0:11" to get the source and line numbers
 			std::smatch match;
-			if ( std::regex_search(compilerMessage, match, re) ) {
+			if ( std::regex_search(compilerMessage,match,re) ) {
 				int sourceIndex = std::stoi( match[1] );
 				int lineNumber  = std::stoi( match[2] );
-				size_t start = 0;
-				size_t currentLine = 0;
-				while ( currentLine < lineNumber-1) {
-					size_t newlinePos = sources[sourceIndex].find('\n', start);
-					if ( newlinePos == std::string::npos ) {
-						start = -1; // Index out of range
-						break;
+				if ( sourceIndex < sourceDataCount ) {
+					const char *line = sourceData[sourceIndex];
+					int currentLine = 0;
+					while ( line && currentLine < lineNumber ) {
+						line = strchr( line+1, '\n' );
+						if ( ! line ) {
+							sourceIndex++;
+							if ( sourceIndex < sourceDataCount ) line = sourceData[sourceIndex];
+						}
+						currentLine++;
 					}
-					start = newlinePos + 1;
-					currentLine++;
-				}
-				if ( start > 0 ) {
-					size_t end = sources[sourceIndex].find('\n', start);
-					std::string_view view(sources[sourceIndex]);
-					*outStream << "SOURCE LINE: " << std::endl;
-					*outStream << view.substr(start, end-start) <<std::endl;
+					if ( line ) {
+						const char *nextLine = strchr( line+1, '\n' );
+						std::string_view view( line+1, nextLine ? nextLine - line : strlen(line+1) );
+						*outStream << "SOURCE LINE: " << std::endl;
+						*outStream << view <<std::endl;
+					}
 				}
 			}
 		}
