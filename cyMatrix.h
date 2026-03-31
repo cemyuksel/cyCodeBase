@@ -548,6 +548,8 @@ public:
 		cell[3] = cz*sx*sy - cx*sz;   cell[4] = cx*cz + sx*sy*sz;   cell[5] = cy*sx;
 		cell[6] = cx*cz*sy + sx*sz;   cell[7] =-cz*sx + cx*sy*sz;   cell[8] = cx*cy;
 	}
+	//! Set as rotation matrix around x, y, and then z axes ( Rz * Ry * Rx )
+	void SetRotationXYZ( Vec3<T> const &angles ) { SetRotationXYZ( angles.x, angles.y, angles.z ); }
 	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
 	void SetRotationZYX( T angleX, T angleY, T angleZ )
 	{
@@ -561,6 +563,8 @@ public:
 		cell[3] = -cy*sz;   cell[4] = cx*cz - sx*sy*sz;   cell[5] = sx*cz + cx*sy*sz;
 		cell[6] =  sy;      cell[7] = -sx*cy;		      cell[8] = cx*cy;
 	}
+	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
+	void SetRotationZYX( Vec3<T> const &angles ) { SetRotationZYX( angles.x, angles.y, angles.z ); }
 	//! Set a rotation matrix about the given axis by angle
 	void SetRotation( Vec3<T> const &axis, T angle ) { SetRotation(axis,std::sin(angle),std::cos(angle)); }
 	//! Set a rotation matrix about the given axis by cos and sin of angle
@@ -1017,8 +1021,12 @@ public:
 	CY_NODISCARD static Matrix3 RotationZ( T angle ) { Matrix3 m; m.SetRotationZ(angle); return m; }
 	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
 	CY_NODISCARD static Matrix3 RotationXYZ( T angleX, T angleY, T angleZ ) { Matrix3 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
+	CY_NODISCARD static Matrix3 RotationXYZ( Vec3<T> const &angles ) { Matrix3 m; m.SetRotationXYZ(angles); return m; }
 	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
 	CY_NODISCARD static Matrix3 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix3 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
+	CY_NODISCARD static Matrix3 RotationZYX( Vec3<T> const &angles ) { Matrix3 m; m.SetRotationZYX(angles); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
 	CY_NODISCARD static Matrix3 Rotation( Vec3<T> const &axis, T angle ) { Matrix3 m; m.SetRotation(axis,angle); return m; }
 	//! Returns a rotation matrix about the given axis by cos and sin of the rotation angle
@@ -1166,6 +1174,8 @@ public:
 		cell[6] = cx*cz*sy + sx*sz;   cell[7] =-cz*sx + cx*sy*sz;   cell[8] = cx*cy;
 		MemClear(cell+9,3);
 	}
+	//! Set as rotation matrix around x, y, and then z axes ( Rz * Ry * Rx )
+	void SetRotationXYZ( Vec3<T> const &angles ) { SetRotationXYZ( angles.x, angles.y, angles.z ); }
 	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
 	void SetRotationZYX( T angleX, T angleY, T angleZ )
 	{
@@ -1180,6 +1190,8 @@ public:
 		cell[6] = sy;      cell[7] =-sx*cy;			     cell[8] = cx*cy;
 		MemClear(cell+9,3);
 	}
+	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
+	void SetRotationZYX( Vec3<T> const &angles ) { SetRotationZYX( angles.x, angles.y, angles.z ); }
 	//! Set a rotation matrix about the given axis by angle
 	void SetRotation( Vec3<T> const &axis, T angle ) { SetRotation(axis,std::sin(angle),std::cos(angle)); }
 	//! Set a rotation matrix about the given axis by cos and sin of angle
@@ -1582,8 +1594,12 @@ public:
 	CY_NODISCARD static Matrix34 RotationZ( T angle ) { Matrix34 m; m.SetRotationZ(angle); return m; }
 	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
 	CY_NODISCARD static Matrix34 RotationXYZ( T angleX, T angleY, T angleZ ) { Matrix34 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
+	CY_NODISCARD static Matrix34 RotationXYZ( Vec3<T> const &angles ) { Matrix34 m; m.SetRotationXYZ(angles); return m; }
 	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
 	CY_NODISCARD static Matrix34 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix34 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
+	CY_NODISCARD static Matrix34 RotationZYX( Vec3<T> const &angles ) { Matrix34 m; m.SetRotationZYX(angles); return m; }
 	//! Returns a rotation matrix about the given axis by angle in radians
 	CY_NODISCARD static Matrix34 Rotation( Vec3<T> const &axis, T angle ) { Matrix34 m; m.SetRotation(axis,angle); return m; }
 	//! Returns a rotation matrix about the given axis by cos and sin of the rotation angle
@@ -1758,6 +1774,8 @@ public:
 		MemClear(cell+11,4);
 		cell[15] = T(1);
 	}
+	//! Set as rotation matrix around x, y, and then z axes ( Rz * Ry * Rx )
+	void SetRotationXYZ( Vec3<T> const &angles ) { SetRotationXYZ( angles.x, angles.y, angles.z ); }
 	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
 	void SetRotationZYX( T angleX, T angleY, T angleZ )
 	{
@@ -1773,6 +1791,8 @@ public:
 		MemClear(cell+11,4);
 		cell[15] = T(1);
 	}
+	//! Set as rotation matrix around z, y, and then x axes ( Rx * Ry * Rz )
+	void SetRotationZYX( Vec3<T> const &angles ) { SetRotationZYX( angles.x, angles.y, angles.z ); }
 	//! Set a rotation matrix about the given axis by angle
 	void SetRotation( Vec3<T> const &axis, T angle ) { SetRotation(axis,std::sin(angle),std::cos(angle)); }
 	//! Set a rotation matrix about the given axis by cos and sin of angle
@@ -2313,8 +2333,12 @@ public:
 	CY_NODISCARD static Matrix4 Rotation( Vec3<T> const &from, Vec3<T> const &to ) { Matrix4 m; m.SetRotation(from,to); return m; }
 	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
 	CY_NODISCARD static Matrix4 RotationXYZ( T angleX, T angleY, T angleZ ) { Matrix4 m; m.SetRotationXYZ(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around x, y, and then z axes by angle in radians (Rz * Ry * Rx)
+	CY_NODISCARD static Matrix4 RotationXYZ( Vec3<T> const &angles ) { Matrix4 m; m.SetRotationXYZ(angles); return m; }
 	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
 	CY_NODISCARD static Matrix4 RotationZYX( T angleX, T angleY, T angleZ ) { Matrix4 m; m.SetRotationZYX(angleX,angleY,angleZ); return m; }
+	//! Returns a rotation matrix around z, y, and then x axes by angle in radians (Rx * Ry * Rz)
+	CY_NODISCARD static Matrix4 RotationZYX( Vec3<T> const &angles ) { Matrix4 m; m.SetRotationZYX(angles); return m; }
 	//! Returns a uniform scale matrix
 	CY_NODISCARD static Matrix4 Scale( T uniformScale ) { Matrix4 m; m.SetScale(uniformScale); return m; }
 	//! Returns a scale matrix
