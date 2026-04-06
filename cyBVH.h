@@ -45,20 +45,20 @@ namespace cy {
 //-------------------------------------------------------------------------------
 
 #ifndef CY_BVH_ELEMENT_COUNT_BITS
-#define CY_BVH_ELEMENT_COUNT_BITS	3	//!< Determines the number of bits needed to represent the maximum number of elements in a node (8)
+#define CY_BVH_ELEMENT_COUNT_BITS   3	//!< Determines the number of bits needed to represent the maximum number of elements in a node (8)
 #endif
 
 #ifndef CY_BVH_MAX_ELEMENT_COUNT
-#define CY_BVH_MAX_ELEMENT_COUNT	(1<<CY_BVH_ELEMENT_COUNT_BITS)	//!< Determines the maximum number of elements in a node (8)
+#define CY_BVH_MAX_ELEMENT_COUNT    (1<<CY_BVH_ELEMENT_COUNT_BITS)	//!< Determines the maximum number of elements in a node (8)
 #endif
 
-#define _CY_BVH_NODE_DATA_BITS		(sizeof(uint32_t)*8)
-#define _CY_BVH_ELEMENT_COUNT_MASK	((1<<CY_BVH_ELEMENT_COUNT_BITS)-1)
-#define _CY_BVH_LEAF_BIT_MASK		((uint32_t)1<<(_CY_BVH_NODE_DATA_BITS-1))
-#define _CY_BVH_CHILD_INDEX_BITS	(_CY_BVH_NODE_DATA_BITS-1)
-#define _CY_BVH_CHILD_INDEX_MASK	(_CY_BVH_LEAF_BIT_MASK-1)
-#define _CY_BVH_ELEMENT_OFFSET_BITS	(_CY_BVH_NODE_DATA_BITS-1-CY_BVH_ELEMENT_COUNT_BITS)
-#define _CY_BVH_ELEMENT_OFFSET_MASK	((1<<_CY_BVH_ELEMENT_OFFSET_BITS)-1)
+#define _CY_BVH_NODE_DATA_BITS      (sizeof(uint32_t)*8)
+#define _CY_BVH_ELEMENT_COUNT_MASK  ((1<<CY_BVH_ELEMENT_COUNT_BITS)-1)
+#define _CY_BVH_LEAF_BIT_MASK       ((uint32_t)1<<(_CY_BVH_NODE_DATA_BITS-1))
+#define _CY_BVH_CHILD_ID_BITS       (_CY_BVH_NODE_DATA_BITS-1)
+#define _CY_BVH_CHILD_ID_MASK       (_CY_BVH_LEAF_BIT_MASK-1)
+#define _CY_BVH_ELEMENT_OFFSET_BITS (_CY_BVH_NODE_DATA_BITS-1-CY_BVH_ELEMENT_COUNT_BITS)
+#define _CY_BVH_ELEMENT_OFFSET_MASK ((1<<_CY_BVH_ELEMENT_OFFSET_BITS)-1)
 
 //-------------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ public:
 	//@ Node Access Methods
 	/////////////////////////////////////////////////////////////////////////////////
 
-	//! Returns the index of the root node.
+	//! Returns the id of the root node.
 	uint32_t GetRootNodeID() const { return 1; }
 
 	//! Returns the bounding box of the node as 6 float values.
@@ -83,13 +83,17 @@ public:
 	//! Returns true if the node is a leaf node.
 	bool IsLeafNode( uint32_t nodeID ) const { return nodes[nodeID].IsLeafNode(); }
 
-	//! Returns the index of the first child node (parent must be an internal node).
-	uint32_t GetFirstChildNode( uint32_t parentNodeID ) const { return nodes[parentNodeID].ChildIndex(); }
+	//! Returns the id of the child node with the given index (parent must be an internal node).
+	//! The child index can only be 0 or 1, since this is a binary BVH.
+	uint32_t GetFirstChildNode( uint32_t parentNodeID, int childIndex ) const { return nodes[parentNodeID].ChildID()+childIndex; }
 
-	//! Returns the index of the second child node (parent must be an internal node).
-	uint32_t GetSecondChildNode( uint32_t parentNodeID ) const { return nodes[parentNodeID].ChildIndex()+1; }
+	//! Returns the id of the first child node (parent must be an internal node).
+	uint32_t GetFirstChildNode( uint32_t parentNodeID ) const { return nodes[parentNodeID].ChildID(); }
 
-	//! Given the first child node index, returns the index of the second child node.
+	//! Returns the id of the second child node (parent must be an internal node).
+	uint32_t GetSecondChildNode( uint32_t parentNodeID ) const { return nodes[parentNodeID].ChildID()+1; }
+
+	//! Given the first child node id, returns the id of the second child node.
 	uint32_t GetSiblingNode( uint32_t firstChildNodeID ) const { return firstChildNodeID+1; }
 
 	//! Returns the child nodes of the given node (parent must be an internal node).
@@ -186,6 +190,31 @@ public:
 			}, maxElementsPerNode );
 	}
 
+	//! Recomputes the bounding boxes of all BVH nodes without modifying the tree structure.
+	//! BVH must already be built. The given function should be in the following form:
+	//! void getElementBounds( uint32_t i, float box[6] )
+	template <typename TGetElementBounds>
+	void Refit( TGetElementBounds getElementBounds )
+	{
+		for ( uint32_t i=(uint32_t)nodes.size()-1; i>0; --i ) {
+			Box box;
+			if ( IsLeafNode(i) ) {
+				uint32_t n = GetNodeElementCount(i);
+				uint32_t const *elem = GetNodeElements(i);
+				box.Init();
+				for ( uint32_t j=0; j<n; ++j ) {
+					Box b;
+					getElementBounds( elem[j], b.b );
+					box += b;
+				}
+			} else {
+				box  = GetNodeBounds( GetFirstChildNode (i) );
+				box += GetNodeBounds( GetSecondChildNode(i) );
+			}
+			nodes[i].SetBounds(box);
+		}
+	}
+
 	/////////////////////////////////////////////////////////////////////////////////
 
 private:
@@ -200,22 +229,25 @@ private:
 		Box() { Init(); }
 		Box( Box const &box ) { for(int i=0; i<6; i++) b[i]=box.b[i]; }
 		void Init() { b[0]=b[1]=b[2]=1e30f; b[3]=b[4]=b[5]=-1e30f; }
-		void operator += ( Box const &box ) { for(int i=0; i<3; i++) { if(b[i]>box.b[i])b[i]=box.b[i]; if(b[i+3]<box.b[i+3])b[i+3]=box.b[i+3]; } }
+		void operator  = ( float const *x ) { for(int i=0; i<6; i++) { b[i]=x[i]; } }
+		void operator += ( float const *x ) { for(int i=0; i<3; i++) { b[i]=Min(b[i],    x[i]); b[i+3]=Max(b[i+3],    x[i+3]); } }
+		void operator += ( Box const &box ) { for(int i=0; i<3; i++) { b[i]=Min(b[i],box.b[i]); b[i+3]=Max(b[i+3],box.b[i+3]); } }
 	};
 
 	class Node
 	{
 	public:
 		void SetLeafNode( Box const &bound, uint32_t elemCount, uint32_t elemOffset ) { box=bound; data=(elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)|_CY_BVH_LEAF_BIT_MASK; }
-		void SetInternalNode( Box const &bound, uint32_t chilIndex ) { box=bound; data=(chilIndex&_CY_BVH_CHILD_INDEX_MASK); }
-		uint32_t      ChildIndex   () const { return (data&_CY_BVH_CHILD_INDEX_MASK); }										//!< returns the index to the first child (must be internal node)
+		void SetInternalNode( Box const &bound, uint32_t chilID ) { box=bound; data=(chilID&_CY_BVH_CHILD_ID_MASK); }
+		uint32_t      ChildID      () const { return (data&_CY_BVH_CHILD_ID_MASK); }										//!< returns the id to the first child (must be internal node)
 		uint32_t      ElementOffset() const { return (data&_CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
 		uint32_t      ElementCount () const { return ((data>>_CY_BVH_ELEMENT_OFFSET_BITS)&_CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
 		bool          IsLeafNode   () const { return (data&_CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
 		float const * GetBounds    () const { return box.b; }																//!< returns the bounding box of the node
+		void          SetBounds    ( Box const &bound ) { box = bound; }													//!< updates the bounds of the node
 	private:
 		Box      box;	//!< bounding box of the node
-		uint32_t data;	//!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
+		uint32_t data;	//!< node data bits that keep the leaf node flag and the child node id or element count and element offset.
 	};
 
 	std::vector<Node>     nodes;	//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
@@ -298,15 +330,15 @@ private:
 	}
 
 	//! Recursively converts the temporary node data to NodeData.
-	uint32_t ConvertTempData( uint32_t nodeID, TempNode *tNode, uint32_t childIndex )
+	uint32_t ConvertTempData( uint32_t nodeID, TempNode *tNode, uint32_t childID )
 	{
 		if ( tNode->IsLeafNode() ) {
 			nodes[nodeID].SetLeafNode( tNode->GetBounds(), tNode->ElementCount(), tNode->ElementOffset() );
-			return childIndex;
+			return childID;
 		} else {
-			nodes[nodeID].SetInternalNode( tNode->GetBounds(), childIndex );
-			uint32_t newChildIndex = ConvertTempData( childIndex, tNode->GetChild1(), childIndex+2 );
-			return ConvertTempData( childIndex+1, tNode->GetChild2(), newChildIndex );
+			nodes[nodeID].SetInternalNode( tNode->GetBounds(), childID );
+			uint32_t newChildID = ConvertTempData( childID, tNode->GetChild1(), childID+2 );
+			return ConvertTempData( childID+1, tNode->GetChild2(), newChildID );
 		}
 	}
 
