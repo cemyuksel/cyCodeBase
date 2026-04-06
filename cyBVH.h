@@ -37,6 +37,10 @@
 #define _CY_BVH_H_INCLUDED_
 
 //-------------------------------------------------------------------------------
+
+#include <vector>
+
+//-------------------------------------------------------------------------------
 namespace cy {
 //-------------------------------------------------------------------------------
 
@@ -64,10 +68,6 @@ class BVH
 {
 public:
 
-	//!@name Constructor and destructor
-	BVH() : nodes(0), elements(0) {}
-	virtual ~BVH() { Clear(); }
-
 	/////////////////////////////////////////////////////////////////////////////////
 	//@ Node Access Methods
 	/////////////////////////////////////////////////////////////////////////////////
@@ -78,32 +78,32 @@ public:
 	//! Returns the bounding box of the node as 6 float values.
 	//! The first 3 values are the minimum x, y, and z coordinates and
 	//! the last 3 values are the maximum x, y, and z coordinates of the box.
-	float const * GetNodeBounds(unsigned int nodeID) const { return nodes[nodeID].GetBounds(); }
+	float const * GetNodeBounds( unsigned int nodeID ) const { return nodes[nodeID].GetBounds(); }
 
 	//! Returns true if the node is a leaf node.
-	bool IsLeafNode(unsigned int nodeID) const { return nodes[nodeID].IsLeafNode(); }
+	bool IsLeafNode( unsigned int nodeID ) const { return nodes[nodeID].IsLeafNode(); }
 
 	//! Returns the index of the first child node (parent must be an internal node).
-	unsigned int GetFirstChildNode(unsigned int parentNodeID) const { return nodes[parentNodeID].ChildIndex(); }
+	unsigned int GetFirstChildNode( unsigned int parentNodeID ) const { return nodes[parentNodeID].ChildIndex(); }
 
 	//! Returns the index of the second child node (parent must be an internal node).
-	unsigned int GetSecondChildNode(unsigned int parentNodeID) const { return nodes[parentNodeID].ChildIndex()+1; }
+	unsigned int GetSecondChildNode( unsigned int parentNodeID ) const { return nodes[parentNodeID].ChildIndex()+1; }
 
 	//! Given the first child node index, returns the index of the second child node.
-	unsigned int GetSiblingNode(unsigned int firstChildNodeID) const { return firstChildNodeID+1; }
+	unsigned int GetSiblingNode( unsigned int firstChildNodeID ) const { return firstChildNodeID+1; }
 
 	//! Returns the child nodes of the given node (parent must be an internal node).
-	void GetChildNodes(unsigned int parent, unsigned int &child1, unsigned int &child2) const
+	void GetChildNodes( unsigned int parent, unsigned int &child1, unsigned int &child2 ) const
 	{
 		child1 = GetFirstChildNode(parent);
 		child2 = GetSiblingNode(child1);
 	}
 
 	//! Returns the number of elements inside the given node (must be a leaf node).
-	unsigned int GetNodeElementCount(unsigned int nodeID) const  { return nodes[nodeID].ElementCount(); }
+	unsigned int GetNodeElementCount( unsigned int nodeID ) const  { return nodes[nodeID].ElementCount(); }
 
 	//! Returns the list of element inside the given node (must be a leaf node).
-	unsigned int const * GetNodeElements(unsigned int nodeID) const { return &elements[nodes[nodeID].ElementOffset()]; }
+	unsigned int const * GetNodeElements( unsigned int nodeID ) const { return &elements[nodes[nodeID].ElementOffset()]; }
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//@ Clear and Build Methods
@@ -112,20 +112,31 @@ public:
 	//! Clears the tree structure
 	void Clear()
 	{
-		if (nodes) delete [] nodes;
-		nodes = 0;
-		if (elements) delete [] elements;
-		elements = 0;
+		nodes.clear();
+		elements.clear();
 	}
 
 	//! Builds the tree structure by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
 	void Build( unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
-		Clear();
-		if ( numElements == 0 ) return;
+		if ( numElements == 0 ) return Clear();
+		SetNumElements( numElements );
+		for ( unsigned int i=0; i<numElements; i++ ) SetElement( i, i );
+		BuildElements( maxElementsPerNode );
+	}
+
+	//! Sets the number of elements prior to calling BuildElements.
+	void SetNumElements( unsigned int numElements ) { elements.resize(numElements); }
+
+	//! Set the element data prior to calling BuildElements.
+	//! Calling this function after the BVH is built can break the BVH data.
+	void SetElement( unsigned int id, unsigned int data ) { elements[id] = data; }
+
+	//! Builds the tree structure using the previously set elements by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
+	void BuildElements( unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	{
 		if ( maxElementsPerNode > CY_BVH_MAX_ELEMENT_COUNT ) maxElementsPerNode = CY_BVH_MAX_ELEMENT_COUNT;
-		elements = new unsigned int[numElements];
-		for ( unsigned int i=0; i<numElements; i++ ) elements[i] = i;
+		unsigned int numElements = (unsigned int) elements.size();
 		Box box;
 		box.Init();
 		for ( unsigned int i=0; i<numElements; i++ ) {
@@ -136,7 +147,7 @@ public:
 		TempNode *tempRoot = new TempNode( numElements, 0, box );
 		SplitTempNode(tempRoot,maxElementsPerNode);
 		unsigned int numNodes = tempRoot->GetNumNodes();
-		nodes = new Node[ numNodes+1 ];
+		nodes.resize( numNodes + 1 );
 		ConvertTempData( 1, tempRoot, 2 );
 		delete tempRoot;
 	}
@@ -149,8 +160,8 @@ protected:
 	//@ Methods to be implemented by sub-classes
 	/////////////////////////////////////////////////////////////////////////////////
 
-	virtual void  GetElementBounds(unsigned int i, float box[6] ) const=0;	//!< Sets box as the i^th element's bounding box.
-	virtual float GetElementCenter(unsigned int i, int dimension) const=0;	//!< Returns the center of the i^th element in the given dimension
+	virtual void  GetElementBounds( unsigned int i, float box[6]  ) const=0;	//!< Sets box as the i^th element's bounding box.
+	virtual float GetElementCenter( unsigned int i, int dimension ) const=0;	//!< Returns the center of the i^th element in the given dimension
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//@ Building method that can be overloaded
@@ -189,7 +200,7 @@ private:
 	public:
 		void SetLeafNode( Box const &bound, unsigned int elemCount, unsigned int elemOffset ) { box=bound; data=(elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)|_CY_BVH_LEAF_BIT_MASK; }
 		void SetInternalNode( Box const &bound, unsigned int chilIndex ) { box=bound; data=(chilIndex&_CY_BVH_CHILD_INDEX_MASK); }
-		unsigned int  ChildIndex   () const { return (data&_CY_BVH_CHILD_INDEX_MASK); }									//!< returns the index to the first child (must be internal node)
+		unsigned int  ChildIndex   () const { return (data&_CY_BVH_CHILD_INDEX_MASK); }										//!< returns the index to the first child (must be internal node)
 		unsigned int  ElementOffset() const { return (data&_CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
 		unsigned int  ElementCount () const { return ((data>>_CY_BVH_ELEMENT_OFFSET_BITS)&_CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
 		bool          IsLeafNode   () const { return (data&_CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
@@ -199,8 +210,8 @@ private:
 		unsigned int data;	//!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
 	};
 
-	Node         *nodes;	//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
-	unsigned int *elements;	//!< indices of all elements in all nodes
+	std::vector<Node>         nodes;	//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
+	std::vector<unsigned int> elements;	//!< indices of all elements in all nodes
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//@ Internal methods for building the BVH tree
@@ -239,7 +250,7 @@ private:
 	};
 
 	//! Recursively splits the given temporary node.
-	void SplitTempNode(TempNode *tNode, unsigned int maxElementsPerNode)
+	void SplitTempNode( TempNode *tNode, unsigned int maxElementsPerNode )
 	{
 		float const *box = tNode->GetBounds().b;
 		unsigned int *nodeElements = &elements[tNode->ElementOffset()];
@@ -292,7 +303,7 @@ private:
 
 	//! Called by the default implementation of FindSplit.
 	//! Splits the elements using the widest axis of the given bounding box.
-	unsigned int MeanSplit(unsigned int elementCount, unsigned int *nodeElements, float const *box, unsigned int maxElementsPerNode )
+	unsigned int MeanSplit( unsigned int elementCount, unsigned int *nodeElements, float const *box, unsigned int maxElementsPerNode )
 	{
 		if ( elementCount <= maxElementsPerNode ) return 0;
 		float d[3] = { box[3]-box[0], box[4]-box[1], box[5]-box[2] };
@@ -353,7 +364,7 @@ public:
 
 protected:
 	//! Sets box as the i^th element's bounding box.
-	virtual void GetElementBounds(unsigned int i, float box[6]) const
+	virtual void GetElementBounds( unsigned int i, float box[6] ) const
 	{
 		TriMesh::TriFace const &f = mesh->F(i);
 		cyVec3f p = mesh->V( f.v[0] );
@@ -368,7 +379,7 @@ protected:
 	}
 
 	//! Returns the center of the i^th element in the given dimension.
-	virtual float GetElementCenter(unsigned int i, int dim) const
+	virtual float GetElementCenter( unsigned int i, int dim ) const
 	{
 		TriMesh::TriFace const &f = mesh->F(i);
 		return ( mesh->V(f.v[0])[dim] + mesh->V(f.v[1])[dim] + mesh->V(f.v[2])[dim] ) / 3.0f;
