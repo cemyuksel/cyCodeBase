@@ -117,12 +117,29 @@ public:
 	}
 
 	//! Builds the tree structure by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
-	void Build( unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	//! The given functions should be in the following forms:
+	//! void getElementBounds( unsigned int i, float box[6] )
+	//! unsigned int findSplit( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode )
+	template <typename TGetElementBounds, typename TFindSplit>
+	void Build( TGetElementBounds getElementBounds, TFindSplit findSplit, unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		if ( numElements == 0 ) return Clear();
 		SetNumElements( numElements );
 		for ( unsigned int i=0; i<numElements; i++ ) SetElement( i, i );
-		BuildElements( maxElementsPerNode );
+		BuildElements<TGetElementBounds,TFindSplit>( getElementBounds, findSplit, maxElementsPerNode );
+	}
+
+	//! Builds the tree structure by recursively splitting the nodes at the centers of bounding boxes. maxElementsPerNode cannot be larger than 8.
+	//! The given functions should be in the following forms:
+	//! void getElementBounds( unsigned int i, float box[6] )
+	//! float getElementCenter( unsigned int i, int dimension )
+	template <typename TGetElementBounds, typename TGetElementCenter>
+	void BuildCenterSplits( TGetElementBounds getElementBounds, TGetElementCenter getElementCenter, unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	{
+		Build( getElementBounds, 
+			[&]( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode ) {
+				return CenterSplit<TGetElementCenter>(getElementCenter,elementCount,_elements,box,maxElementsPerNode);
+			}, numElements, maxElementsPerNode );
 	}
 
 	//! Sets the number of elements prior to calling BuildElements.
@@ -133,7 +150,11 @@ public:
 	void SetElement( unsigned int id, unsigned int data ) { elements[id] = data; }
 
 	//! Builds the tree structure using the previously set elements by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
-	void BuildElements( unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	//! The given functions should be in the following forms:
+	//! void getElementBounds( unsigned int i, float box[6] )
+	//! unsigned int findSplit( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode )
+	template <typename TGetElementBounds, typename TFindSplit>
+	void BuildElements( TGetElementBounds getElementBounds, TFindSplit findSplit, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		if ( maxElementsPerNode > CY_BVH_MAX_ELEMENT_COUNT ) maxElementsPerNode = CY_BVH_MAX_ELEMENT_COUNT;
 		unsigned int numElements = (unsigned int) elements.size();
@@ -141,41 +162,28 @@ public:
 		box.Init();
 		for ( unsigned int i=0; i<numElements; i++ ) {
 			Box b;
-			GetElementBounds(i,b.b);
+			getElementBounds(i,b.b);
 			box += b;
 		}
 		TempNode *tempRoot = new TempNode( numElements, 0, box );
-		SplitTempNode(tempRoot,maxElementsPerNode);
+		SplitTempNode( getElementBounds, findSplit, tempRoot, maxElementsPerNode );
 		unsigned int numNodes = tempRoot->GetNumNodes();
 		nodes.resize( numNodes + 1 );
 		ConvertTempData( 1, tempRoot, 2 );
 		delete tempRoot;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
-
-protected:
-
-	/////////////////////////////////////////////////////////////////////////////////
-	//@ Methods to be implemented by sub-classes
-	/////////////////////////////////////////////////////////////////////////////////
-
-	virtual void  GetElementBounds( unsigned int i, float box[6]  ) const=0;	//!< Sets box as the i^th element's bounding box.
-	virtual float GetElementCenter( unsigned int i, int dimension ) const=0;	//!< Returns the center of the i^th element in the given dimension
-
-	/////////////////////////////////////////////////////////////////////////////////
-	//@ Building method that can be overloaded
-	/////////////////////////////////////////////////////////////////////////////////
-
-	//! Sorts the given elements of a temporary node while building the BVH hierarchy,
-	//! such that first N elements are to be assigned to the first child and the 
-	//! remaining elements are to be assigned to the second child node, then returns N.
-	//! Returns zero, if the node is not to be split.
-	//! The default implementation splits the temporary node down the middle of the
-	//! widest axis of its bounding box.
-	virtual unsigned int FindSplit( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode )
+	//! Builds the tree structure using the previously set elements by recursively splitting the nodes at the centers of bounding boxes. maxElementsPerNode cannot be larger than 8.
+	//! The given functions should be in the following forms:
+	//! void getElementBounds( unsigned int i, float box[6] )
+	//! float getElementCenter( unsigned int i, int dimension )
+	template <typename TGetElementBounds, typename TGetElementCenter>
+	void BuildElementsCenterSplits( TGetElementBounds getElementBounds, TGetElementCenter getElementCenter, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
-		return MeanSplit(elementCount,_elements,box,maxElementsPerNode);
+		BuildElements( getElementBounds, 
+			[&]( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode ) {
+				return CenterSplit<TGetElementCenter>(getElementCenter,elementCount,_elements,box,maxElementsPerNode);
+			}, maxElementsPerNode );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
@@ -250,11 +258,12 @@ private:
 	};
 
 	//! Recursively splits the given temporary node.
-	void SplitTempNode( TempNode *tNode, unsigned int maxElementsPerNode )
+	template <typename TGetElementBounds, typename TFindSplit>
+	void SplitTempNode( TGetElementBounds getElementBounds, TFindSplit findSplit, TempNode *tNode, unsigned int maxElementsPerNode )
 	{
 		float const *box = tNode->GetBounds().b;
 		unsigned int *nodeElements = &elements[tNode->ElementOffset()];
-		unsigned int child1ElemCount = FindSplit(tNode->ElementCount(),nodeElements,box,maxElementsPerNode);
+		unsigned int child1ElemCount = findSplit(tNode->ElementCount(),nodeElements,box,maxElementsPerNode);
 
 		// If the FindSplit call does not return a valid split position
 		if ( child1ElemCount == 0 || child1ElemCount >= tNode->ElementCount() ) {
@@ -273,19 +282,19 @@ private:
 		Box child2Box;
 		for ( unsigned int i=0; i<child1ElemCount; i++ ) {
 			Box eBox;
-			GetElementBounds( nodeElements[i], eBox.b );
+			getElementBounds( nodeElements[i], eBox.b );
 			child1Box += eBox;
 		}
 		for ( unsigned int i=child1ElemCount; i<tNode->ElementCount(); i++ ) {
 			Box eBox;
-			GetElementBounds( nodeElements[i], eBox.b );
+			getElementBounds( nodeElements[i], eBox.b );
 			child2Box += eBox;
 		}
 
 		// Split recursively
 		tNode->Split( child1ElemCount, child1Box, child2Box );
-		SplitTempNode(tNode->GetChild1(),maxElementsPerNode);
-		SplitTempNode(tNode->GetChild2(),maxElementsPerNode);
+		SplitTempNode<TGetElementBounds,TFindSplit>(getElementBounds,findSplit,tNode->GetChild1(),maxElementsPerNode);
+		SplitTempNode<TGetElementBounds,TFindSplit>(getElementBounds,findSplit,tNode->GetChild2(),maxElementsPerNode);
 	}
 
 	//! Recursively converts the temporary node data to NodeData.
@@ -303,7 +312,8 @@ private:
 
 	//! Called by the default implementation of FindSplit.
 	//! Splits the elements using the widest axis of the given bounding box.
-	unsigned int MeanSplit( unsigned int elementCount, unsigned int *nodeElements, float const *box, unsigned int maxElementsPerNode )
+	template <typename TGetElementCenter>
+	static unsigned int CenterSplit( TGetElementCenter getElementCenter, unsigned int elementCount, unsigned int *nodeElements, float const *box, unsigned int maxElementsPerNode )
 	{
 		if ( elementCount <= maxElementsPerNode ) return 0;
 		float d[3] = { box[3]-box[0], box[4]-box[1], box[5]-box[2] };
@@ -319,7 +329,7 @@ private:
 			float splitPos = 0.5f * ( box[splitDim] + box[splitDim+3] );
 			unsigned int i=0, j=elementCount;
 			while ( i<j ) {
-				float center = GetElementCenter( nodeElements[i], splitDim );
+				float center = getElementCenter( nodeElements[i], splitDim );
 				if ( center <= splitPos ) {
 					i++;
 				} else {
@@ -359,30 +369,25 @@ public:
 	{
 		mesh = m;
 		Clear();
-		Build(mesh->NF(),maxElementsPerNode);
-	}
-
-protected:
-	//! Sets box as the i^th element's bounding box.
-	virtual void GetElementBounds( unsigned int i, float box[6] ) const
-	{
-		TriMesh::TriFace const &f = mesh->F(i);
-		cyVec3f p = mesh->V( f.v[0] );
-		box[0]=box[3]=p.x; box[1]=box[4]=p.y; box[2]=box[5]=p.z;
-		for ( int j=1; j<3; j++ ) { // for each triangle
-			cyVec3f q = mesh->V( f.v[j] );
-			for ( int k=0; k<3; k++ ) { // for each dimension
-				if ( box[k] > q[k] ) box[k] = q[k];
-				if ( box[k+3] < q[k] ) box[k+3] = q[k];
+		auto getElementBounds = [&]( unsigned int i, float box[6] )
+		{
+			TriMesh::TriFace const &f = mesh->F(i);
+			cyVec3f p = mesh->V( f.v[0] );
+			box[0]=box[3]=p.x; box[1]=box[4]=p.y; box[2]=box[5]=p.z;
+			for ( int j=1; j<3; j++ ) { // for each triangle
+				cyVec3f q = mesh->V( f.v[j] );
+				for ( int k=0; k<3; k++ ) { // for each dimension
+					if ( box[k] > q[k] ) box[k] = q[k];
+					if ( box[k+3] < q[k] ) box[k+3] = q[k];
+				}
 			}
-		}
-	}
-
-	//! Returns the center of the i^th element in the given dimension.
-	virtual float GetElementCenter( unsigned int i, int dim ) const
-	{
-		TriMesh::TriFace const &f = mesh->F(i);
-		return ( mesh->V(f.v[0])[dim] + mesh->V(f.v[1])[dim] + mesh->V(f.v[2])[dim] ) / 3.0f;
+		};
+		auto getElementCenter = [&]( unsigned int i, int dim )
+		{
+			TriMesh::TriFace const &f = mesh->F(i);
+			return ( mesh->V(f.v[0])[dim] + mesh->V(f.v[1])[dim] + mesh->V(f.v[2])[dim] ) / 3.0f;
+		};
+		BuildCenterSplits( getElementBounds, getElementCenter, mesh->NF(), maxElementsPerNode );
 	}
 
 private:
