@@ -52,9 +52,9 @@ namespace cy {
 #define CY_BVH_MAX_ELEMENT_COUNT	(1<<CY_BVH_ELEMENT_COUNT_BITS)	//!< Determines the maximum number of elements in a node (8)
 #endif
 
-#define _CY_BVH_NODE_DATA_BITS		(sizeof(unsigned int)*8)
+#define _CY_BVH_NODE_DATA_BITS		(sizeof(uint32_t)*8)
 #define _CY_BVH_ELEMENT_COUNT_MASK	((1<<CY_BVH_ELEMENT_COUNT_BITS)-1)
-#define _CY_BVH_LEAF_BIT_MASK		((unsigned int)1<<(_CY_BVH_NODE_DATA_BITS-1))
+#define _CY_BVH_LEAF_BIT_MASK		((uint32_t)1<<(_CY_BVH_NODE_DATA_BITS-1))
 #define _CY_BVH_CHILD_INDEX_BITS	(_CY_BVH_NODE_DATA_BITS-1)
 #define _CY_BVH_CHILD_INDEX_MASK	(_CY_BVH_LEAF_BIT_MASK-1)
 #define _CY_BVH_ELEMENT_OFFSET_BITS	(_CY_BVH_NODE_DATA_BITS-1-CY_BVH_ELEMENT_COUNT_BITS)
@@ -73,37 +73,37 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////
 
 	//! Returns the index of the root node.
-	unsigned int GetRootNodeID() const { return 1; }
+	uint32_t GetRootNodeID() const { return 1; }
 
 	//! Returns the bounding box of the node as 6 float values.
 	//! The first 3 values are the minimum x, y, and z coordinates and
 	//! the last 3 values are the maximum x, y, and z coordinates of the box.
-	float const * GetNodeBounds( unsigned int nodeID ) const { return nodes[nodeID].GetBounds(); }
+	float const * GetNodeBounds( uint32_t nodeID ) const { return nodes[nodeID].GetBounds(); }
 
 	//! Returns true if the node is a leaf node.
-	bool IsLeafNode( unsigned int nodeID ) const { return nodes[nodeID].IsLeafNode(); }
+	bool IsLeafNode( uint32_t nodeID ) const { return nodes[nodeID].IsLeafNode(); }
 
 	//! Returns the index of the first child node (parent must be an internal node).
-	unsigned int GetFirstChildNode( unsigned int parentNodeID ) const { return nodes[parentNodeID].ChildIndex(); }
+	uint32_t GetFirstChildNode( uint32_t parentNodeID ) const { return nodes[parentNodeID].ChildIndex(); }
 
 	//! Returns the index of the second child node (parent must be an internal node).
-	unsigned int GetSecondChildNode( unsigned int parentNodeID ) const { return nodes[parentNodeID].ChildIndex()+1; }
+	uint32_t GetSecondChildNode( uint32_t parentNodeID ) const { return nodes[parentNodeID].ChildIndex()+1; }
 
 	//! Given the first child node index, returns the index of the second child node.
-	unsigned int GetSiblingNode( unsigned int firstChildNodeID ) const { return firstChildNodeID+1; }
+	uint32_t GetSiblingNode( uint32_t firstChildNodeID ) const { return firstChildNodeID+1; }
 
 	//! Returns the child nodes of the given node (parent must be an internal node).
-	void GetChildNodes( unsigned int parent, unsigned int &child1, unsigned int &child2 ) const
+	void GetChildNodes( uint32_t parent, uint32_t &child1, uint32_t &child2 ) const
 	{
 		child1 = GetFirstChildNode(parent);
 		child2 = GetSiblingNode(child1);
 	}
 
 	//! Returns the number of elements inside the given node (must be a leaf node).
-	unsigned int GetNodeElementCount( unsigned int nodeID ) const  { return nodes[nodeID].ElementCount(); }
+	uint32_t GetNodeElementCount( uint32_t nodeID ) const  { return nodes[nodeID].ElementCount(); }
 
 	//! Returns the list of element inside the given node (must be a leaf node).
-	unsigned int const * GetNodeElements( unsigned int nodeID ) const { return &elements[nodes[nodeID].ElementOffset()]; }
+	uint32_t const * GetNodeElements( uint32_t nodeID ) const { return &elements[nodes[nodeID].ElementOffset()]; }
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//@ Clear and Build Methods
@@ -118,56 +118,56 @@ public:
 
 	//! Builds the tree structure by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
 	//! The given functions should be in the following forms:
-	//! void getElementBounds( unsigned int i, float box[6] )
-	//! unsigned int findSplit( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode )
+	//! void getElementBounds( uint32_t i, float box[6] )
+	//! uint32_t findSplit( uint32_t elementCount, uint32_t *_elements, float const *box, int maxElementsPerNode )
 	template <typename TGetElementBounds, typename TFindSplit>
-	void Build( TGetElementBounds getElementBounds, TFindSplit findSplit, unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	void Build( TGetElementBounds getElementBounds, TFindSplit findSplit, uint32_t numElements, int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
-		if ( numElements == 0 ) return Clear();
+		if ( numElements <= 0 ) return Clear();
 		SetNumElements( numElements );
-		for ( unsigned int i=0; i<numElements; i++ ) SetElement( i, i );
+		for ( uint32_t i=0; i<numElements; i++ ) SetElement( i, i );
 		BuildElements<TGetElementBounds,TFindSplit>( getElementBounds, findSplit, maxElementsPerNode );
 	}
 
 	//! Builds the tree structure by recursively splitting the nodes at the centers of bounding boxes. maxElementsPerNode cannot be larger than 8.
 	//! The given functions should be in the following forms:
-	//! void getElementBounds( unsigned int i, float box[6] )
-	//! float getElementCenter( unsigned int i, int dimension )
+	//! void getElementBounds( uint32_t i, float box[6] )
+	//! float getElementCenter( uint32_t i, int dimension )
 	template <typename TGetElementBounds, typename TGetElementCenter>
-	void BuildCenterSplits( TGetElementBounds getElementBounds, TGetElementCenter getElementCenter, unsigned int numElements, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	void BuildCenterSplits( TGetElementBounds getElementBounds, TGetElementCenter getElementCenter, uint32_t numElements, int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		Build( getElementBounds, 
-			[&]( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode ) {
+			[&]( uint32_t elementCount, uint32_t *_elements, float const *box, int maxElementsPerNode ) {
 				return CenterSplit<TGetElementCenter>(getElementCenter,elementCount,_elements,box,maxElementsPerNode);
 			}, numElements, maxElementsPerNode );
 	}
 
 	//! Sets the number of elements prior to calling BuildElements.
-	void SetNumElements( unsigned int numElements ) { elements.resize(numElements); }
+	void SetNumElements( uint32_t numElements ) { elements.resize(numElements); }
 
 	//! Set the element data prior to calling BuildElements.
 	//! Calling this function after the BVH is built can break the BVH data.
-	void SetElement( unsigned int id, unsigned int data ) { elements[id] = data; }
+	void SetElement( uint32_t id, uint32_t data ) { elements[id] = data; }
 
 	//! Builds the tree structure using the previously set elements by recursively splitting the nodes. maxElementsPerNode cannot be larger than 8.
 	//! The given functions should be in the following forms:
-	//! void getElementBounds( unsigned int i, float box[6] )
-	//! unsigned int findSplit( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode )
+	//! void getElementBounds( uint32_t i, float box[6] )
+	//! uint32_t findSplit( uint32_t elementCount, uint32_t *_elements, float const *box, int maxElementsPerNode )
 	template <typename TGetElementBounds, typename TFindSplit>
-	void BuildElements( TGetElementBounds getElementBounds, TFindSplit findSplit, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	void BuildElements( TGetElementBounds getElementBounds, TFindSplit findSplit, int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		if ( maxElementsPerNode > CY_BVH_MAX_ELEMENT_COUNT ) maxElementsPerNode = CY_BVH_MAX_ELEMENT_COUNT;
-		unsigned int numElements = (unsigned int) elements.size();
+		uint32_t numElements = (uint32_t) elements.size();
 		Box box;
 		box.Init();
-		for ( unsigned int i=0; i<numElements; i++ ) {
+		for ( uint32_t i=0; i<numElements; i++ ) {
 			Box b;
 			getElementBounds(i,b.b);
 			box += b;
 		}
 		TempNode *tempRoot = new TempNode( numElements, 0, box );
 		SplitTempNode( getElementBounds, findSplit, tempRoot, maxElementsPerNode );
-		unsigned int numNodes = tempRoot->GetNumNodes();
+		uint32_t numNodes = tempRoot->GetNumNodes();
 		nodes.resize( numNodes + 1 );
 		ConvertTempData( 1, tempRoot, 2 );
 		delete tempRoot;
@@ -175,13 +175,13 @@ public:
 
 	//! Builds the tree structure using the previously set elements by recursively splitting the nodes at the centers of bounding boxes. maxElementsPerNode cannot be larger than 8.
 	//! The given functions should be in the following forms:
-	//! void getElementBounds( unsigned int i, float box[6] )
-	//! float getElementCenter( unsigned int i, int dimension )
+	//! void getElementBounds( uint32_t i, float box[6] )
+	//! float getElementCenter( uint32_t i, int dimension )
 	template <typename TGetElementBounds, typename TGetElementCenter>
-	void BuildElementsCenterSplits( TGetElementBounds getElementBounds, TGetElementCenter getElementCenter, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	void BuildElementsCenterSplits( TGetElementBounds getElementBounds, TGetElementCenter getElementCenter, int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		BuildElements( getElementBounds, 
-			[&]( unsigned int elementCount, unsigned int *_elements, float const *box, unsigned int maxElementsPerNode ) {
+			[&]( uint32_t elementCount, uint32_t *_elements, float const *box, int maxElementsPerNode ) {
 				return CenterSplit<TGetElementCenter>(getElementCenter,elementCount,_elements,box,maxElementsPerNode);
 			}, maxElementsPerNode );
 	}
@@ -206,20 +206,20 @@ private:
 	class Node
 	{
 	public:
-		void SetLeafNode( Box const &bound, unsigned int elemCount, unsigned int elemOffset ) { box=bound; data=(elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)|_CY_BVH_LEAF_BIT_MASK; }
-		void SetInternalNode( Box const &bound, unsigned int chilIndex ) { box=bound; data=(chilIndex&_CY_BVH_CHILD_INDEX_MASK); }
-		unsigned int  ChildIndex   () const { return (data&_CY_BVH_CHILD_INDEX_MASK); }										//!< returns the index to the first child (must be internal node)
-		unsigned int  ElementOffset() const { return (data&_CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
-		unsigned int  ElementCount () const { return ((data>>_CY_BVH_ELEMENT_OFFSET_BITS)&_CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
+		void SetLeafNode( Box const &bound, uint32_t elemCount, uint32_t elemOffset ) { box=bound; data=(elemOffset&_CY_BVH_ELEMENT_OFFSET_MASK)|((elemCount-1)<<_CY_BVH_ELEMENT_OFFSET_BITS)|_CY_BVH_LEAF_BIT_MASK; }
+		void SetInternalNode( Box const &bound, uint32_t chilIndex ) { box=bound; data=(chilIndex&_CY_BVH_CHILD_INDEX_MASK); }
+		uint32_t      ChildIndex   () const { return (data&_CY_BVH_CHILD_INDEX_MASK); }										//!< returns the index to the first child (must be internal node)
+		uint32_t      ElementOffset() const { return (data&_CY_BVH_ELEMENT_OFFSET_MASK); }									//!< returns the offset to the first element (must be leaf node)
+		uint32_t      ElementCount () const { return ((data>>_CY_BVH_ELEMENT_OFFSET_BITS)&_CY_BVH_ELEMENT_COUNT_MASK)+1; }	//!< returns the number of elements in this node (must be leaf node)
 		bool          IsLeafNode   () const { return (data&_CY_BVH_LEAF_BIT_MASK)>0; }										//!< returns true if this is a leaf node
 		float const * GetBounds    () const { return box.b; }																//!< returns the bounding box of the node
 	private:
-		Box          box;	//!< bounding box of the node
-		unsigned int data;	//!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
+		Box      box;	//!< bounding box of the node
+		uint32_t data;	//!< node data bits that keep the leaf node flag and the child node index or element count and element offset.
 	};
 
-	std::vector<Node>         nodes;	//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
-	std::vector<unsigned int> elements;	//!< indices of all elements in all nodes
+	std::vector<Node>     nodes;	//!< the tree structure that keeps all the node data (nodeData[0] is not used for cache coherency)
+	std::vector<uint32_t> elements;	//!< indices of all elements in all nodes
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//@ Internal methods for building the BVH tree
@@ -229,41 +229,41 @@ private:
 	class TempNode
 	{
 	public:
-		TempNode( unsigned int count, unsigned int offset, Box const &boundBox) : child1(0), child2(0), elementCount(count), elementOffset(offset), box(boundBox) {}
+		TempNode( uint32_t count, uint32_t offset, Box const &boundBox) : child1(0), child2(0), elementCount(count), elementOffset(offset), box(boundBox) {}
 		~TempNode() { if ( child1 ) delete child1; if ( child2 ) delete child2; }
 
-		void Split( unsigned int child1ElementCount, Box const &child1Box, Box const &child2Box )
+		void Split( uint32_t child1ElementCount, Box const &child1Box, Box const &child2Box )
 		{
 			child1 = new TempNode(child1ElementCount,elementOffset,child1Box);
 			child2 = new TempNode(ElementCount()-child1ElementCount,elementOffset+child1ElementCount,child2Box);
 		}
-		unsigned int GetNumNodes() const
+		uint32_t GetNumNodes() const
 		{
-			unsigned int n = 1;
+			uint32_t n = 1;
 			if ( child1 ) n += child1->GetNumNodes();
 			if ( child2 ) n += child2->GetNumNodes();
 			return n;
 		}
-		bool IsLeafNode() const { return child1==0; }
-		unsigned int ElementCount () const { return elementCount; }
-		unsigned int ElementOffset() const { return elementOffset; }
-		TempNode* GetChild1() { return child1; }
-		TempNode* GetChild2() { return child2; }
-		Box const & GetBounds() const { return box; }
+		bool      IsLeafNode   () const { return child1==0; }
+		uint32_t  ElementCount () const { return elementCount; }
+		uint32_t  ElementOffset() const { return elementOffset; }
+		TempNode* GetChild1    ()       { return child1; }
+		TempNode* GetChild2    ()       { return child2; }
+		Box const & GetBounds  () const { return box; }
 	private:
-		TempNode		*child1, *child2;
-		Box				box;
-		unsigned int	elementCount;
-		unsigned int	elementOffset;
+		TempNode *child1, *child2;
+		Box      box;
+		uint32_t elementCount;
+		uint32_t elementOffset;
 	};
 
 	//! Recursively splits the given temporary node.
 	template <typename TGetElementBounds, typename TFindSplit>
-	void SplitTempNode( TGetElementBounds getElementBounds, TFindSplit findSplit, TempNode *tNode, unsigned int maxElementsPerNode )
+	void SplitTempNode( TGetElementBounds getElementBounds, TFindSplit findSplit, TempNode *tNode, int maxElementsPerNode )
 	{
 		float const *box = tNode->GetBounds().b;
-		unsigned int *nodeElements = &elements[tNode->ElementOffset()];
-		unsigned int child1ElemCount = findSplit(tNode->ElementCount(),nodeElements,box,maxElementsPerNode);
+		uint32_t *nodeElements = &elements[tNode->ElementOffset()];
+		uint32_t child1ElemCount = findSplit(tNode->ElementCount(),nodeElements,box,maxElementsPerNode);
 
 		// If the FindSplit call does not return a valid split position
 		if ( child1ElemCount == 0 || child1ElemCount >= tNode->ElementCount() ) {
@@ -280,12 +280,12 @@ private:
 		// Compute child bounding boxes
 		Box child1Box;
 		Box child2Box;
-		for ( unsigned int i=0; i<child1ElemCount; i++ ) {
+		for ( uint32_t i=0; i<child1ElemCount; i++ ) {
 			Box eBox;
 			getElementBounds( nodeElements[i], eBox.b );
 			child1Box += eBox;
 		}
-		for ( unsigned int i=child1ElemCount; i<tNode->ElementCount(); i++ ) {
+		for ( uint32_t i=child1ElemCount; i<tNode->ElementCount(); i++ ) {
 			Box eBox;
 			getElementBounds( nodeElements[i], eBox.b );
 			child2Box += eBox;
@@ -298,14 +298,14 @@ private:
 	}
 
 	//! Recursively converts the temporary node data to NodeData.
-	unsigned int ConvertTempData( unsigned int nodeID, TempNode *tNode, unsigned int childIndex )
+	uint32_t ConvertTempData( uint32_t nodeID, TempNode *tNode, uint32_t childIndex )
 	{
 		if ( tNode->IsLeafNode() ) {
 			nodes[nodeID].SetLeafNode( tNode->GetBounds(), tNode->ElementCount(), tNode->ElementOffset() );
 			return childIndex;
 		} else {
 			nodes[nodeID].SetInternalNode( tNode->GetBounds(), childIndex );
-			unsigned int newChildIndex = ConvertTempData( childIndex, tNode->GetChild1(), childIndex+2 );
+			uint32_t newChildIndex = ConvertTempData( childIndex, tNode->GetChild1(), childIndex+2 );
 			return ConvertTempData( childIndex+1, tNode->GetChild2(), newChildIndex );
 		}
 	}
@@ -313,28 +313,28 @@ private:
 	//! Called by the default implementation of FindSplit.
 	//! Splits the elements using the widest axis of the given bounding box.
 	template <typename TGetElementCenter>
-	static unsigned int CenterSplit( TGetElementCenter getElementCenter, unsigned int elementCount, unsigned int *nodeElements, float const *box, unsigned int maxElementsPerNode )
+	static uint32_t CenterSplit( TGetElementCenter getElementCenter, uint32_t elementCount, uint32_t *nodeElements, float const *box, int maxElementsPerNode )
 	{
-		if ( elementCount <= maxElementsPerNode ) return 0;
+		if ( elementCount <= (uint32_t)maxElementsPerNode ) return 0;
 		float d[3] = { box[3]-box[0], box[4]-box[1], box[5]-box[2] };
-		unsigned int sd[3]; // split dimensions
+		int sd[3]; // split dimensions
 		sd[0] = d[0] >= d[1] ? ( d[0] >= d[2] ? 0 : 2 ) : ( d[1] >= d[2] ? 1 : 2 );
 		sd[1] = (sd[0]+1) % 3;
 		sd[2] = (sd[0]+2) % 3;
 		if ( d[sd[1]] < d[sd[2]] ) { int t=sd[1]; sd[1]=sd[2]; sd[2]=t; }
 
-		unsigned int child1ElemCount = 0;
+		uint32_t child1ElemCount = 0;
 		for ( int s=0; s<3; s++ ) {
-			unsigned int splitDim = sd[s];
+			int splitDim = sd[s];
 			float splitPos = 0.5f * ( box[splitDim] + box[splitDim+3] );
-			unsigned int i=0, j=elementCount;
+			uint32_t i=0, j=elementCount;
 			while ( i<j ) {
 				float center = getElementCenter( nodeElements[i], splitDim );
 				if ( center <= splitPos ) {
 					i++;
 				} else {
 					j--;
-					unsigned int t = nodeElements[i];
+					uint32_t t = nodeElements[i];
 					nodeElements[i] = nodeElements[j];
 					nodeElements[j] = t;
 				}
@@ -365,11 +365,11 @@ public:
 	BVHTriMesh( TriMesh const *m ) { SetMesh(m); }
 
 	//! Sets the mesh pointer and builds the BVH structure.
-	void SetMesh( TriMesh const *m, unsigned int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
+	void SetMesh( TriMesh const *m, int maxElementsPerNode=CY_BVH_MAX_ELEMENT_COUNT )
 	{
 		mesh = m;
 		Clear();
-		auto getElementBounds = [&]( unsigned int i, float box[6] )
+		auto getElementBounds = [&]( uint32_t i, float box[6] )
 		{
 			TriMesh::TriFace const &f = mesh->F(i);
 			cyVec3f p = mesh->V( f.v[0] );
@@ -382,7 +382,7 @@ public:
 				}
 			}
 		};
-		auto getElementCenter = [&]( unsigned int i, int dim )
+		auto getElementCenter = [&]( uint32_t i, int dim )
 		{
 			TriMesh::TriFace const &f = mesh->F(i);
 			return ( mesh->V(f.v[0])[dim] + mesh->V(f.v[1])[dim] + mesh->V(f.v[2])[dim] ) / 3.0f;
