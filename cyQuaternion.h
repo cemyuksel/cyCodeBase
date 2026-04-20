@@ -82,13 +82,15 @@ public:
 	CY_NODISCARD T       GetRotationAngle() const { return T(2)*std::acos(s/Length()); }	//!< Returns rotation angle in radians
 	CY_NODISCARD Vec3<T> GetRotationAxis () const { return v.GetNormalized(); }				//!< Returns the normalized rotation axis
 
-	//!@name Normalize, Length, and Inverse functions
+	//!@name Normalize, Length, Conjugate, and Inverse functions
 	void                    Normalize    ()       { *this /= Length(); }				//!< Normalizes the quaternion, such that its length becomes 1.
 	CY_NODISCARD Quaternion GetNormalized() const { return *this / Length(); }			//!< Returns a normalized copy of the quaternion.
 	CY_NODISCARD T          LengthSquared() const { return s*s + v.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
 	CY_NODISCARD T          Length       () const { return Sqrt(LengthSquared()); }		//!< Returns the length of the quaternion.
-	CY_NODISCARD Quaternion GetInverse   () const { return Quaternion(-v,s); }			//!< Returns the inverse of the quaternion
-	void                    Invert       ()       { v = -v; }
+	void                    Conjugate    ()       { v = -v; }							//!< Converts the quaternion to its conjugate
+	CY_NODISCARD Quaternion GetConjugate () const { return Quaternion(-v,s); }			//!< Returns the conjugate of the quaternion
+	void                    Invert       ()       { T l2=LengthSquared(); v/=-l2; s/=l2; }					//!< Converts to quaternion to its inverse
+	CY_NODISCARD Quaternion GetInverse   () const { T l2=LengthSquared(); return Quaternion(-v/l2,s/l2); }	//!< Returns the inverse of the quaternion
 
 	//!@name Conversion functions
 	CY_NODISCARD Matrix3<T> GetRotationMatrix() const;								//!< Returns a matrix representing the rotation of the quaternion.
@@ -159,11 +161,18 @@ public:
 	Vec3<T> const & GetVector() const { return Quaternion<T>::v; }
 	T       const & GetScalar() const { return Quaternion<T>::s; }
 
-	CY_NODISCARD T GetRotationAngle() const { return T(2)*std::acos(Quaternion<T>::s); }		//!< Returns rotation angle in radians
+	CY_NODISCARD T       GetRotationAngle() const { return T(2)*std::acos(Quaternion<T>::s); }	//!< Returns rotation angle in radians
+	CY_NODISCARD Vec3<T> GetRotationAxis () const { return Quaternion<T>::v.GetNormalized(); }	//!< Returns the normalized rotation axis
 
 	//!@name Normalize, Length, and Inverse functions
-	using Quaternion<T>::GetInverse;
-	using Quaternion<T>::Invert;
+	void                        Normalize    ()       {}							//!< Does nothing, since the unit quaternion is already normalized.
+	CY_NODISCARD UnitQuaternion GetNormalized() const { return *this; }				//!< Returns the quaternion itself, since it is already normalized.
+	CY_NODISCARD T              LengthSquared() const { return T(1); }				//!< Returns 1, since the unit quaternion always has length 1.
+	CY_NODISCARD T              Length       () const { return T(1); }				//!< Returns 1, since the unit quaternion always has length 1.
+	void                        Conjugate    ()       { Quaternion::Conjugate(); }	//!< Converts the quaternion to its conjugate
+	CY_NODISCARD UnitQuaternion GetConjugate () const { return UnitQuaternion(-Quaternion<T>::v,Quaternion<T>::s); }	//!< Returns the conjugate of the quaternion
+	void                        Invert       ()       { Conjugate(); }				//!< Converts to quaternion to its inverse
+	CY_NODISCARD UnitQuaternion GetInverse   () const { return GetConjugate(); }	//!< Returns the inverse of the quaternion
 
 	//!@name Conversion functions
 	CY_NODISCARD Matrix3<T> GetRotationMatrix() const { return Quaternion<T>::GetMatrix3(); }	//!< Returns a matrix representing the rotation of the quaternion.
@@ -180,10 +189,6 @@ public:
 	using Quaternion<T>::operator -;
 	using Quaternion<T>::operator *;
 	using Quaternion<T>::operator /;
-
-	//! Rotates the given vector using the quaternion. If multiple vectors will be rotated, converting the quaternion to a matrix would be more efficient.
-	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> vxp = Quaternion<T>::v.Cross(p); vxp += vxp; return p + vxp*Quaternion<T>::s + Quaternion<T>::v.Cross(vxp); }
-	CY_NODISCARD Matrix3<T> operator * ( Matrix3<T> const &m ) const { return GetMatrix3()*m; }
 
 	//!@name Assignment operators
 	UnitQuaternion& operator *= ( UnitQuaternion const &q ) { *this = *this * q; return *this; }
