@@ -66,7 +66,7 @@ public:
 		Str() : data(nullptr) {}							//!< Constructor
 		Str( Str const &s ) : data(nullptr) { *this = s; }	//!< Copy constructor
 		~Str() { if ( data ) delete [] data; }				//!< Destructor
-		operator char const * () { return data; }			//!< Implicit conversion to const char
+		operator char const * () const { return data; }			//!< Implicit conversion to const char
 		void operator = ( Str  const &s ) { *this = s.data; }	//!< Assignment operator
 		void operator = ( char const *s ) { if (s) { size_t n=strlen(s); if (data) delete [] data; data=new char[n+1]; strncpy(data,s,n); data[n]='\0'; } else if (data) { delete [] data; data=nullptr; } }	//!< Assignment operator
 	};
