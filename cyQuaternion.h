@@ -91,10 +91,11 @@ public:
 	void                    Invert       ()       { v = -v; }
 
 	//!@name Conversion functions
-	CY_NODISCARD Matrix3<T> GetMatrix3() const;										//!< Returns a matrix representing the rotation of the quaternion.
-	CY_NODISCARD Matrix4<T> GetMatrix4() const { return Matrix4<T>(GetMatrix3()); }	//!< Returns a matrix representing the rotation of the quaternion.
-	CY_NODISCARD explicit operator Matrix3<T>() const { return GetMatrix3(); }		//!< Returns a matrix representing the rotation of the quaternion.
-	CY_NODISCARD explicit operator Matrix4<T>() const { return GetMatrix4(); }		//!< Returns a matrix representing the rotation of the quaternion.
+	CY_NODISCARD Matrix3<T> GetRotationMatrix() const;								//!< Returns a matrix representing the rotation of the quaternion.
+	CY_NODISCARD Matrix3<T> GetMatrix3() const;										//!< Returns a matrix representing the rotation and scale of the quaternion.
+	CY_NODISCARD Matrix4<T> GetMatrix4() const { return Matrix4<T>(GetMatrix3()); }	//!< Returns a matrix representing the rotation and scale of the quaternion.
+	CY_NODISCARD explicit operator Matrix3<T>() const { return GetMatrix3(); }		//!< Returns a matrix representing the rotation ans scale of the quaternion.
+	CY_NODISCARD explicit operator Matrix4<T>() const { return GetMatrix4(); }		//!< Returns a matrix representing the rotation ans scale of the quaternion.
 	CY_NODISCARD explicit operator Vec4<T>   () const { return Vec4(v,s); }			//!< Returns a vector containing the values of the quaternion with the scalar in the w coordinate
 
 	//!@name Unary operators
@@ -106,7 +107,7 @@ public:
 	CY_NODISCARD Quaternion operator - ( Quaternion const &q ) const { return Quaternion( v - q.v, s - q.s ); }
 	CY_NODISCARD Quaternion operator * ( T          const &f ) const { return Quaternion( v*f, s*f ); }
 	CY_NODISCARD Quaternion operator / ( T          const &f ) const { return Quaternion( v/f, s*f ); }
-	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { return GetMatrix3()*p; }
+	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> t = 2*v.Cross(p); return p + t*s + v.Cross(t); }
 	CY_NODISCARD Matrix3<T> operator * ( Matrix3<T> const &m ) const { return GetMatrix3()*m; }
 
 	//!@name Assignment operators
@@ -165,8 +166,9 @@ public:
 	using Quaternion<T>::Invert;
 
 	//!@name Conversion functions
-	CY_NODISCARD Matrix3<T> GetMatrix3() const;										//!< Returns a matrix representing the rotation of the quaternion.
-	CY_NODISCARD Matrix4<T> GetMatrix4() const { return Matrix4<T>(GetMatrix3()); }	//!< Returns a matrix representing the rotation of the quaternion.
+	CY_NODISCARD Matrix3<T> GetRotationMatrix() const { return Quaternion<T>::GetMatrix3(); }	//!< Returns a matrix representing the rotation of the quaternion.
+	CY_NODISCARD Matrix3<T> GetMatrix3()        const { return Quaternion<T>::GetMatrix3(); }	//!< Returns a matrix representing the rotation of the quaternion.
+	CY_NODISCARD Matrix4<T> GetMatrix4()        const { return Quaternion<T>::GetMatrix4(); }	//!< Returns a matrix representing the rotation of the quaternion.
 	CY_NODISCARD explicit operator Matrix3<T>() const { return GetMatrix3(); }		//!< Returns a matrix representing the rotation of the quaternion.
 	CY_NODISCARD explicit operator Matrix4<T>() const { return GetMatrix4(); }		//!< Returns a matrix representing the rotation of the quaternion.
 	CY_NODISCARD operator Quaternion<T>() const { return Quaternion<T>(*this); }	//!< Returns a generic quaternion representation of the unit quaternion.
@@ -278,7 +280,7 @@ inline void UnitQuaternion<T>::SetRotation( Vec3<T> const &from, Vec3<T> const &
 //-------------------------------------------------------------------------------
 
 template <typename T>
-inline Matrix3<T> Quaternion<T>::GetMatrix3() const
+inline Matrix3<T> Quaternion<T>::GetRotationMatrix() const
 {
 	T const l2 = LengthSquared();
 	T const x_l2 = v.x / l2;
@@ -295,31 +297,31 @@ inline Matrix3<T> Quaternion<T>::GetMatrix3() const
 	T const sz = s   * z_l2;
 
 	Matrix3<T> m;
-	m[0] = 1 - 2*(yy + zz);  m[3] = 2*(xy - sz);      m[6] = 2*(xz + sy);
-	m[1] = 2*(xy + sz);      m[4] = 1 - 2*(xx + zz);  m[7] = 2*(yz - sx);
-	m[2] = 2*(xz - sy);      m[5] = 2*(yz + sx);      m[8] = 1 - 2*(xx + yy);
+	m[0] = 1 - 2*(yy + zz);  m[1] =     2*(xy + sz);  m[2] =     2*(xz - sy);
+	m[3] =     2*(xy - sz);  m[4] = 1 - 2*(xx + zz);  m[5] =     2*(yz + sx);
+	m[6] =     2*(xz + sy);  m[7] =     2*(yz - sx);  m[8] = 1 - 2*(xx + yy);
 	return m;
 }
 
 //-------------------------------------------------------------------------------
 
 template <typename T>
-inline Matrix3<T> UnitQuaternion<T>::GetMatrix3() const
+inline Matrix3<T> Quaternion<T>::GetMatrix3() const
 {
-	T const xx = Quaternion<T>::v.x * Quaternion<T>::v.x;
-	T const yy = Quaternion<T>::v.y * Quaternion<T>::v.y;
-	T const zz = Quaternion<T>::v.z * Quaternion<T>::v.z;
-	T const xz = Quaternion<T>::v.x * Quaternion<T>::v.z;
-	T const xy = Quaternion<T>::v.x * Quaternion<T>::v.y;
-	T const yz = Quaternion<T>::v.y * Quaternion<T>::v.z;
-	T const sx = Quaternion<T>::s   * Quaternion<T>::v.x;
-	T const sy = Quaternion<T>::s   * Quaternion<T>::v.y;
-	T const sz = Quaternion<T>::s   * Quaternion<T>::v.z;
+	T const xx = v.x * v.x;
+	T const yy = v.y * v.y;
+	T const zz = v.z * v.z;
+	T const xz = v.x * v.z;
+	T const xy = v.x * v.y;
+	T const yz = v.y * v.z;
+	T const sx = s   * v.x;
+	T const sy = s   * v.y;
+	T const sz = s   * v.z;
 
 	Matrix3<T> m;
-	m[0] = 1 - 2*(yy + zz);  m[3] = 2*(xy - sz);      m[6] = 2*(xz + sy);
-	m[1] = 2*(xy + sz);      m[4] = 1 - 2*(xx + zz);  m[7] = 2*(yz - sx);
-	m[2] = 2*(xz - sy);      m[5] = 2*(yz + sx);      m[8] = 1 - 2*(xx + yy);
+	m[0] = 1 - 2*(yy + zz);  m[1] =     2*(xy + sz);  m[2] =     2*(xz - sy);
+	m[3] =     2*(xy - sz);  m[4] = 1 - 2*(xx + zz);  m[5] =     2*(yz + sx);
+	m[6] =     2*(xz + sy);  m[7] =     2*(yz - sx);  m[8] = 1 - 2*(xx + yy);
 	return m;
 }
 
