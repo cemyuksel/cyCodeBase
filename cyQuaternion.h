@@ -109,7 +109,7 @@ public:
 	CY_NODISCARD Quaternion operator - ( Quaternion const &q ) const { return Quaternion( v - q.v, s - q.s ); }
 	CY_NODISCARD Quaternion operator * ( T          const &f ) const { return Quaternion( v*f, s*f ); }
 	CY_NODISCARD Quaternion operator / ( T          const &f ) const { return Quaternion( v/f, s*f ); }
-	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> t = 2*v.Cross(p); return p + t*s + v.Cross(t); }
+	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> sp = s*p; return v.Dot(p)*v + s*sp + 2*v.Cross(sp) + v.Cross(v.Cross(p)); }
 	CY_NODISCARD Matrix3<T> operator * ( Matrix3<T> const &m ) const { return GetMatrix3()*m; }
 
 	//!@name Assignment operators
@@ -189,6 +189,10 @@ public:
 	using Quaternion<T>::operator -;
 	using Quaternion<T>::operator *;
 	using Quaternion<T>::operator /;
+
+	//! Rotates the given vector using the quaternion. If multiple vectors will be rotated, converting the quaternion to a matrix would be more efficient.
+	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> vxp = Quaternion<T>::v.Cross(p); vxp += vxp; return p + vxp*Quaternion<T>::s + Quaternion<T>::v.Cross(vxp); }
+	CY_NODISCARD Matrix3<T> operator * ( Matrix3<T> const &m ) const { return GetMatrix3()*m; }
 
 	//!@name Assignment operators
 	UnitQuaternion& operator *= ( UnitQuaternion const &q ) { *this = *this * q; return *this; }
