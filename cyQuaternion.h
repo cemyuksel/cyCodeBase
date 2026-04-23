@@ -156,7 +156,7 @@ public:
 	using Quaternion<T>::GetRotationAxis;
 	void SetRotation( Vec3<T> const &axis, T angle );											//!< Sets a rotation around the given axis.
 	void SetRotation( Matrix3<T> const &rotation ) { Quaternion<T>::SetRotation(rotation); }	//!< Sets the quaternion using a rotation matrix. This method only works for rotation matrices.
-	void SetRotation( Vec3<T> const &from, Vec3<T> const &to );									//!< Sets the quaternion as a rotation from one direction to another. The resulting quaternion is not normalized.
+	void SetRotation( Vec3<T> const &from, Vec3<T> const &to );									//!< Sets the quaternion as a rotation from one direction to another. The input must be unit vectors.
 	void SetHalfRotation() { Quaternion<T>::s += T(1); Quaternion<T>::Normalize(); }			//!< Reduces the rotation of the quaternion by half
 	Vec3<T> const & GetVector() const { return Quaternion<T>::v; }
 	T       const & GetScalar() const { return Quaternion<T>::s; }
@@ -257,15 +257,9 @@ inline void UnitQuaternion<T>::SetRotation( Vec3<T> const &axis, T angle )
 template <typename T>
 inline void Quaternion<T>::SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 {
-	T cosAngle = from % to;
-	T len = Sqrt( from.Length() * to.Length() );
-	if ( cosAngle < T(-0.99999)*len ) { // 180 degree rotation
-		s = T(0);
-		v = to.GetPerpendicular().GetNormalized();
-	} else {
-		s = len + cosAngle;
-		v = from ^ to;
-	}
+	T len = Sqrt( from.LengthSquared() * to.LengthSquared() );
+	s = len + (from % to);
+	v = from ^ to;
 }
 
 //-------------------------------------------------------------------------------
@@ -275,15 +269,9 @@ inline void UnitQuaternion<T>::SetRotation( Vec3<T> const &from, Vec3<T> const &
 {
 	assert( from.IsUnit() );
 	assert( to  .IsUnit() );
-	T cosAngle = from % to;
-	if ( cosAngle < T(-0.99999) ) { // 180 degree rotation
-		Quaternion<T>::s = T(0);
-		Quaternion<T>::v = to.GetPerpendicular();
-	} else {
-		Quaternion<T>::s = cosAngle;
-		Quaternion<T>::v = from ^ to;
-		SetHalfRotation();
-	}
+	Quaternion<T>::s = from % to;
+	Quaternion<T>::v = from ^ to;
+	SetHalfRotation();
 }
 
 //-------------------------------------------------------------------------------
