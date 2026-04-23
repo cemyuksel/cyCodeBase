@@ -54,7 +54,8 @@ class alignas(sizeof(T)*4) Quaternion
 {
 	CY_NODISCARD friend Quaternion operator * ( T          const &f, const Quaternion &q ) { return q * f; }
 	CY_NODISCARD friend Matrix3<T> operator * ( Matrix3<T> const &m, const Quaternion &q ) { return m * q.GetMatrix3(); }
-	CY_NODISCARD friend Quaternion Inverse( Quaternion const &q ) { return q.GetInverse(); }	//!< return the inverse of the quaternion
+	CY_NODISCARD friend Quaternion Conjugate( Quaternion const &q ) { return q.GetConjugate(); }	//!< Returns the conjugate of the quaternion.
+	CY_NODISCARD friend Quaternion Inverse  ( Quaternion const &q ) { return q.GetInverse  (); }	//!< Returns the inverse of the quaternion.
 
 public:
 	Vec3<T> v;	//!< vector part
@@ -77,20 +78,21 @@ public:
 	void SetRotation( Vec3<T> const &axis, T angle );								//!< Sets a rotation around the given axis.
 	void SetRotation( Matrix3<T> const &rotation );									//!< Sets the quaternion using a rotation matrix. This method only works for rotation matrices.
 	void SetRotation( Vec3<T> const &from, Vec3<T> const &to );						//!< Sets the quaternion as a rotation from one direction to another. The resulting quaternion is not normalized.
-	void SetHalfRotation ()       { s += Length(); }								//!< Reduces the rotation of the quaternion by half
+	void SetHalfRotation() { s += Length(); }										//!< Reduces the rotation of the quaternion by half.
+	Quaternion<T> GetHalfRotation() { Quaternion<T> h=*this; h.SetHalfRotation(); return h; }	//!< Returns a quaternion with half the rotation.
 
-	CY_NODISCARD T       GetRotationAngle() const { return T(2)*std::acos(s/Length()); }	//!< Returns rotation angle in radians
-	CY_NODISCARD Vec3<T> GetRotationAxis () const { return v.GetNormalized(); }				//!< Returns the normalized rotation axis
+	CY_NODISCARD T       GetRotationAngle() const { return T(2)*std::acos(s/Length()); }	//!< Returns rotation angle in radians.
+	CY_NODISCARD Vec3<T> GetRotationAxis () const { return v.GetNormalized(); }				//!< Returns the normalized rotation axis.
 
 	//!@name Normalize, Length, Conjugate, and Inverse functions
 	void                    Normalize    ()       { *this /= Length(); }				//!< Normalizes the quaternion, such that its length becomes 1.
 	CY_NODISCARD Quaternion GetNormalized() const { return *this / Length(); }			//!< Returns a normalized copy of the quaternion.
 	CY_NODISCARD T          LengthSquared() const { return s*s + v.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
 	CY_NODISCARD T          Length       () const { return Sqrt(LengthSquared()); }		//!< Returns the length of the quaternion.
-	void                    Conjugate    ()       { v = -v; }							//!< Converts the quaternion to its conjugate
-	CY_NODISCARD Quaternion GetConjugate () const { return Quaternion(-v,s); }			//!< Returns the conjugate of the quaternion
-	void                    Invert       ()       { T l2=LengthSquared(); v/=-l2; s/=l2; }					//!< Converts to quaternion to its inverse
-	CY_NODISCARD Quaternion GetInverse   () const { T l2=LengthSquared(); return Quaternion(-v/l2,s/l2); }	//!< Returns the inverse of the quaternion
+	void                    Conjugate    ()       { v = -v; }							//!< Converts the quaternion to its conjugate.
+	CY_NODISCARD Quaternion GetConjugate () const { return Quaternion(-v,s); }			//!< Returns the conjugate of the quaternion.
+	void                    Invert       ()       { T l2=LengthSquared(); v/=-l2; s/=l2; }					//!< Converts to quaternion to its inverse.
+	CY_NODISCARD Quaternion GetInverse   () const { T l2=LengthSquared(); return Quaternion(-v/l2,s/l2); }	//!< Returns the inverse of the quaternion.
 
 	//!@name Conversion functions
 	CY_NODISCARD Matrix3<T> GetRotationMatrix() const;								//!< Returns a matrix representing the rotation of the quaternion.
@@ -98,7 +100,7 @@ public:
 	CY_NODISCARD Matrix4<T> GetMatrix4() const { return Matrix4<T>(GetMatrix3()); }	//!< Returns a matrix representing the rotation and scale of the quaternion.
 	CY_NODISCARD explicit operator Matrix3<T>() const { return GetMatrix3(); }		//!< Returns a matrix representing the rotation ans scale of the quaternion.
 	CY_NODISCARD explicit operator Matrix4<T>() const { return GetMatrix4(); }		//!< Returns a matrix representing the rotation ans scale of the quaternion.
-	CY_NODISCARD explicit operator Vec4<T>   () const { return Vec4(v,s); }			//!< Returns a vector containing the values of the quaternion with the scalar in the w coordinate
+	CY_NODISCARD explicit operator Vec4<T>   () const { return Vec4(v,s); }			//!< Returns a vector containing the values of the quaternion with the scalar in the w coordinate.
 
 	//!@name Unary operators
 	CY_NODISCARD Quaternion operator - () const { return Quaternion(-v,-s); }
@@ -137,7 +139,8 @@ class alignas(sizeof(T)*4) UnitQuaternion : private Quaternion<T>
 {
 	CY_NODISCARD friend Quaternion<T> operator * ( T          const &f, const UnitQuaternion &q ) { return q * f; }
 	CY_NODISCARD friend Matrix3<T>    operator * ( Matrix3<T> const &m, const UnitQuaternion &q ) { return m * q.GetMatrix3(); }
-	CY_NODISCARD friend UnitQuaternion Inverse( UnitQuaternion const &q ) { return q.GetInverse(); }	//!< return the inverse of the quaternion
+	CY_NODISCARD friend UnitQuaternion Conjugate( UnitQuaternion const &q ) { return q.GetConjugate(); }	//!< Returns the conjugate of the quaternion.
+	CY_NODISCARD friend UnitQuaternion Inverse  ( UnitQuaternion const &q ) { return q.GetInverse  (); }	//!< Returns the inverse of the quaternion.
 
 public:
 
@@ -154,10 +157,11 @@ public:
 	using Quaternion<T>::IsFinite;
 	using Quaternion<T>::GetRotationAngle;
 	using Quaternion<T>::GetRotationAxis;
-	void SetRotation( Vec3<T> const &axis, T angle );											//!< Sets a rotation around the given axis.
-	void SetRotation( Matrix3<T> const &rotation ) { Quaternion<T>::SetRotation(rotation); }	//!< Sets the quaternion using a rotation matrix. This method only works for rotation matrices.
-	void SetRotation( Vec3<T> const &from, Vec3<T> const &to );									//!< Sets the quaternion as a rotation from one direction to another. The input must be unit vectors.
-	void SetHalfRotation() { Quaternion<T>::s += T(1); Quaternion<T>::Normalize(); }			//!< Reduces the rotation of the quaternion by half
+	void SetRotation( Vec3<T> const &axis, T angle );													//!< Sets a rotation around the given axis.
+	void SetRotation( Matrix3<T> const &rotation ) { Quaternion<T>::SetRotation(rotation); }			//!< Sets the quaternion using a rotation matrix. This method only works for rotation matrices.
+	void SetRotation( Vec3<T> const &from, Vec3<T> const &to );											//!< Sets the quaternion as a rotation from one direction to another. The input must be unit vectors.
+	void SetHalfRotation() { Quaternion<T>::s+=T(1); T l=Sqrt(Quaternion<T>::s*T(2)); *this/=l; }		//!< Reduces the rotation of the quaternion by half.
+	UnitQuaternion<T> GetHalfRotation() { UnitQuaternion<T> h=*this; h.SetHalfRotation(); return h; }	//!< Returns a quaternion with half the rotation.
 	Vec3<T> const & GetVector() const { return Quaternion<T>::v; }
 	T       const & GetScalar() const { return Quaternion<T>::s; }
 
@@ -257,9 +261,8 @@ inline void UnitQuaternion<T>::SetRotation( Vec3<T> const &axis, T angle )
 template <typename T>
 inline void Quaternion<T>::SetRotation( Vec3<T> const &from, Vec3<T> const &to )
 {
-	T len = Sqrt( from.LengthSquared() * to.LengthSquared() );
-	s = len + (from % to);
-	v = from ^ to;
+	s = (from % to) + Sqrt( from.LengthSquared() * to.LengthSquared() );
+	v = (from ^ to);
 }
 
 //-------------------------------------------------------------------------------
@@ -269,9 +272,9 @@ inline void UnitQuaternion<T>::SetRotation( Vec3<T> const &from, Vec3<T> const &
 {
 	assert( from.IsUnit() );
 	assert( to  .IsUnit() );
-	Quaternion<T>::s = from % to;
-	Quaternion<T>::v = from ^ to;
-	SetHalfRotation();
+	Quaternion<T>::s = (from % to) + 1;
+	Quaternion<T>::v = (from ^ to);
+	Quaternion<T>::Normalize();
 }
 
 //-------------------------------------------------------------------------------
