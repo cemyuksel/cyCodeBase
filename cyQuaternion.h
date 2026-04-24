@@ -52,8 +52,7 @@ template <typename T> class UnitQuaternion;
 template <typename T>
 class alignas(sizeof(T)*4) Quaternion
 {
-	CY_NODISCARD friend Quaternion operator * ( T          const &f, const Quaternion &q ) { return q * f; }
-	CY_NODISCARD friend Matrix3<T> operator * ( Matrix3<T> const &m, const Quaternion &q ) { return m * q.GetMatrix3(); }
+	CY_NODISCARD friend Quaternion operator * ( T const &f, const Quaternion &q ) { return q * f; }
 	CY_NODISCARD friend Quaternion Conjugate( Quaternion const &q ) { return q.GetConjugate(); }	//!< Returns the conjugate of the quaternion.
 	CY_NODISCARD friend Quaternion Inverse  ( Quaternion const &q ) { return q.GetInverse  (); }	//!< Returns the inverse of the quaternion.
 
@@ -64,7 +63,7 @@ public:
 	//!@name Constructors
 	Quaternion() CY_CLASS_FUNCTION_DEFAULT
 	Quaternion( T const &x, T const &y, T const &z, T const &_s ) : v(x,y,z),       s(_s)  {}
-	Quaternion( Vec3<T> const &_v, T _s=0 )                       : v(_v),          s(_s)  {}
+	explicit Quaternion( Vec3<T> const &_v, T _s=0 )              : v(_v),          s(_s)  {}
 	explicit Quaternion( Vec4<T> const &q )                       : v(q.x,q.y,q.z), s(q.w) {}
 	explicit Quaternion( UnitQuaternion<T> const &q );
 	Quaternion( Vec3<T> const &from, Vec3<T> const &to ) { SetRotation(from,to); }
@@ -106,16 +105,14 @@ public:
 	CY_NODISCARD Quaternion operator - () const { return Quaternion(-v,-s); }
 
 	//!@name Binary operators
-	CY_NODISCARD Quaternion operator * ( Quaternion const &q ) const { return Quaternion( s*q.v + v*q.s + v.Cross(q.v), s*q.s - v.Dot(q.v) ); }
+	CY_NODISCARD Quaternion operator * ( Quaternion const &q ) const { return Quaternion( s*q.v + v*q.s + (v^q.v), s*q.s - (v%q.v) ); }
 	CY_NODISCARD Quaternion operator + ( Quaternion const &q ) const { return Quaternion( v + q.v, s + q.s ); }
 	CY_NODISCARD Quaternion operator - ( Quaternion const &q ) const { return Quaternion( v - q.v, s - q.s ); }
 	CY_NODISCARD Quaternion operator * ( T          const &f ) const { return Quaternion( v*f, s*f ); }
 	CY_NODISCARD Quaternion operator / ( T          const &f ) const { return Quaternion( v/f, s*f ); }
-	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> sp = s*p; return v.Dot(p)*v + s*sp + 2*v.Cross(sp) + v.Cross(v.Cross(p)); }
-	CY_NODISCARD Matrix3<T> operator * ( Matrix3<T> const &m ) const { return GetMatrix3()*m; }
 
 	//!@name Assignment operators
-	Quaternion& operator *= ( Quaternion const &q ) { Set( s*q.v + q.s*v + v.Cross(q.v), s*q.s - v.Dot(q.v) ); return *this; }
+	Quaternion& operator *= ( Quaternion const &q ) { Set( s*q.v + q.s*v + (v^q.v), s*q.s - (v%q.v) ); return *this; }
 	Quaternion& operator += ( Quaternion const &q ) { v+=q.v; s+=q.s; return *this; }
 	Quaternion& operator -= ( Quaternion const &q ) { v-=q.v; s-=q.s; return *this; }
 	Quaternion& operator *= ( T          const &f ) { v*=f;   s*=f;   return *this; }
@@ -126,8 +123,12 @@ public:
 	CY_NODISCARD int operator != ( Quaternion const &q ) const { return q.v != v || q.s != s; }
 
 	//!@name Dot product
-	CY_NODISCARD T Dot        ( Quaternion const &p ) const { return v.Dot(p.v) + s*p.s; }	//!< Dot product
-	CY_NODISCARD T operator % ( Quaternion const &p ) const { return Dot(p); }				//!< Dot product
+	CY_NODISCARD T Dot        ( Quaternion const &p ) const { return (v%p.v) + s*p.s; }	//!< Dot product
+	CY_NODISCARD T operator % ( Quaternion const &p ) const { return Dot(p); }			//!< Dot product
+
+	//!@name Rotation
+	CY_NODISCARD Vec3<T> Rotate    ( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return s*t + (v^t) + p*LengthSquared(); }	//!< Returns a rotated vector scaled by the square length of the quaternion.
+	CY_NODISCARD Vec3<T> UnitRotate( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return s*t + (v^t) + p; }					//!< Returns a rotated vector by the quaternion, assuming unit quaternion.
 };
 
 //-------------------------------------------------------------------------------
@@ -137,17 +138,15 @@ public:
 template <typename T>
 class alignas(sizeof(T)*4) UnitQuaternion : private Quaternion<T>
 {
-	CY_NODISCARD friend Quaternion<T> operator * ( T          const &f, const UnitQuaternion &q ) { return q * f; }
-	CY_NODISCARD friend Matrix3<T>    operator * ( Matrix3<T> const &m, const UnitQuaternion &q ) { return m * q.GetMatrix3(); }
+	CY_NODISCARD friend Quaternion<T> operator * ( T const &f, const UnitQuaternion &q ) { return q * f; }
 	CY_NODISCARD friend UnitQuaternion Conjugate( UnitQuaternion const &q ) { return q.GetConjugate(); }	//!< Returns the conjugate of the quaternion.
 	CY_NODISCARD friend UnitQuaternion Inverse  ( UnitQuaternion const &q ) { return q.GetInverse  (); }	//!< Returns the inverse of the quaternion.
 
 public:
-
 	//!@name Constructors
 	UnitQuaternion() CY_CLASS_FUNCTION_DEFAULT
 	UnitQuaternion( T const &x, T const &y, T const &z, T const &_s ) : Quaternion<T>(x,y,z,_s) { Quaternion<T>::Normalize(); }
-	UnitQuaternion( Vec3<T> const &_v, T _s=0 )                       : Quaternion<T>(_v,   _s) { Quaternion<T>::Normalize(); }
+	explicit UnitQuaternion( Vec3<T> const &_v, T _s=0 )              : Quaternion<T>(_v,   _s) { Quaternion<T>::Normalize(); }
 	explicit UnitQuaternion( Vec4<T> const &q )                       : Quaternion<T>(q)        { Quaternion<T>::Normalize(); }
 	explicit UnitQuaternion( Quaternion<T> const &q )                 : Quaternion<T>(q)        { Quaternion<T>::Normalize(); }
 	UnitQuaternion( Vec3<T> const &from, Vec3<T> const &to ) { SetRotation(from,to); }
@@ -194,10 +193,6 @@ public:
 	using Quaternion<T>::operator *;
 	using Quaternion<T>::operator /;
 
-	//! Rotates the given vector using the quaternion. If multiple vectors will be rotated, converting the quaternion to a matrix would be more efficient.
-	CY_NODISCARD Vec3<T>    operator * ( Vec3<T>    const &p ) const { Vec3<T> vxp = Quaternion<T>::v.Cross(p); vxp += vxp; return p + vxp*Quaternion<T>::s + Quaternion<T>::v.Cross(vxp); }
-	CY_NODISCARD Matrix3<T> operator * ( Matrix3<T> const &m ) const { return GetMatrix3()*m; }
-
 	//!@name Assignment operators
 	UnitQuaternion& operator *= ( UnitQuaternion const &q ) { *this = *this * q; return *this; }
 
@@ -208,6 +203,10 @@ public:
 	//!@name Dot product
 	using Quaternion<T>::Dot;
 	using Quaternion<T>::operator %;
+
+	//!@name Rotation
+	CY_NODISCARD Vec3<T> Rotate    ( Vec3<T> const &p ) const { return Quaternion<T>::UnitRotate(p); }	//!< Returns a rotated vector by the quaternion.
+	CY_NODISCARD Vec3<T> UnitRotate( Vec3<T> const &p ) const { return Rotate(p); }						//!< Returns a rotated vector by the quaternion.
 
 	//!@name Slerp (Spherical Linear Interpolation)
 	CY_NODISCARD static UnitQuaternion<T> Slerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, T t );
