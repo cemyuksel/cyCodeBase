@@ -109,7 +109,7 @@ public:
 	CY_NODISCARD Quaternion operator + ( Quaternion const &q ) const { return Quaternion( v + q.v, s + q.s ); }
 	CY_NODISCARD Quaternion operator - ( Quaternion const &q ) const { return Quaternion( v - q.v, s - q.s ); }
 	CY_NODISCARD Quaternion operator * ( T          const &f ) const { return Quaternion( v*f, s*f ); }
-	CY_NODISCARD Quaternion operator / ( T          const &f ) const { return Quaternion( v/f, s*f ); }
+	CY_NODISCARD Quaternion operator / ( T          const &f ) const { return Quaternion( v/f, s/f ); }
 
 	//!@name Assignment operators
 	Quaternion& operator *= ( Quaternion const &q ) { Set( s*q.v + q.s*v + (v^q.v), s*q.s - (v%q.v) ); return *this; }
