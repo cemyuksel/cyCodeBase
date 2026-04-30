@@ -65,8 +65,9 @@ public:
 	Quaternion( T const &x, T const &y, T const &z, T const &_s ) : v(x,y,z),       s(_s)  {}
 	explicit Quaternion( Vec3<T> const &_v, T _s=0 )              : v(_v),          s(_s)  {}
 	explicit Quaternion( Vec4<T> const &q )                       : v(q.x,q.y,q.z), s(q.w) {}
-	explicit Quaternion( UnitQuaternion<T> const &q );
-	Quaternion( Vec3<T> const &from, Vec3<T> const &to ) { SetRotation(from,to); }
+	explicit Quaternion( Matrix3<T> const &rotation )    { SetRotation( rotation ); }
+	Quaternion( Vec3<T> const &from, Vec3<T> const &to ) { SetRotation( from, to ); }
+	Quaternion( UnitQuaternion<T> const &q );
 
 	//!@name Set & Get value functions
 	void Zero       () { v.Zero(); s=T(1); }										//!< Sets the scalar part to one and vector part to zero, meaning no rotation.
@@ -119,16 +120,18 @@ public:
 	Quaternion& operator /= ( T          const &f ) { v/=f;   s/=f;   return *this; }
 
 	//!@name Test operators
-	CY_NODISCARD int operator == ( Quaternion const &q ) const { return q.v == v && q.s == s; }
-	CY_NODISCARD int operator != ( Quaternion const &q ) const { return q.v != v || q.s != s; }
+	CY_NODISCARD bool operator == ( Quaternion const &q ) const { return q.v == v && q.s == s; }
+	CY_NODISCARD bool operator != ( Quaternion const &q ) const { return q.v != v || q.s != s; }
 
 	//!@name Dot product
 	CY_NODISCARD T Dot        ( Quaternion const &p ) const { return (v%p.v) + s*p.s; }	//!< Dot product
 	CY_NODISCARD T operator % ( Quaternion const &p ) const { return Dot(p); }			//!< Dot product
 
 	//!@name Rotation
-	CY_NODISCARD Vec3<T> Rotate    ( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return s*t + (v^t) + p*LengthSquared(); }	//!< Returns a rotated vector scaled by the square length of the quaternion.
-	CY_NODISCARD Vec3<T> UnitRotate( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return s*t + (v^t) + p; }					//!< Returns a rotated vector by the quaternion, assuming unit quaternion.
+	CY_NODISCARD Vec3<T> Rotate           ( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return (v^t) + s*t + p*LengthSquared(); }	//!< Returns a rotated vector scaled by the square length of the quaternion.
+	CY_NODISCARD Vec3<T> ReverseRotate    ( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return (v^t) - s*t + p*LengthSquared(); }	//!< Returns a rotated vector in the reverse direction scaled by the square length of the quaternion. This is equivalent to GetConjugate().Rotate(p).
+	CY_NODISCARD Vec3<T> UnitRotate       ( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return (v^t) + s*t + p; }					//!< Returns a rotated vector by the quaternion, assuming unit quaternion.
+	CY_NODISCARD Vec3<T> UnitReverseRotate( Vec3<T> const &p ) const { Vec3<T> t=(2*v)^p; return (v^t) - s*t + p; }					//!< Returns a rotated vector by the quaternion in the reverse direction, assuming unit quaternion. This is equivalent to GetConjugate().UnitRotate(p).
 };
 
 //-------------------------------------------------------------------------------
@@ -139,8 +142,10 @@ template <typename T>
 class alignas(sizeof(T)*4) UnitQuaternion : private Quaternion<T>
 {
 	CY_NODISCARD friend Quaternion<T> operator * ( T const &f, const UnitQuaternion &q ) { return q * f; }
-	CY_NODISCARD friend UnitQuaternion Conjugate( UnitQuaternion const &q ) { return q.GetConjugate(); }	//!< Returns the conjugate of the quaternion.
-	CY_NODISCARD friend UnitQuaternion Inverse  ( UnitQuaternion const &q ) { return q.GetInverse  (); }	//!< Returns the inverse of the quaternion.
+	CY_NODISCARD friend UnitQuaternion<T> Conjugate( UnitQuaternion const &q ) { return q.GetConjugate(); }	//!< Returns the conjugate of the quaternion.
+	CY_NODISCARD friend UnitQuaternion<T> Inverse  ( UnitQuaternion const &q ) { return q.GetInverse  (); }	//!< Returns the inverse of the quaternion.
+	CY_NODISCARD friend UnitQuaternion<T> Slerp    ( UnitQuaternion const &q0, UnitQuaternion const &q1, T t ) { return q0.Slerp(q1,t); }	//!< Spherical linear interpolation.
+	CY_NODISCARD friend UnitQuaternion<T> Nlerp    ( UnitQuaternion const &q0, UnitQuaternion const &q1, T t ) { return q0.Nlerp(q1,t); }	//!< Normalized linear interpolation.
 
 public:
 	//!@name Constructors
@@ -149,7 +154,8 @@ public:
 	explicit UnitQuaternion( Vec3<T> const &_v, T _s=0 )              : Quaternion<T>(_v,   _s) { Quaternion<T>::Normalize(); }
 	explicit UnitQuaternion( Vec4<T> const &q )                       : Quaternion<T>(q)        { Quaternion<T>::Normalize(); }
 	explicit UnitQuaternion( Quaternion<T> const &q )                 : Quaternion<T>(q)        { Quaternion<T>::Normalize(); }
-	UnitQuaternion( Vec3<T> const &from, Vec3<T> const &to ) { SetRotation(from,to); }
+	explicit UnitQuaternion( Matrix3<T> const &rotation )    { SetRotation( rotation ); }
+	UnitQuaternion( Vec3<T> const &from, Vec3<T> const &to ) { SetRotation( from, to ); }
 
 	//!@name Set & Get value functions
 	using Quaternion<T>::Zero;
@@ -188,6 +194,8 @@ public:
 
 	//!@name Unary and Binary operators
 	CY_NODISCARD UnitQuaternion operator * ( UnitQuaternion const &q ) const { Quaternion<T> m=Quaternion<T>::operator*(q); UnitQuaternion r; r.v=m.v; r.s=m.s; return r; }
+	CY_NODISCARD Quaternion<T>  operator + ( UnitQuaternion const &q ) const { return Quaternion<T>::operator+( Quaternion<T>(q) ); }
+	CY_NODISCARD Quaternion<T>  operator - ( UnitQuaternion const &q ) const { return Quaternion<T>::operator-( Quaternion<T>(q) ); }
 	using Quaternion<T>::operator +;
 	using Quaternion<T>::operator -;
 	using Quaternion<T>::operator *;
@@ -205,12 +213,14 @@ public:
 	using Quaternion<T>::operator %;
 
 	//!@name Rotation
-	CY_NODISCARD Vec3<T> Rotate    ( Vec3<T> const &p ) const { return Quaternion<T>::UnitRotate(p); }	//!< Returns a rotated vector by the quaternion.
-	CY_NODISCARD Vec3<T> UnitRotate( Vec3<T> const &p ) const { return Rotate(p); }						//!< Returns a rotated vector by the quaternion.
+	CY_NODISCARD Vec3<T> Rotate           ( Vec3<T> const &p ) const { return Quaternion<T>::UnitRotate(p); }			//!< Returns a rotated vector by the quaternion.
+	CY_NODISCARD Vec3<T> ReverseRotate    ( Vec3<T> const &p ) const { return Quaternion<T>::UnitReverseRotate(p); }	//!< Returns a rotated vector by the quaternion in the reverse direction.
+	CY_NODISCARD Vec3<T> UnitRotate       ( Vec3<T> const &p ) const { return Rotate(p); }								//!< Returns a rotated vector by the quaternion.
+	CY_NODISCARD Vec3<T> UnitReverseRotate( Vec3<T> const &p ) const { return ReverseRotate(p); }						//!< Returns a rotated vector by the quaternion in the reverse direction.
 
-	//!@name Slerp (Spherical Linear Interpolation)
-	CY_NODISCARD static UnitQuaternion<T> Slerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, T t );
-	CY_NODISCARD static UnitQuaternion<T> Slerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, UnitQuaternion<T> const &q2, Vec3<T> const &bary );
+	//!@name Interpolation
+	CY_NODISCARD UnitQuaternion<T> Slerp( UnitQuaternion const &q1, T t ) const;	// Spherical linear interpolation.
+	CY_NODISCARD UnitQuaternion<T> Nlerp( UnitQuaternion const &q1, T t ) const;	// Normalized linear interpolation.
 };
 
 //-------------------------------------------------------------------------------
@@ -227,10 +237,12 @@ template <typename T>
 inline void Quaternion<T>::SetRotation( Matrix3<T> const &r )
 {
 	assert( std::abs(r.GetDeterminant()) - T(1) < T(0.0001) );	// The given matrix must be a rotation matrix.
-	s   = Sqrt( Max<T>( 0, 1 + r[0] + r[4] + r[8] ) ) / T(2);
-	v.x = Sqrt( Max<T>( 0, 1 + r[0] - r[4] - r[8] ) ) / T(2);
-	v.y = Sqrt( Max<T>( 0, 1 - r[0] + r[4] - r[8] ) ) / T(2);
-	v.z = Sqrt( Max<T>( 0, 1 - r[0] - r[4] + r[8] ) ) / T(2);
+	T r48 = r[4] + r[8];
+	T sum = T(0.5) + (r[0] + r48)*T(0.5);
+	s   = Sqrt( Max<T>( 0, sum ) );
+	v.x = Sqrt( Max<T>( 0, sum - r48 ) );
+	v.y = Sqrt( Max<T>( 0, sum - r[0] - r[8] ) );
+	v.z = Sqrt( Max<T>( 0, sum - r[0] - r[4] ) );
 	v.x = CopySign( v.x, r(2,1) - r(1,2) );
 	v.y = CopySign( v.y, r(0,2) - r(2,0) );
 	v.z = CopySign( v.z, r(1,0) - r(0,1) );
@@ -325,30 +337,22 @@ inline Matrix3<T> Quaternion<T>::GetMatrix3() const
 }
 
 //-------------------------------------------------------------------------------
-/////////////////////////////////////////////////////////////////////////////////
-// Support Functions
-/////////////////////////////////////////////////////////////////////////////////
-//-------------------------------------------------------------------------------
 
-///! Interpolates two quaternions using parameter t in [0,1].
+///! Spherically interpolates two quaternions using parameter t in [0,1].
 template <typename T>
-inline UnitQuaternion<T> UnitQuaternion<T>::Slerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, T t )
+inline UnitQuaternion<T> UnitQuaternion<T>::Slerp( UnitQuaternion<T> const &q1, T t ) const
 {
-	T cosTheta = q0 % q1;
-	T flip = cosTheta < T(0) ? T(-1) : T(1);	// Slerp is not going to take the shortest path, we should effectively reverse one of the quaternions.
-	T theta = std::acos( Min<T>(1,cosTheta*flip) );
 	Quaternion<T> q;
-	if ( std::abs(theta) < T(0.0001) ) {
-		q = (q0 * (1-t)) + (q1 * t);
-		q.Normalize();
+	T cosTheta = (*this) % q1;
+	if ( std::abs(cosTheta) < T(0.9999) ) {
+		T theta = std::acos(cosTheta);
+		T invSinTheta = 1 / std::sin( theta );
+		T c0 = std::sin( (1 - t)*theta )*invSinTheta;
+		T c1 = std::sin( t*theta )*invSinTheta; 
+		q = ((*this) * c0) + (q1 * c1);
 	} else {
-		T theta0 = theta * (1-t);
-		T theta1 = theta * t;
-		T sinTheta  = std::sin(theta);
-		T sinTheta0 = std::sin(theta0);
-		T s0 = sinTheta0 / sinTheta;
-		T s1 = std::cos(theta0)*flip - cosTheta*sinTheta0 / sinTheta;
-		q = (q0 * s0) + (q1 * s1);
+		q = (*this) + t*(q1 - (*this));
+		q.Normalize();
 	}
 	UnitQuaternion<T> uq;
 	uq.s = q.s;
@@ -358,15 +362,48 @@ inline UnitQuaternion<T> UnitQuaternion<T>::Slerp( UnitQuaternion<T> const &q0, 
 
 //-------------------------------------------------------------------------------
 
-///! Interpolates three quaternions using the given barycentric coordinates
+///! Linearly interpolates two quaternions using parameter t in [0,1] and then normalizes the result.
 template <typename T>
-inline UnitQuaternion<T> UnitQuaternion<T>::Slerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, UnitQuaternion<T> const &q2, Vec3<T> const &bc )
+inline UnitQuaternion<T> UnitQuaternion<T>::Nlerp( UnitQuaternion<T> const &q1, T t ) const
+{
+	Quaternion<T> q = *this;
+	T cosTheta = q % q1;
+	if ( cosTheta >= T(0) ) {
+		q += (q1 - q)*t;
+	} else {
+		q -= (q1 + q)*t;
+	}
+	return UnitQuaternion<T>(q);
+}
+
+//-------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////
+// Support Functions
+/////////////////////////////////////////////////////////////////////////////////
+//-------------------------------------------------------------------------------
+
+///! Spherically interpolates three quaternions using the given barycentric coordinates.
+template <typename T>
+inline UnitQuaternion<T> Slerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, UnitQuaternion<T> const &q2, Vec3<T> const &bc )
 {
 	T ab = bc.x + bc.y;
-	if ( std::abs(ab) < T(0.000001) ) return q2;
-	T t = bc.y / ab;
-	UnitQuaternion<T> q01 = Slerp( q0, q1, t );
-	return Slerp( q01, q2, T(1)-ab );
+	if ( std::abs(ab) > T(0.000001) ) {
+		T t = bc.y / ab;
+		UnitQuaternion<T> q01 = Slerp( q0, q1, t );
+		return Slerp( q01, q2, T(1)-ab );
+	} else return q2;
+}
+
+///! Linearly interpolates three quaternions using the given barycentric coordinates and normalizes the result.
+template <typename T>
+inline UnitQuaternion<T> Nlerp( UnitQuaternion<T> const &q0, UnitQuaternion<T> const &q1, UnitQuaternion<T> const &q2, Vec3<T> const &bc )
+{
+	T ab = bc.x + bc.y;
+	if ( std::abs(ab) > T(0.000001) ) {
+		T t = bc.y / ab;
+		UnitQuaternion<T> q01 = Nlerp( q0, q1, t );
+		return Nlerp( q01, q2, T(1)-ab );
+	} else return q2;
 }
 
 //-------------------------------------------------------------------------------
