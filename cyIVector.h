@@ -105,10 +105,10 @@ public:
 	CY_NODISCARD int  MaxComp() const { T m = elem[0]; int ix=0; for ( int i=1; i<N; ++i ) if ( m < elem[i] ) { m = elem[i]; ix = i; } return ix; }
 
 	//!@name Limit methods
-	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }		//!< Ensures that all components of the vector are within the given limits.
-	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]<v) ? v : elem[i]; }	//!< Ensures that all components of the vector are greater than or equal to the given limit.
-	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) elem[i] = (elem[i]>v) ? v : elem[i]; }	//!< Ensures that all components of the vector are smaller than or equal to the given limit.
-	void SetAbs  ()      { for ( int i=0; i<N; i++ ) elem[i] = std::abs(elem[i]); }			//!< Converts all negative components to positive values
+	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
+	void ClampMin( T v ) { for ( int i=0; i<N; ++i ) elem[i] = cy::Max(elem[i],v); }	//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { for ( int i=0; i<N; ++i ) elem[i] = cy::Min(elem[i],v); }	//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void SetAbs  ()      { for ( int i=0; i<N; i++ ) elem[i] = std::abs(elem[i]); }		//!< Converts all negative components to positive values
 
 	//!@name Unary operators
 	CY_NODISCARD IVec operator - () const { IVec r; for ( int i=0; i<N; ++i ) r.elem[i]=-elem[i]; return r; } 
@@ -226,8 +226,8 @@ public:
 
 	//!@name Limit methods
 	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
-	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; }									//!< Ensures that all components of the vector are greater than or equal to the given limit.
-	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; }									//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void ClampMin( T v ) { x=cy::Max(x,v); y=cy::Max(y,v); }							//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { x=cy::Min(x,v); y=cy::Min(y,v); }							//!< Ensures that all components of the vector are smaller than or equal to the given limit.
 	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); }								//!< Converts all negative components to positive values
 
 	//!@name Unary operators
@@ -349,8 +349,8 @@ public:
 
 	//!@name Limit methods
 	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }	//!< Ensures that all components of the vector are within the given limits.
-	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; }						//!< Ensures that all components of the vector are greater than or equal to the given limit.
-	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; }						//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void ClampMin( T v ) { x=cy::Max(x,v); y=cy::Max(y,v); z=cy::Max(z,v); }			//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { x=cy::Min(x,v); y=cy::Min(y,v); z=cy::Min(z,v); }			//!< Ensures that all components of the vector are smaller than or equal to the given limit.
 	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); z=std::abs(z); }				//!< Converts all negative components to positive values
 
 	//!@name Unary operators
@@ -474,10 +474,10 @@ public:
 	CY_NODISCARD IVec4 SortDesc() const { IVec4 v; Sort4<false>(v.x,v.y,v.z,v.w,x,y,z,w); return v; }	//!< Returns a vector with components sorted in descending order.
 
 	//!@name Limit methods
-	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }		//!< Ensures that all components of the vector are within the given limits.
-	void ClampMin( T v ) { x=(x<v)?v:x; y=(y<v)?v:y; z=(z<v)?v:z; w=(w<v)?v:w; }			//!< Ensures that all components of the vector are greater than or equal to the given limit.
-	void ClampMax( T v ) { x=(x>v)?v:x; y=(y>v)?v:y; z=(z>v)?v:z; w=(w>v)?v:w; }			//!< Ensures that all components of the vector are smaller than or equal to the given limit.
-	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); z=std::abs(z); w=std::abs(w); }	//!< Converts all negative components to positive values
+	void Clamp   ( T minValue, T maxValue ) { ClampMin(minValue); ClampMax(maxValue); }			//!< Ensures that all components of the vector are within the given limits.
+	void ClampMin( T v ) { x=cy::Max(x,v); y=cy::Max(y,v); z=cy::Max(z,v); w=cy::Max(w,v); }	//!< Ensures that all components of the vector are greater than or equal to the given limit.
+	void ClampMax( T v ) { x=cy::Min(x,v); y=cy::Min(y,v); z=cy::Min(z,v); w=cy::Min(w,v); }	//!< Ensures that all components of the vector are smaller than or equal to the given limit.
+	void SetAbs  ()      { x=std::abs(x); y=std::abs(y); z=std::abs(z); w=std::abs(w); }		//!< Converts all negative components to positive values
 
 	//!@name Unary operators
 	CY_NODISCARD IVec4 operator - () const { IVec4 r; r.x=-x; r.y=-y; r.z=-z; r.w=-w; return r; } 
