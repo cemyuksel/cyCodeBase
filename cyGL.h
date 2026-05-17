@@ -1766,20 +1766,22 @@ inline bool GLSLShader::Compile( char const *shaderSource, GLenum shaderType, in
 				int lineNumber  = std::stoi( match[2] );
 				if ( sourceIndex < sourceDataCount ) {
 					const char *line = sourceData[sourceIndex];
-					int currentLine = 0;
+					int currentLine = 1;
 					while ( line && currentLine < lineNumber ) {
-						line = strchr( line+1, '\n' );
+						line = strchr( line, '\n' );
 						if ( ! line ) {
 							sourceIndex++;
 							if ( sourceIndex < sourceDataCount ) line = sourceData[sourceIndex];
+						} else {
+							line++;
+							currentLine++;
 						}
-						currentLine++;
 					}
 					if ( line ) {
-						const char *nextLine = strchr( line+1, '\n' );
-						std::string_view view( line+1, nextLine ? nextLine - line : strlen(line+1) );
-						*outStream << "SOURCE LINE: " << std::endl;
-						*outStream << view <<std::endl;
+						const char *nextLine = strchr( line, '\n' );
+						std::string_view view( line, nextLine ? nextLine - line : strlen(line) );
+						*outStream << "SOURCE LINE (" << lineNumber << "): " << std::endl;
+						*outStream << view << std::endl << std::endl;
 					}
 				}
 			}
