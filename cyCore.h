@@ -52,9 +52,18 @@
 #include <type_traits>
 #include <limits>
 
-#if !defined(CY_NO_INTRIN_H) && !defined(CY_NO_EMMINTRIN_H) && !defined(CY_NO_IMMINTRIN_H)
-# include <immintrin.h>
-#endif
+#if !defined(CY_NO_INTRIN_H)
+	#if defined(_M_ARM64) || defined(_M_ARM64EC)
+		#include <intrin.h>
+		#if !defined(CY_NO_ARM_NEON_H)
+			#include <arm64_neon.h>
+		#endif
+	#elif defined(_M_X64) || defined(_M_IX86)
+		#if !defined(CY_NO_IMMINTRIN_H) && !defined(CY_NO_EMMINTRIN_H)
+			#include <immintrin.h>
+		#endif
+	#endif
+#endif // !defined(CY_NO_INTRIN_H)
 
 //-------------------------------------------------------------------------------
 namespace cy {
