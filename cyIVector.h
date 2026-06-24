@@ -279,7 +279,7 @@ public:
 
 	//!@name Test operators
 	CY_NODISCARD bool operator == ( IVec2 const &p ) const { return x==p.x && y==p.y; }
-	CY_NODISCARD bool operator != ( IVec2 const &p ) const { return x!=p.x && y!=p.y; }
+	CY_NODISCARD bool operator != ( IVec2 const &p ) const { return x!=p.x || y!=p.y; }
 
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
@@ -402,7 +402,7 @@ public:
 
 	//!@name Test operators
 	CY_NODISCARD bool operator == ( IVec3 const& p ) const { return x==p.x && y==p.y && z==p.z; }
-	CY_NODISCARD bool operator != ( IVec3 const& p ) const { return x!=p.x && y!=p.y && z!=p.z; }
+	CY_NODISCARD bool operator != ( IVec3 const& p ) const { return x!=p.x || y!=p.y || z!=p.z; }
 
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
@@ -528,7 +528,7 @@ public:
 
 	//!@name Test operators
 	CY_NODISCARD bool operator == ( IVec4 const &p ) const { return x==p.x && y==p.y && z==p.z && w==p.w; }
-	CY_NODISCARD bool operator != ( IVec4 const &p ) const { return x!=p.x && y!=p.y && z!=p.z && w!=p.w; }
+	CY_NODISCARD bool operator != ( IVec4 const &p ) const { return x!=p.x || y!=p.y || z!=p.z || w!=p.w; }
 
 	//!@name Access operators
 	CY_NODISCARD T&       operator [] ( int i )       { return Element(i); }
