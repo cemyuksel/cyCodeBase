@@ -567,60 +567,60 @@ template <typename T> template <typename S>        IVec3<T>::IVec3( IVec4<S> con
 
 /// !@name Support functions
 
-template <typename T, int N> inline CY_NODISCARD T Sum( IVec<T,N> const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
-template <typename T>        inline CY_NODISCARD T Sum( IVec2<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
-template <typename T>        inline CY_NODISCARD T Sum( IVec3<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
-template <typename T>        inline CY_NODISCARD T Sum( IVec4<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T, int N> CY_NODISCARD inline T Sum( IVec<T,N> const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T>        CY_NODISCARD inline T Sum( IVec2<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T>        CY_NODISCARD inline T Sum( IVec3<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T>        CY_NODISCARD inline T Sum( IVec4<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
 
-template <typename T, int N> inline CY_NODISCARD bool IsZero( IVec<T,N> const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
-template <typename T>        inline CY_NODISCARD bool IsZero( IVec2<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
-template <typename T>        inline CY_NODISCARD bool IsZero( IVec3<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
-template <typename T>        inline CY_NODISCARD bool IsZero( IVec4<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T, int N> CY_NODISCARD inline bool IsZero( IVec<T,N> const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T>        CY_NODISCARD inline bool IsZero( IVec2<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T>        CY_NODISCARD inline bool IsZero( IVec3<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T>        CY_NODISCARD inline bool IsZero( IVec4<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
 
-template <typename T, int N> inline CY_NODISCARD T Min( IVec<T,N> const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD T Min( IVec2<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD T Min( IVec3<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD T Min( IVec4<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T, int N> CY_NODISCARD inline T Min( IVec<T,N> const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline T Min( IVec2<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline T Min( IVec3<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline T Min( IVec4<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD T Max( IVec<T,N> const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD T Max( IVec2<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD T Max( IVec3<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD T Max( IVec4<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T, int N> CY_NODISCARD inline T Max( IVec<T,N> const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline T Max( IVec2<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline T Max( IVec3<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline T Max( IVec4<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD int MinComp( IVec<T,N> const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD int MinComp( IVec2<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD int MinComp( IVec3<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD int MinComp( IVec4<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T, int N> CY_NODISCARD inline int MinComp( IVec<T,N> const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline int MinComp( IVec2<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline int MinComp( IVec3<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline int MinComp( IVec4<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD int MaxComp( IVec<T,N> const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD int MaxComp( IVec2<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD int MaxComp( IVec3<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD int MaxComp( IVec4<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T, int N> CY_NODISCARD inline int MaxComp( IVec<T,N> const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline int MaxComp( IVec2<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline int MaxComp( IVec3<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline int MaxComp( IVec4<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD IVec<T,N> Abs( IVec<T,N> const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
-template <typename T>        inline CY_NODISCARD IVec2<T>  Abs( IVec2<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
-template <typename T>        inline CY_NODISCARD IVec3<T>  Abs( IVec3<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
-template <typename T>        inline CY_NODISCARD IVec4<T>  Abs( IVec4<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T, int N> CY_NODISCARD inline IVec<T,N> Abs( IVec<T,N> const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T>        CY_NODISCARD inline IVec2<T>  Abs( IVec2<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T>        CY_NODISCARD inline IVec3<T>  Abs( IVec3<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T>        CY_NODISCARD inline IVec4<T>  Abs( IVec4<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
 
-template <typename T, int N> inline CY_NODISCARD IVec<T,N> Clamp   ( IVec<T,N> const &p, T minLimit, T maxLimit ) { IVec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Clamp(p.elem[i],minLimit,maxLimit); return r; }	//!< Returns a vector with all components within the given limits.
-template <typename T>        inline CY_NODISCARD IVec2<T>  Clamp   ( IVec2<T>  const &p, T minLimit, T maxLimit ) { return IVec2<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit) ); }			//!< Returns a vector with all components within the given limits.
-template <typename T>        inline CY_NODISCARD IVec3<T>  Clamp   ( IVec3<T>  const &p, T minLimit, T maxLimit ) { return IVec3<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
-template <typename T>        inline CY_NODISCARD IVec4<T>  Clamp   ( IVec4<T>  const &p, T minLimit, T maxLimit ) { return IVec4<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit), cy::Clamp(p.w,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
+template <typename T, int N> CY_NODISCARD inline IVec<T,N> Clamp   ( IVec<T,N> const &p, T minLimit, T maxLimit ) { IVec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Clamp(p.elem[i],minLimit,maxLimit); return r; }	//!< Returns a vector with all components within the given limits.
+template <typename T>        CY_NODISCARD inline IVec2<T>  Clamp   ( IVec2<T>  const &p, T minLimit, T maxLimit ) { return IVec2<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit) ); }			//!< Returns a vector with all components within the given limits.
+template <typename T>        CY_NODISCARD inline IVec3<T>  Clamp   ( IVec3<T>  const &p, T minLimit, T maxLimit ) { return IVec3<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
+template <typename T>        CY_NODISCARD inline IVec4<T>  Clamp   ( IVec4<T>  const &p, T minLimit, T maxLimit ) { return IVec4<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit), cy::Clamp(p.w,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
 
-template <typename T, int N> inline CY_NODISCARD IVec<T,N> ClampMin( IVec<T,N> const &p, T v ) { IVec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Max(p.elem[i],v); return r; }		//!< Returns a vector with all components greater than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD IVec2<T>  ClampMin( IVec2<T>  const &p, T v ) { return IVec2<T>( cy::Max(p.x,v), cy::Max(p.y,v) ); }									//!< Returns a vector with all components greater than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD IVec3<T>  ClampMin( IVec3<T>  const &p, T v ) { return IVec3<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v) ); }					//!< Returns a vector with all components greater than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD IVec4<T>  ClampMin( IVec4<T>  const &p, T v ) { return IVec4<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v), cy::Max(p.w,v) ); }	//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T, int N> CY_NODISCARD inline IVec<T,N> ClampMin( IVec<T,N> const &p, T v ) { IVec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Max(p.elem[i],v); return r; }		//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline IVec2<T>  ClampMin( IVec2<T>  const &p, T v ) { return IVec2<T>( cy::Max(p.x,v), cy::Max(p.y,v) ); }									//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline IVec3<T>  ClampMin( IVec3<T>  const &p, T v ) { return IVec3<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v) ); }					//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline IVec4<T>  ClampMin( IVec4<T>  const &p, T v ) { return IVec4<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v), cy::Max(p.w,v) ); }	//!< Returns a vector with all components greater than or equal to the given limit.
 
-template <typename T, int N> inline CY_NODISCARD IVec<T,N> ClampMax( IVec<T,N> const &p, T v ) { IVec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Min(p.elem[i],v); return r; }		//!< Returns a vector with all components smaller than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD IVec2<T>  ClampMax( IVec2<T>  const &p, T v ) { return IVec2<T>( cy::Min(p.x,v), cy::Min(p.y,v) ); }									//!< Returns a vector with all components smaller than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD IVec3<T>  ClampMax( IVec3<T>  const &p, T v ) { return IVec3<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v) ); }					//!< Returns a vector with all components smaller than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD IVec4<T>  ClampMax( IVec4<T>  const &p, T v ) { return IVec4<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v), cy::Min(p.w,v) ); }	//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T, int N> CY_NODISCARD inline IVec<T,N> ClampMax( IVec<T,N> const &p, T v ) { IVec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Min(p.elem[i],v); return r; }		//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline IVec2<T>  ClampMax( IVec2<T>  const &p, T v ) { return IVec2<T>( cy::Min(p.x,v), cy::Min(p.y,v) ); }									//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline IVec3<T>  ClampMax( IVec3<T>  const &p, T v ) { return IVec3<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v) ); }					//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline IVec4<T>  ClampMax( IVec4<T>  const &p, T v ) { return IVec4<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v), cy::Min(p.w,v) ); }	//!< Returns a vector with all components smaller than or equal to the given limit.
 
-template <typename T, int N> inline CY_NODISCARD T Dot( IVec<T,N> const &a, IVec<T,N> const &b ) { return a.Dot(b); }	//!< Dot product
-template <typename T>        inline CY_NODISCARD T Dot( IVec2<T>  const &a, IVec2<T>  const &b ) { return a.Dot(b); }	//!< Dot product
-template <typename T>        inline CY_NODISCARD T Dot( IVec3<T>  const &a, IVec3<T>  const &b ) { return a.Dot(b); }	//!< Dot product
-template <typename T>        inline CY_NODISCARD T Dot( IVec4<T>  const &a, IVec4<T>  const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T, int N> CY_NODISCARD inline T Dot( IVec<T,N> const &a, IVec<T,N> const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T>        CY_NODISCARD inline T Dot( IVec2<T>  const &a, IVec2<T>  const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T>        CY_NODISCARD inline T Dot( IVec3<T>  const &a, IVec3<T>  const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T>        CY_NODISCARD inline T Dot( IVec4<T>  const &a, IVec4<T>  const &b ) { return a.Dot(b); }	//!< Dot product
 
 //-------------------------------------------------------------------------------
 

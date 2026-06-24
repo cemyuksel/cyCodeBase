@@ -648,102 +648,102 @@ template <typename T>        template <typename S> Vec3<T>::Vec3( Vec4<S> const 
 
 /// !@name Support functions
 
-template <typename T, int N> inline CY_NODISCARD Vec<T,N> Normalize( Vec<T,N> const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
-template <typename T>        inline CY_NODISCARD Vec2<T>  Normalize( Vec2<T>  const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
-template <typename T>        inline CY_NODISCARD Vec3<T>  Normalize( Vec3<T>  const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
-template <typename T>        inline CY_NODISCARD Vec4<T>  Normalize( Vec4<T>  const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
+template <typename T, int N> CY_NODISCARD inline Vec<T,N> Normalize( Vec<T,N> const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
+template <typename T>        CY_NODISCARD inline Vec2<T>  Normalize( Vec2<T>  const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
+template <typename T>        CY_NODISCARD inline Vec3<T>  Normalize( Vec3<T>  const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
+template <typename T>        CY_NODISCARD inline Vec4<T>  Normalize( Vec4<T>  const &v ) { return v.GetNormalized(); }	//!< Returns a normalized copy of the vector.
 
-template <typename T, int N> inline CY_NODISCARD T LengthSquared( Vec<T,N> const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-template <typename T>        inline CY_NODISCARD T LengthSquared( Vec2<T>  const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-template <typename T>        inline CY_NODISCARD T LengthSquared( Vec3<T>  const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
-template <typename T>        inline CY_NODISCARD T LengthSquared( Vec4<T>  const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+template <typename T, int N> CY_NODISCARD inline T LengthSquared( Vec<T,N> const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+template <typename T>        CY_NODISCARD inline T LengthSquared( Vec2<T>  const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+template <typename T>        CY_NODISCARD inline T LengthSquared( Vec3<T>  const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
+template <typename T>        CY_NODISCARD inline T LengthSquared( Vec4<T>  const &p ) { return p.LengthSquared(); }	//!< Returns the square of the length. Effectively, this is the dot product of the vector with itself.
 
-template <typename T, int N> inline CY_NODISCARD T Length( Vec<T,N> const &p ) { return p.Length(); }	//!< Returns the length of the vector.
-template <typename T>        inline CY_NODISCARD T Length( Vec2<T>  const &p ) { return p.Length(); }	//!< Returns the length of the vector.
-template <typename T>        inline CY_NODISCARD T Length( Vec3<T>  const &p ) { return p.Length(); }	//!< Returns the length of the vector.
-template <typename T>        inline CY_NODISCARD T Length( Vec4<T>  const &p ) { return p.Length(); }	//!< Returns the length of the vector.
+template <typename T, int N> CY_NODISCARD inline T Length( Vec<T,N> const &p ) { return p.Length(); }	//!< Returns the length of the vector.
+template <typename T>        CY_NODISCARD inline T Length( Vec2<T>  const &p ) { return p.Length(); }	//!< Returns the length of the vector.
+template <typename T>        CY_NODISCARD inline T Length( Vec3<T>  const &p ) { return p.Length(); }	//!< Returns the length of the vector.
+template <typename T>        CY_NODISCARD inline T Length( Vec4<T>  const &p ) { return p.Length(); }	//!< Returns the length of the vector.
 
-template <typename T, int N> inline CY_NODISCARD T Sum( Vec<T,N> const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
-template <typename T>        inline CY_NODISCARD T Sum( Vec2<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
-template <typename T>        inline CY_NODISCARD T Sum( Vec3<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
-template <typename T>        inline CY_NODISCARD T Sum( Vec4<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T, int N> CY_NODISCARD inline T Sum( Vec<T,N> const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T>        CY_NODISCARD inline T Sum( Vec2<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T>        CY_NODISCARD inline T Sum( Vec3<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
+template <typename T>        CY_NODISCARD inline T Sum( Vec4<T>  const &p ) { return p.Sum(); }	//!< Returns the sum of its components.
 
-template <typename T, int N> inline CY_NODISCARD bool IsZero( Vec<T,N> const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
-template <typename T>        inline CY_NODISCARD bool IsZero( Vec2<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
-template <typename T>        inline CY_NODISCARD bool IsZero( Vec3<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
-template <typename T>        inline CY_NODISCARD bool IsZero( Vec4<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T, int N> CY_NODISCARD inline bool IsZero( Vec<T,N> const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T>        CY_NODISCARD inline bool IsZero( Vec2<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T>        CY_NODISCARD inline bool IsZero( Vec3<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
+template <typename T>        CY_NODISCARD inline bool IsZero( Vec4<T>  const &p ) { return p.IsZero(); }	//!< Returns true if all components are exactly zero.
 
-template <typename T, int N> inline CY_NODISCARD T Min( Vec<T,N> const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD T Min( Vec2<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD T Min( Vec3<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD T Min( Vec4<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T, int N> CY_NODISCARD inline T Min( Vec<T,N> const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline T Min( Vec2<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline T Min( Vec3<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline T Min( Vec4<T>  const &p ) { return p.Min(); }	//!< Returns the minimum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD T Max( Vec<T,N> const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD T Max( Vec2<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD T Max( Vec3<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD T Max( Vec4<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T, int N> CY_NODISCARD inline T Max( Vec<T,N> const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline T Max( Vec2<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline T Max( Vec3<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline T Max( Vec4<T>  const &p ) { return p.Max(); }	//!< Returns the maximum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD int MinComp( Vec<T,N> const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD int MinComp( Vec2<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD int MinComp( Vec3<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
-template <typename T>        inline CY_NODISCARD int MinComp( Vec4<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T, int N> CY_NODISCARD inline int MinComp( Vec<T,N> const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline int MinComp( Vec2<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline int MinComp( Vec3<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
+template <typename T>        CY_NODISCARD inline int MinComp( Vec4<T>  const &p ) { return p.MinComp(); }	//!< Returns the index of the minimum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD int MaxComp( Vec<T,N> const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD int MaxComp( Vec2<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD int MaxComp( Vec3<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
-template <typename T>        inline CY_NODISCARD int MaxComp( Vec4<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T, int N> CY_NODISCARD inline int MaxComp( Vec<T,N> const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline int MaxComp( Vec2<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline int MaxComp( Vec3<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
+template <typename T>        CY_NODISCARD inline int MaxComp( Vec4<T>  const &p ) { return p.MaxComp(); }	//!< Returns the index of the maximum component of the vector.
 
-template <typename T, int N> inline CY_NODISCARD bool IsFinite( Vec<T,N> const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
-template <typename T>        inline CY_NODISCARD bool IsFinite( Vec2<T>  const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
-template <typename T>        inline CY_NODISCARD bool IsFinite( Vec3<T>  const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
-template <typename T>        inline CY_NODISCARD bool IsFinite( Vec4<T>  const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
+template <typename T, int N> CY_NODISCARD inline bool IsFinite( Vec<T,N> const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
+template <typename T>        CY_NODISCARD inline bool IsFinite( Vec2<T>  const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
+template <typename T>        CY_NODISCARD inline bool IsFinite( Vec3<T>  const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
+template <typename T>        CY_NODISCARD inline bool IsFinite( Vec4<T>  const &p ) { return p.IsFinite(); }	//!< Returns true if all components are finite real numbers.
 
-template <typename T, int N> inline CY_NODISCARD bool IsUnit( Vec<T,N> const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
-template <typename T>        inline CY_NODISCARD bool IsUnit( Vec2<T>  const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
-template <typename T>        inline CY_NODISCARD bool IsUnit( Vec3<T>  const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
-template <typename T>        inline CY_NODISCARD bool IsUnit( Vec4<T>  const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
+template <typename T, int N> CY_NODISCARD inline bool IsUnit( Vec<T,N> const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
+template <typename T>        CY_NODISCARD inline bool IsUnit( Vec2<T>  const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
+template <typename T>        CY_NODISCARD inline bool IsUnit( Vec3<T>  const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
+template <typename T>        CY_NODISCARD inline bool IsUnit( Vec4<T>  const &p ) { return p.IsUnit(); }	//!< Returns true if the length of the vector is close to 1.
 
-template <typename T, int N> inline CY_NODISCARD Vec<T,N> Sqrt( Vec<T,N> const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
-template <typename T>        inline CY_NODISCARD Vec2<T>  Sqrt( Vec2<T>  const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
-template <typename T>        inline CY_NODISCARD Vec3<T>  Sqrt( Vec3<T>  const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
-template <typename T>        inline CY_NODISCARD Vec4<T>  Sqrt( Vec4<T>  const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
+template <typename T, int N> CY_NODISCARD inline Vec<T,N> Sqrt( Vec<T,N> const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
+template <typename T>        CY_NODISCARD inline Vec2<T>  Sqrt( Vec2<T>  const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
+template <typename T>        CY_NODISCARD inline Vec3<T>  Sqrt( Vec3<T>  const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
+template <typename T>        CY_NODISCARD inline Vec4<T>  Sqrt( Vec4<T>  const &p ) { return p.Sqrt(); }	//!< Returns the square root of the vector.
 
-template <typename T, int N> inline CY_NODISCARD Vec<T,N> Abs( Vec<T,N> const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
-template <typename T>        inline CY_NODISCARD Vec2<T>  Abs( Vec2<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
-template <typename T>        inline CY_NODISCARD Vec3<T>  Abs( Vec3<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
-template <typename T>        inline CY_NODISCARD Vec4<T>  Abs( Vec4<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T, int N> CY_NODISCARD inline Vec<T,N> Abs( Vec<T,N> const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T>        CY_NODISCARD inline Vec2<T>  Abs( Vec2<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T>        CY_NODISCARD inline Vec3<T>  Abs( Vec3<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
+template <typename T>        CY_NODISCARD inline Vec4<T>  Abs( Vec4<T>  const &p ) { return p.Abs(); }	//!< Returns a vector containing the absolute values of all components.
 
-template <typename T, int N, typename V> inline CY_NODISCARD V Mix( Vec<T,N> const &p, V const v[N] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
-template <typename T,        typename V> inline CY_NODISCARD V Mix( Vec2<T>  const &p, V const v[2] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
-template <typename T,        typename V> inline CY_NODISCARD V Mix( Vec3<T>  const &p, V const v[3] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
-template <typename T,        typename V> inline CY_NODISCARD V Mix( Vec4<T>  const &p, V const v[4] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
+template <typename T, int N, typename V> CY_NODISCARD inline V Mix( Vec<T,N> const &p, V const v[N] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
+template <typename T,        typename V> CY_NODISCARD inline V Mix( Vec2<T>  const &p, V const v[2] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
+template <typename T,        typename V> CY_NODISCARD inline V Mix( Vec3<T>  const &p, V const v[3] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
+template <typename T,        typename V> CY_NODISCARD inline V Mix( Vec4<T>  const &p, V const v[4] ) { return p.Mix(v); }		//!< Returns the weighted sum of two values, using the components of the vector as weights.
 
-template <typename T, typename V> inline CY_NODISCARD V Mix( Vec2<T> const &p, V const &a, V const &b )                         { return p.Mix(a,b); }		//!< Returns the weighted sum of 2 values, using the components of the vector as weights.
-template <typename T, typename V> inline CY_NODISCARD V Mix( Vec3<T> const &p, V const &a, V const &b, V const &c )             { return p.Mix(a,b,c); }	//!< Returns the weighted sum of 3 values, using the components of the vector as weights.
-template <typename T, typename V> inline CY_NODISCARD V Mix( Vec4<T> const &p, V const &a, V const &b, V const &c, V const &d ) { return p.Mix(a,b,c,d); }	//!< Returns the weighted sum of 4 values, using the components of the vector as weights.
+template <typename T, typename V> CY_NODISCARD inline V Mix( Vec2<T> const &p, V const &a, V const &b )                         { return p.Mix(a,b); }		//!< Returns the weighted sum of 2 values, using the components of the vector as weights.
+template <typename T, typename V> CY_NODISCARD inline V Mix( Vec3<T> const &p, V const &a, V const &b, V const &c )             { return p.Mix(a,b,c); }	//!< Returns the weighted sum of 3 values, using the components of the vector as weights.
+template <typename T, typename V> CY_NODISCARD inline V Mix( Vec4<T> const &p, V const &a, V const &b, V const &c, V const &d ) { return p.Mix(a,b,c,d); }	//!< Returns the weighted sum of 4 values, using the components of the vector as weights.
 
-template <typename T, int N> inline CY_NODISCARD Vec<T,N> Clamp   ( Vec<T,N> const &p, T minLimit, T maxLimit ) { Vec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Clamp(p.elem[i],minLimit,maxLimit); return r; }	//!< Returns a vector with all components within the given limits.
-template <typename T>        inline CY_NODISCARD Vec2<T>  Clamp   ( Vec2<T>  const &p, T minLimit, T maxLimit ) { return Vec2<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit) ); }			//!< Returns a vector with all components within the given limits.
-template <typename T>        inline CY_NODISCARD Vec3<T>  Clamp   ( Vec3<T>  const &p, T minLimit, T maxLimit ) { return Vec3<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
-template <typename T>        inline CY_NODISCARD Vec4<T>  Clamp   ( Vec4<T>  const &p, T minLimit, T maxLimit ) { return Vec4<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit), cy::Clamp(p.w,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
+template <typename T, int N> CY_NODISCARD inline Vec<T,N> Clamp   ( Vec<T,N> const &p, T minLimit, T maxLimit ) { Vec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Clamp(p.elem[i],minLimit,maxLimit); return r; }	//!< Returns a vector with all components within the given limits.
+template <typename T>        CY_NODISCARD inline Vec2<T>  Clamp   ( Vec2<T>  const &p, T minLimit, T maxLimit ) { return Vec2<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit) ); }			//!< Returns a vector with all components within the given limits.
+template <typename T>        CY_NODISCARD inline Vec3<T>  Clamp   ( Vec3<T>  const &p, T minLimit, T maxLimit ) { return Vec3<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
+template <typename T>        CY_NODISCARD inline Vec4<T>  Clamp   ( Vec4<T>  const &p, T minLimit, T maxLimit ) { return Vec4<T>( cy::Clamp(p.x,minLimit,maxLimit), cy::Clamp(p.y,minLimit,maxLimit), cy::Clamp(p.z,minLimit,maxLimit), cy::Clamp(p.w,minLimit,maxLimit) ); }	//!< Returns a vector with all components within the given limits.
 
-template <typename T, int N> inline CY_NODISCARD Vec<T,N> ClampMin( Vec<T,N> const &p, T v ) { Vec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Max(p.elem[i],v); return r; }		//!< Returns a vector with all components greater than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD Vec2<T>  ClampMin( Vec2<T>  const &p, T v ) { return Vec2<T>( cy::Max(p.x,v), cy::Max(p.y,v) ); }									//!< Returns a vector with all components greater than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD Vec3<T>  ClampMin( Vec3<T>  const &p, T v ) { return Vec3<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v) ); }					//!< Returns a vector with all components greater than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD Vec4<T>  ClampMin( Vec4<T>  const &p, T v ) { return Vec4<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v), cy::Max(p.w,v) ); }	//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T, int N> CY_NODISCARD inline Vec<T,N> ClampMin( Vec<T,N> const &p, T v ) { Vec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Max(p.elem[i],v); return r; }		//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline Vec2<T>  ClampMin( Vec2<T>  const &p, T v ) { return Vec2<T>( cy::Max(p.x,v), cy::Max(p.y,v) ); }									//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline Vec3<T>  ClampMin( Vec3<T>  const &p, T v ) { return Vec3<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v) ); }					//!< Returns a vector with all components greater than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline Vec4<T>  ClampMin( Vec4<T>  const &p, T v ) { return Vec4<T>( cy::Max(p.x,v), cy::Max(p.y,v), cy::Max(p.z,v), cy::Max(p.w,v) ); }	//!< Returns a vector with all components greater than or equal to the given limit.
 
-template <typename T, int N> inline CY_NODISCARD Vec<T,N> ClampMax( Vec<T,N> const &p, T v ) { Vec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Min(p.elem[i],v); return r; }		//!< Returns a vector with all components smaller than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD Vec2<T>  ClampMax( Vec2<T>  const &p, T v ) { return Vec2<T>( cy::Min(p.x,v), cy::Min(p.y,v) ); }									//!< Returns a vector with all components smaller than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD Vec3<T>  ClampMax( Vec3<T>  const &p, T v ) { return Vec3<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v) ); }					//!< Returns a vector with all components smaller than or equal to the given limit.
-template <typename T>        inline CY_NODISCARD Vec4<T>  ClampMax( Vec4<T>  const &p, T v ) { return Vec4<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v), cy::Min(p.w,v) ); }	//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T, int N> CY_NODISCARD inline Vec<T,N> ClampMax( Vec<T,N> const &p, T v ) { Vec<T,N> r; for (int i=0; i<N; ++i) r.elem[i]=cy::Min(p.elem[i],v); return r; }		//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline Vec2<T>  ClampMax( Vec2<T>  const &p, T v ) { return Vec2<T>( cy::Min(p.x,v), cy::Min(p.y,v) ); }									//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline Vec3<T>  ClampMax( Vec3<T>  const &p, T v ) { return Vec3<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v) ); }					//!< Returns a vector with all components smaller than or equal to the given limit.
+template <typename T>        CY_NODISCARD inline Vec4<T>  ClampMax( Vec4<T>  const &p, T v ) { return Vec4<T>( cy::Min(p.x,v), cy::Min(p.y,v), cy::Min(p.z,v), cy::Min(p.w,v) ); }	//!< Returns a vector with all components smaller than or equal to the given limit.
 
-template <typename T>        inline CY_NODISCARD T       Cross( Vec2<T> const &a, Vec2<T> const &b ) { return a.Cross(b); }	//!< Cross product
-template <typename T>        inline CY_NODISCARD Vec3<T> Cross( Vec3<T> const &a, Vec3<T> const &b ) { return a.Cross(b); }	//!< Cross product
+template <typename T>        CY_NODISCARD inline T       Cross( Vec2<T> const &a, Vec2<T> const &b ) { return a.Cross(b); }	//!< Cross product
+template <typename T>        CY_NODISCARD inline Vec3<T> Cross( Vec3<T> const &a, Vec3<T> const &b ) { return a.Cross(b); }	//!< Cross product
 
-template <typename T, int N> inline CY_NODISCARD T Dot( Vec<T,N> const &a, Vec<T,N> const &b ) { return a.Dot(b); }	//!< Dot product
-template <typename T>        inline CY_NODISCARD T Dot( Vec2<T>  const &a, Vec2<T>  const &b ) { return a.Dot(b); }	//!< Dot product
-template <typename T>        inline CY_NODISCARD T Dot( Vec3<T>  const &a, Vec3<T>  const &b ) { return a.Dot(b); }	//!< Dot product
-template <typename T>        inline CY_NODISCARD T Dot( Vec4<T>  const &a, Vec4<T>  const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T, int N> CY_NODISCARD inline T Dot( Vec<T,N> const &a, Vec<T,N> const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T>        CY_NODISCARD inline T Dot( Vec2<T>  const &a, Vec2<T>  const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T>        CY_NODISCARD inline T Dot( Vec3<T>  const &a, Vec3<T>  const &b ) { return a.Dot(b); }	//!< Dot product
+template <typename T>        CY_NODISCARD inline T Dot( Vec4<T>  const &a, Vec4<T>  const &b ) { return a.Dot(b); }	//!< Dot product
 
 //-------------------------------------------------------------------------------
 
