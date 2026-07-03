@@ -453,26 +453,29 @@ public:
 
 	//!@name Constructors
 	Vec4() CY_CLASS_FUNCTION_DEFAULT
-	Vec4( T _x, T _y, T _z, T _w )                    : x( _x), y( _y), z( _z), w( _w) {}
-	explicit Vec4( T v )                              : x(v  ), y(v  ), z(v  ), w(v  ) {}
-	explicit Vec4( Vec2<T> const &p, T _z=0, T _w=1 ) : x(p.x), y(p.y), z( _z), w( _w) {}
-	explicit Vec4( Vec3<T> const &p,         T _w=1 ) : x(p.x), y(p.y), z(p.z), w( _w) {}
+	Vec4( T _x, T _y, T _z, T _w )                      : x( _x), y( _y), z( _z), w( _w) {}
+	explicit Vec4( T v )                                : x(v  ), y(v  ), z(v  ), w(v  ) {}
+	explicit Vec4( Vec2<T> const &p, Vec2<T> const &q ) : x(p.x), y(p.y), z(q.x), w(q.y) {}
+	explicit Vec4( Vec2<T> const &p, T _z=0, T _w=1 )   : x(p.x), y(p.y), z( _z), w( _w) {}
+	explicit Vec4( Vec3<T> const &p,         T _w=1 )   : x(p.x), y(p.y), z(p.z), w( _w) {}
 	explicit Vec4( T const * restrict v ) { Set( v ); }
-	template <typename S> explicit Vec4( Vec2<S> const &p, T _z=0, T _w=1 ) : x(T(p.x)), y(T(p.y)), z(   _z ), w(   _w ) {}
-	template <typename S> explicit Vec4( Vec3<S> const &p,         T _w=1 ) : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(   _w ) {}
-	template <typename S> explicit Vec4( Vec4<S> const &p )                 : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(T(p.w)) {}
+	template <typename S> explicit Vec4( Vec2<S> const &p, Vec2<S> const &q ) : x(T(p.x)), y(T(p.y)), z(T(q.x)), w(T(q.y)) {}
+	template <typename S> explicit Vec4( Vec2<S> const &p, T _z=0, T _w=1 )   : x(T(p.x)), y(T(p.y)), z(   _z ), w(   _w ) {}
+	template <typename S> explicit Vec4( Vec3<S> const &p,         T _w=1 )   : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(   _w ) {}
+	template <typename S> explicit Vec4( Vec4<S> const &p )                   : x(T(p.x)), y(T(p.y)), z(T(p.z)), w(T(p.w)) {}
 	template <int N            > explicit Vec4( Vec<T,N> const &p ) { p.template CopyData<4>(&x); }
 	template <int N, typename S> explicit Vec4( Vec<S,N> const &p ) { p.template ConvertData<T,4>(&x); }
 
 	//!@name Set & Get value methods
-	void Zero()                                { x=0; y=0; z=0; w=0; }			//!< Sets the coordinates as zero
-	void Get( T       * p ) const              { MemCopy(p,&x,4); }				//!< Puts the coordinate values into the array
-	void Set( T const * p )                    { MemCopy(&x,p,4); }				//!< Sets the coordinates using the values in the given array
-	void Set( T v )                            { x=v; y=v; z=v; w=v; }			//!< Sets all coordinates using the given value
-	void Set( T _x, T _y, T _z, T _w=1 )       { x= _x; y= _y; z= _z; w=_w; }	//!< Sets the coordinates using the given values
-	void Set( Vec2<T> const &p, T _z, T _w=1 ) { x=p.x; y=p.y; z= _z; w=_w; }	//!< Sets the coordinates using the given values
-	void Set( Vec3<T> const &p,       T _w=1 ) { x=p.x; y=p.y; z=p.z; w=_w; }	//!< Sets the coordinates using the given values
-	void Normalize()                           { *this /= Length(); }			//!< Normalizes the vector, such that its length becomes 1.
+	void Zero()                                    { x=0; y=0; z=0; w=0; }			//!< Sets the coordinates as zero
+	void Get( T       * p ) const                  { MemCopy(p,&x,4); }				//!< Puts the coordinate values into the array
+	void Set( T const * p )                        { MemCopy(&x,p,4); }				//!< Sets the coordinates using the values in the given array
+	void Set( T v )                                { x=v; y=v; z=v; w=v; }			//!< Sets all coordinates using the given value
+	void Set( T _x, T _y, T _z, T _w=1 )           { x= _x; y= _y; z= _z; w= _w; }	//!< Sets the coordinates using the given values
+	void Set( Vec2<T> const &p, Vec2<T> const &q ) { x=p.x; y=p.y; z=q.x; w=q.y; }	//!< Sets the coordinates using the given values
+	void Set( Vec2<T> const &p, T _z, T _w=1 )     { x=p.x; y=p.y; z= _z; w= _w; }	//!< Sets the coordinates using the given values
+	void Set( Vec3<T> const &p,       T _w=1 )     { x=p.x; y=p.y; z=p.z; w= _w; }	//!< Sets the coordinates using the given values
+	void Normalize()                               { *this /= Length(); }			//!< Normalizes the vector, such that its length becomes 1.
 
 	//!@name General methods
 	CY_NODISCARD Vec4 GetNormalized() const { return *this / Length(); }							//!< Returns a normalized copy of the vector.
