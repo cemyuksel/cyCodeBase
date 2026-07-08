@@ -822,7 +822,7 @@ public:
 		//! Loads the given source file and parses it for include statements.
 		//! The contents of all included files are recursively added to the list.
 		//! This method does not avoid possible infinite loops with nested include statements.
-		static bool ParseIncludesFile( std::vector<std::string> &sources, char const *filename, std::string const &includePath, std::ostream *outStream=&std::cout );
+		static bool ParseIncludesFile( std::vector<std::string> &sources, char const *filename, std::ostream *outStream=&std::cout );
 
 		//! Parses the given for include statements. Together with parts of the given string,
 		//! the contents of all included files are recursively added to the returned vector.
@@ -1675,10 +1675,15 @@ inline bool GLSLShader::Source::LoadFile( char const *filename, std::ostream *ou
 	return true;
 }
 
-inline bool GLSLShader::Source::ParseIncludesFile( std::vector<std::string> &sources, char const *filename, std::string const &includePath, std::ostream *outStream )
+inline bool GLSLShader::Source::ParseIncludesFile( std::vector<std::string> &sources, char const *filename, std::ostream *outStream )
 {
 	Source source;
-	if ( source.LoadFile( filename, outStream ) ) return source.ParseIncludes( sources, source.data(), includePath, outStream );
+	if ( source.LoadFile( filename, outStream ) ) {
+		std::string includePath = filename;
+		size_t pos = includePath.find_last_of("/\\");
+		includePath.erase( pos+1 );
+		return source.ParseIncludes( sources, source.data(), includePath, outStream );
+	}
 	else return false;
 }
 
@@ -1693,7 +1698,7 @@ inline bool GLSLShader::Source::ParseIncludes( std::vector<std::string> &sources
 		sources.push_back( remainingSource.substr(0, matches.position()) );
 		std::string includeFileName = includePath;
 		includeFileName += matches[1];
-		if ( ! ParseIncludesFile( sources, includeFileName.data(), includePath, outStream ) ) return false;
+		if ( ! ParseIncludesFile( sources, includeFileName.data(), outStream ) ) return false;
 		lastIndex = matches.position() + matches.length();
 		remainingSource = remainingSource.substr(lastIndex);
 	}
